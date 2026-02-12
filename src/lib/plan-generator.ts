@@ -118,6 +118,10 @@ const SUBREDDIT_MAP: Record<string, string[]> = {
   'startup': ['r/startups', 'r/SideProject', 'r/Entrepreneur'],
   'mobile': ['r/androidapps', 'r/iOSProgramming', 'r/AppBusiness'],
   'automation': ['r/automation', 'r/homeautomation'],
+  'sleep': ['r/sleep', 'r/insomnia', 'r/DSPD'],
+  'wellness': ['r/selfimprovement', 'r/Meditation', 'r/yoga'],
+  'sound': ['r/WeAreTheMusicMakers', 'r/audiophile', 'r/ambientmusic'],
+  'focus': ['r/productivity', 'r/ADHD', 'r/GetStudying'],
 };
 
 function findSubreddits(category: string, appName: string): string[] {
@@ -198,7 +202,23 @@ function generateKeywords(config: AppConfig) {
 function conjugateForThirdPerson(phrase: string): string {
   const words = phrase.split(/\s+/);
   if (words.length === 0) return phrase;
-  const verb = words[0];
+  const verb = words[0].toLowerCase();
+  
+  // Don't conjugate adverbs/negatives — find the actual verb
+  const skipWords = ['never', 'always', 'easily', 'quickly', 'automatically', 'instantly', 'simply', 'just'];
+  if (skipWords.includes(verb)) {
+    // Conjugate the second word instead
+    if (words.length < 2) return phrase;
+    const actualVerb = words[1].toLowerCase();
+    const irregulars: Record<string, string> = { 'do': 'does', 'go': 'goes', 'have': 'has' };
+    if (irregulars[actualVerb]) { words[1] = irregulars[actualVerb]; return words.join(' '); }
+    if (actualVerb.endsWith('s') && !actualVerb.endsWith('ss')) return phrase;
+    if (actualVerb.endsWith('y') && !/[aeiou]y$/i.test(actualVerb)) { words[1] = actualVerb.slice(0, -1) + 'ies'; }
+    else if (actualVerb.endsWith('sh') || actualVerb.endsWith('ch') || actualVerb.endsWith('x') || actualVerb.endsWith('z') || actualVerb.endsWith('ss') || actualVerb.endsWith('o')) { words[1] = actualVerb + 'es'; }
+    else { words[1] = actualVerb + 's'; }
+    return words.join(' ');
+  }
+  
   const irregulars: Record<string, string> = { 'do': 'does', 'go': 'goes', 'have': 'has' };
   if (irregulars[verb]) { words[0] = irregulars[verb]; return words.join(' '); }
   if (verb.endsWith('s') && !verb.endsWith('ss')) return phrase;

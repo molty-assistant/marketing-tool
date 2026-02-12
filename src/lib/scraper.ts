@@ -87,7 +87,7 @@ export async function scrapeAppStore(url: string): Promise<ScrapedApp> {
     name: app.trackName || app.trackCensoredName || 'Unknown',
     icon: app.artworkUrl512 || app.artworkUrl100 || app.artworkUrl60,
     description: app.description || '',
-    shortDescription: app.trackName ? `${app.trackName} by ${app.artistName}` : undefined,
+    shortDescription: app.description ? app.description.split('\n')[0].trim().substring(0, 160) : undefined,
     screenshots: [
       ...(app.screenshotUrls || []),
       ...(app.ipadScreenshotUrls || []),
