@@ -12,8 +12,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@types/archiver": "^7.0.0",
+    "archiver": "^7.0.1",
     "better-sqlite3": "^12.6.2",
     "next": "16.1.6",
+    "playwright-core": "^1.58.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
