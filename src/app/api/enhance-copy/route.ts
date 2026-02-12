@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
     const tone: Tone = body.tone && VALID_TONES.includes(body.tone) ? body.tone : 'professional';
     const context = typeof body.context === 'string' ? body.context : '';
 
-    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyCjhC1WzyRIh6oAG1zpN9ao1qUweqNSYD0';
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return Response.json({ error: 'GEMINI_API_KEY is not set' }, { status: 500 });
+    }
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const systemPrompt = `You are a marketing copywriter. Rewrite the following marketing copy to sound more natural, human, and engaging. Tone: ${tone}. Context about the app: ${context}. Return ONLY the improved copy, nothing else.`;
