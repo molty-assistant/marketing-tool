@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { MarketingPlan } from '@/lib/types';
+import EnhanceButton from '@/components/EnhanceButton';
 
 // Simple markdown to HTML converter for our structured content
 function renderMarkdown(md: string): string {
@@ -99,21 +100,52 @@ function parseTemplates(assetsContent: string): { heading: string; content: stri
   return templates;
 }
 
-function TemplateCard({ heading, content }: { heading: string; content: string }) {
+function TemplateCard({
+  heading,
+  content,
+  appContext,
+}: {
+  heading: string;
+  content: string;
+  appContext: string;
+}) {
   const [open, setOpen] = useState(false);
+  const [displayContent, setDisplayContent] = useState(content);
+  const [isEnhanced, setIsEnhanced] = useState(false);
+
+  const handleTextChange = useCallback(
+    (newText: string) => {
+      setDisplayContent(newText);
+      setIsEnhanced(newText !== content);
+    },
+    [content]
+  );
 
   // Strip markdown bold/links for plain-text copy
-  const plainText = content
+  const plainText = displayContent
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
 
   return (
-    <div className="bg-slate-900/50 border border-slate-700/30 rounded-xl overflow-hidden">
+    <div
+      className={`rounded-xl overflow-hidden transition-colors ${
+        isEnhanced
+          ? 'bg-indigo-950/30 border border-indigo-500/30'
+          : 'bg-slate-900/50 border border-slate-700/30'
+      }`}
+    >
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors text-left"
       >
-        <h4 className="text-sm font-semibold text-indigo-400">{heading}</h4>
+        <h4 className="text-sm font-semibold text-indigo-400">
+          {heading}
+          {isEnhanced && (
+            <span className="ml-2 text-xs font-normal text-indigo-300/70">
+              ✨ AI enhanced
+            </span>
+          )}
+        </h4>
         <div className="flex items-center gap-2">
           <CopyButton text={plainText} label="Copy" />
           <span className="text-slate-500 text-sm">{open ? '−' : '+'}</span>
@@ -121,9 +153,17 @@ function TemplateCard({ heading, content }: { heading: string; content: string }
       </button>
       {open && (
         <div className="px-4 pb-4 border-t border-slate-700/30">
+          {/* Enhance controls */}
+          <div className="mt-3 mb-3">
+            <EnhanceButton
+              text={content}
+              appContext={appContext}
+              onTextChange={handleTextChange}
+            />
+          </div>
           <div
-            className="markdown-content mt-3 text-sm"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+            className="markdown-content text-sm"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }}
           />
         </div>
       )}
@@ -136,11 +176,13 @@ function StageSection({
   content,
   defaultOpen = false,
   isAssetsStage = false,
+  appContext = '',
 }: {
   title: string;
   content: string;
   defaultOpen?: boolean;
   isAssetsStage?: boolean;
+  appContext?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const templates = isAssetsStage ? parseTemplates(content) : [];
@@ -171,7 +213,12 @@ function StageSection({
                 }}
               />
               {templates.map((t, i) => (
-                <TemplateCard key={i} heading={t.heading} content={t.content} />
+                <TemplateCard
+                  key={i}
+                  heading={t.heading}
+                  content={t.content}
+                  appContext={appContext}
+                />
               ))}
             </div>
           ) : (
@@ -331,6 +378,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           content={plan.stages[stage.key]}
           defaultOpen={i === 0}
           isAssetsStage={stage.isAssets}
+          appContext={`${plan.config.app_name} — ${plan.config.one_liner}. Category: ${plan.config.category}. Audience: ${plan.config.target_audience}. Pricing: ${plan.config.pricing}.`}
         />
       ))}
 
