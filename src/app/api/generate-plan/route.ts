@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateMarketingPlan, scrapedToConfig } from '@/lib/plan-generator';
+import { savePlan } from '@/lib/db';
 import { AppConfig, ScrapedApp } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
@@ -22,6 +23,15 @@ export async function POST(request: NextRequest) {
     };
 
     const plan = generateMarketingPlan(config, scraped);
+
+    // Auto-save to SQLite
+    try {
+      savePlan(plan);
+    } catch (dbErr) {
+      console.error('Failed to save plan to database:', dbErr);
+      // Don't fail the request if DB save fails — plan is still returned
+    }
+
     return NextResponse.json(plan);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to generate plan';

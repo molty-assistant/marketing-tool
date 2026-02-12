@@ -66,8 +66,84 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   );
 }
 
-function StageSection({ title, content, defaultOpen = false }: { title: string; content: string; defaultOpen?: boolean }) {
+// Parse Stage 4 content into individual templates for per-template copy
+function parseTemplates(assetsContent: string): { heading: string; content: string }[] {
+  const templates: { heading: string; content: string }[] = [];
+  const lines = assetsContent.split('\n');
+  let currentHeading = '';
+  let currentLines: string[] = [];
+
+  for (const line of lines) {
+    const h3Match = line.match(/^### (.+)$/);
+    if (h3Match) {
+      if (currentHeading && currentLines.length > 0) {
+        templates.push({
+          heading: currentHeading,
+          content: currentLines.join('\n').trim(),
+        });
+      }
+      currentHeading = h3Match[1];
+      currentLines = [];
+    } else if (currentHeading) {
+      currentLines.push(line);
+    }
+  }
+  // Push last template
+  if (currentHeading && currentLines.length > 0) {
+    templates.push({
+      heading: currentHeading,
+      content: currentLines.join('\n').trim(),
+    });
+  }
+
+  return templates;
+}
+
+function TemplateCard({ heading, content }: { heading: string; content: string }) {
+  const [open, setOpen] = useState(false);
+
+  // Strip markdown bold/links for plain-text copy
+  const plainText = content
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+  return (
+    <div className="bg-slate-900/50 border border-slate-700/30 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors text-left"
+      >
+        <h4 className="text-sm font-semibold text-indigo-400">{heading}</h4>
+        <div className="flex items-center gap-2">
+          <CopyButton text={plainText} label="Copy" />
+          <span className="text-slate-500 text-sm">{open ? '−' : '+'}</span>
+        </div>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 border-t border-slate-700/30">
+          <div
+            className="markdown-content mt-3 text-sm"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StageSection({
+  title,
+  content,
+  defaultOpen = false,
+  isAssetsStage = false,
+}: {
+  title: string;
+  content: string;
+  defaultOpen?: boolean;
+  isAssetsStage?: boolean;
+}) {
   const [open, setOpen] = useState(defaultOpen);
+  const templates = isAssetsStage ? parseTemplates(content) : [];
 
   return (
     <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden mb-4">
@@ -83,10 +159,27 @@ function StageSection({ title, content, defaultOpen = false }: { title: string; 
       </button>
       {open && (
         <div className="px-5 pb-5 border-t border-slate-700/50">
-          <div
-            className="markdown-content mt-4"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
-          />
+          {isAssetsStage && templates.length > 0 ? (
+            <div className="mt-4 space-y-3">
+              {/* Stage 4 header line */}
+              <div
+                className="markdown-content mb-2"
+                dangerouslySetInnerHTML={{
+                  __html: renderMarkdown(
+                    content.split('\n').filter((l) => !l.startsWith('### ') && !templates.some((t) => t.content.includes(l.trim()) && l.trim())).slice(0, 2).join('\n')
+                  ),
+                }}
+              />
+              {templates.map((t, i) => (
+                <TemplateCard key={i} heading={t.heading} content={t.content} />
+              ))}
+            </div>
+          ) : (
+            <div
+              className="markdown-content mt-4"
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+            />
+          )}
         </div>
       )}
     </div>
@@ -97,19 +190,55 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   const { id } = use(params);
   const router = useRouter();
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
+  const [loadingDb, setLoadingDb] = useState(false);
 
   useEffect(() => {
+    // Try sessionStorage first (just generated)
     const stored = sessionStorage.getItem(`plan-${id}`);
     if (stored) {
-      try { setPlan(JSON.parse(stored)); } catch { /* ignore */ }
+      try {
+        setPlan(JSON.parse(stored));
+        return;
+      } catch { /* fall through to DB */ }
     }
+
+    // Fall back to DB
+    setLoadingDb(true);
+    fetch(`/api/plans/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then((data) => {
+        setPlan(data);
+        // Cache in sessionStorage for subsequent navigations
+        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
+      })
+      .catch(() => {
+        // Plan not found anywhere
+      })
+      .finally(() => setLoadingDb(false));
   }, [id]);
+
+  if (loadingDb) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-20">
+        <div className="inline-flex items-center gap-3 text-lg text-slate-300">
+          <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Loading plan...
+        </div>
+      </div>
+    );
+  }
 
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
         <div className="text-slate-400 mb-4">Plan not found</div>
-        <p className="text-sm text-slate-500 mb-4">Plans are stored in your browser session. They may have expired.</p>
+        <p className="text-sm text-slate-500 mb-4">This plan may have been deleted or doesn&apos;t exist.</p>
         <a href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </a>
@@ -128,17 +257,17 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   };
 
   const stageLabels = [
-    { key: 'research' as const, title: '🔍 Stage 1: Research', emoji: '🔍' },
-    { key: 'foundation' as const, title: '🏗️ Stage 2: Foundation', emoji: '🏗️' },
-    { key: 'structure' as const, title: '🧱 Stage 3: Structure', emoji: '🧱' },
-    { key: 'assets' as const, title: '✍️ Stage 4: Copy Templates', emoji: '✍️' },
-    { key: 'distribution' as const, title: '📡 Stage 5: Distribution', emoji: '📡' },
+    { key: 'research' as const, title: '🔍 Stage 1: Research', isAssets: false },
+    { key: 'foundation' as const, title: '🏗️ Stage 2: Foundation', isAssets: false },
+    { key: 'structure' as const, title: '🧱 Stage 3: Structure', isAssets: false },
+    { key: 'assets' as const, title: '✍️ Stage 4: Copy Templates', isAssets: true },
+    { key: 'distribution' as const, title: '📡 Stage 5: Distribution', isAssets: false },
   ];
 
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
         <div>
           <a href="/" className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-3 inline-block">
             ← Back to home
@@ -153,7 +282,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={handleExportMarkdown}
             className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
@@ -181,7 +310,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">
             {plan.config.pricing}
           </span>
-          {plan.config.distribution_channels.map(ch => (
+          {plan.config.distribution_channels.map((ch) => (
             <span key={ch} className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">
               {ch}
             </span>
@@ -201,6 +330,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           title={stage.title}
           content={plan.stages[stage.key]}
           defaultOpen={i === 0}
+          isAssetsStage={stage.isAssets}
         />
       ))}
 

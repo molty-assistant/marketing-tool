@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, use } from 'react';
-import { useRouter } from 'next/navigation';
 import { MarketingPlan, GeneratedAsset, AssetConfig } from '@/lib/types';
 
 function AssetPreview({ asset }: { asset: GeneratedAsset }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [downloading, setDownloading] = useState(false);
 
   const handleDownload = () => {
     const blob = new Blob([asset.html], { type: 'text/html' });
@@ -76,7 +74,6 @@ function AssetPreview({ asset }: { asset: GeneratedAsset }) {
 
 export default function AssetsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
   const [assets, setAssets] = useState<GeneratedAsset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,18 +88,35 @@ export default function AssetsPage({ params }: { params: Promise<{ id: string }>
   });
 
   useEffect(() => {
+    // Try sessionStorage first
     const stored = sessionStorage.getItem(`plan-${id}`);
     if (stored) {
       try {
         const p = JSON.parse(stored) as MarketingPlan;
         setPlan(p);
-      } catch { /* ignore */ }
+        return;
+      } catch { /* fall through */ }
     }
+
+    // Fall back to DB
+    fetch(`/api/plans/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then((data) => {
+        setPlan(data);
+        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
+      })
+      .catch(() => {
+        // Plan not found
+      });
   }, [id]);
 
   useEffect(() => {
     if (!plan) return;
     generateAssetsFromPlan();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan, colors]);
 
   const generateAssetsFromPlan = async () => {
