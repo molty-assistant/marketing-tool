@@ -3,7 +3,35 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Marketing Tool — Vibe Marketing Brief Generator',
-  description: 'Generate complete 5-stage marketing briefs from any app URL',
+  description:
+    'Paste any App Store, Google Play, or website URL and get a complete 5-stage marketing brief powered by the Vibe Marketing methodology. AI-enhanced copy, competitive analysis, and social media assets included.',
+  metadataBase: new URL('https://mission-control-production-2304.up.railway.app'),
+  openGraph: {
+    title: 'Marketing Tool — Vibe Marketing Brief Generator',
+    description:
+      'Paste any app or website URL → get a full marketing brief with AI copy, competitor research, and social assets.',
+    type: 'website',
+    siteName: 'Marketing Tool',
+    locale: 'en_GB',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Marketing Tool — Vibe Marketing Brief Generator',
+    description:
+      'Paste any app or website URL → get a full marketing brief with AI copy, competitor research, and social assets.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  keywords: [
+    'marketing brief generator',
+    'vibe marketing',
+    'app store marketing',
+    'AI copywriting',
+    'competitive analysis',
+    'social media assets',
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
