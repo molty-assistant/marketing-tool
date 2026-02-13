@@ -303,6 +303,17 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
     URL.revokeObjectURL(url);
   };
 
+  const handleExportPdf = () => {
+    // Open all collapsed sections before printing
+    const details = document.querySelectorAll('[data-print-expand]');
+    details.forEach((el) => el.setAttribute('data-print-open', 'true'));
+    window.print();
+    // Clean up after print dialog closes
+    setTimeout(() => {
+      details.forEach((el) => el.removeAttribute('data-print-open'));
+    }, 500);
+  };
+
   const stageLabels = [
     { key: 'research' as const, title: '🔍 Stage 1: Research', isAssets: false },
     { key: 'foundation' as const, title: '🏗️ Stage 2: Foundation', isAssets: false },
@@ -335,6 +346,12 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
             className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
           >
             📥 Export .md
+          </button>
+          <button
+            onClick={handleExportPdf}
+            className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+          >
+            📄 Export PDF
           </button>
           <a
             href={`/plan/${id}/assets`}
