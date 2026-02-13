@@ -66,19 +66,19 @@ function EditableListField({
           </span>
         ))}
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="w-full sm:flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         />
         <button
           onClick={addItem}
           disabled={!newItem.trim()}
-          className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded-lg transition-colors"
+          className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm px-3 py-2 rounded-lg transition-colors"
         >
           Add
         </button>
@@ -249,14 +249,14 @@ function AnalyzeContent() {
 
       {/* App Card */}
       <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8 mb-6">
-        <div className="flex items-start gap-5">
+        <div className="flex flex-col sm:flex-row items-start gap-5">
           {data.icon ? (
             <img src={data.icon} alt={data.name} className="w-20 h-20 rounded-2xl flex-shrink-0" />
           ) : (
             <div className="w-20 h-20 rounded-2xl bg-slate-700 flex items-center justify-center text-3xl flex-shrink-0">🔗</div>
           )}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-1">
+            <div className="flex flex-wrap items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold text-white">{data.name}</h1>
               <span className="text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full">{sourceLabel}</span>
             </div>
@@ -298,7 +298,7 @@ function AnalyzeContent() {
           <h2 className="text-lg font-semibold text-white mb-4">Screenshots</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {data.screenshots.slice(0, 6).map((ss, i) => (
-              <img key={i} src={ss} alt={`Screenshot ${i + 1}`} className="h-48 rounded-lg flex-shrink-0" />
+              <img key={i} src={ss} alt={`Screenshot ${i + 1}`} className="h-40 sm:h-48 rounded-lg flex-shrink-0" />
             ))}
           </div>
         </div>
@@ -437,7 +437,7 @@ function AnalyzeContent() {
           <button
             onClick={handleGeneratePlan}
             disabled={generating || !appName.trim()}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-all"
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg transition-all"
           >
             {generating ? (
               <span className="flex items-center gap-2">

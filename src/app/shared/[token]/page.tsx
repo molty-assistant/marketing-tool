@@ -151,28 +151,28 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 flex-wrap gap-4">
         <div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 min-w-0">
             {plan.config.icon && (
               <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
             )}
-            <div>
-              <h1 className="text-2xl font-bold text-white">{plan.config.app_name}</h1>
-              <p className="text-slate-400">{plan.config.one_liner}</p>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-white break-words">{plan.config.app_name}</h1>
+              <p className="text-slate-400 break-words">{plan.config.one_liner}</p>
             </div>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={handleExportMarkdown}
-            className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
           >
             📥 Export .md
           </button>
           <button
             onClick={handleExportPdf}
-            className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
           >
             📄 Export PDF
           </button>

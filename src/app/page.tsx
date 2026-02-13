@@ -60,7 +60,7 @@ export default function Home() {
         <label htmlFor="url-input" className="block text-sm font-medium text-slate-300 mb-3">
           Enter URL to analyze
         </label>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             id="url-input"
             type="url"
@@ -68,13 +68,13 @@ export default function Home() {
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="https://apps.apple.com/app/... or any URL"
-            className="flex-1 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            className="w-full sm:flex-1 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             disabled={loading}
           />
           <button
             onClick={handleAnalyze}
             disabled={loading || !url.trim()}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold px-6 py-3 rounded-xl transition-all whitespace-nowrap"
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold px-6 py-3 rounded-xl transition-all whitespace-nowrap"
           >
             {loading ? (
               <span className="flex items-center gap-2">

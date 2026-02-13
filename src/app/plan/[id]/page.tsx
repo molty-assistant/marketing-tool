@@ -61,7 +61,7 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+      className="text-sm sm:text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 sm:py-1.5 rounded-lg transition-colors flex items-center gap-1"
     >
       {copied ? '✓ Copied' : `📋 ${label || 'Copy'}`}
     </button>
@@ -137,9 +137,9 @@ function TemplateCard({
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors text-left"
+        className="w-full flex items-center justify-between gap-3 p-4 hover:bg-slate-800/30 transition-colors text-left"
       >
-        <h4 className="text-sm font-semibold text-indigo-400">
+        <h4 className="text-sm font-semibold text-indigo-400 flex-1 min-w-0 break-words">
           {heading}
           {isEnhanced && (
             <span className="ml-2 text-xs font-normal text-indigo-300/70">
@@ -198,7 +198,7 @@ function StageSection({
     <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden mb-4">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-5 hover:bg-slate-800/50 transition-colors text-left"
+        className="w-full flex items-center justify-between gap-3 p-5 hover:bg-slate-800/50 transition-colors text-left"
       >
         <h2 className="text-lg font-semibold text-white">{title}</h2>
         <div className="flex items-center gap-3">
@@ -370,31 +370,31 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 flex-wrap gap-4">
         <div>
           <a href="/" className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-3 inline-block">
             ← Back to home
           </a>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 min-w-0">
             {plan.config.icon && (
               <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
             )}
-            <div>
-              <h1 className="text-2xl font-bold text-white">{plan.config.app_name}</h1>
-              <p className="text-slate-400">{plan.config.one_liner}</p>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-white break-words">{plan.config.app_name}</h1>
+              <p className="text-slate-400 break-words">{plan.config.one_liner}</p>
             </div>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={handleExportMarkdown}
-            className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
           >
             📥 Export .md
           </button>
           <button
             onClick={handleExportPdf}
-            className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
           >
             📄 Export PDF
           </button>
@@ -402,21 +402,21 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
             <button
               onClick={handleShare}
               disabled={shareLoading}
-              className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors disabled:opacity-50"
             >
               {shareLoading ? '...' : shareCopied ? '✓ Link copied!' : '🔗 Share'}
             </button>
           ) : (
-            <div className="flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row gap-1 w-full sm:w-auto">
               <button
                 onClick={handleCopyShareUrl}
-                className="bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-l-lg transition-colors"
+                className="w-full sm:w-auto bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg sm:rounded-l-lg transition-colors"
               >
                 {shareCopied ? '✓ Copied!' : '🔗 Copy link'}
               </button>
               <button
                 onClick={handleUnshare}
-                className="bg-red-800 hover:bg-red-700 text-white text-sm px-3 py-2 rounded-r-lg transition-colors"
+                className="w-full sm:w-auto bg-red-800 hover:bg-red-700 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg sm:rounded-r-lg transition-colors"
                 title="Unshare"
               >
                 ✕
@@ -425,7 +425,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           )}
           <a
             href={`/plan/${id}/assets`}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
           >
             🎨 Assets
           </a>
@@ -453,7 +453,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Copy full plan */}
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex flex-wrap gap-2">
         <CopyButton text={plan.generated} label="Copy full plan" />
       </div>
 

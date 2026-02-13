@@ -73,7 +73,7 @@ export default function DashboardPage() {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">📊 Dashboard</h1>
           <p className="text-slate-400">
@@ -82,7 +82,7 @@ export default function DashboardPage() {
         </div>
         <a
           href="/"
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm"
+          className="w-full sm:w-auto text-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm"
         >
           + New Analysis
         </a>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
                 </a>
                 <button
                   onClick={() => handleDelete(plan.id, plan.config.app_name)}
-                  className="text-sm bg-slate-700 hover:bg-red-500/30 hover:text-red-400 text-slate-400 py-2 px-3 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  className="text-sm bg-slate-700 hover:bg-red-500/30 hover:text-red-400 text-slate-400 py-2.5 sm:py-2 px-3 rounded-lg transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                   title="Delete plan"
                 >
                   🗑
