@@ -27,9 +27,16 @@ export function getDb(): Database.Database {
         generated TEXT NOT NULL,
         stages TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        share_token TEXT
       )
     `);
+
+    // Migration: add share_token if missing
+    const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
+    if (!cols.some(c => c.name === 'share_token')) {
+      db.exec("ALTER TABLE plans ADD COLUMN share_token TEXT");
+    }
   }
   return db;
 }
@@ -42,6 +49,7 @@ export interface PlanRow {
   stages: string;
   created_at: string;
   updated_at: string;
+  share_token: string | null;
 }
 
 export function savePlan(plan: {
@@ -84,4 +92,25 @@ export function deletePlan(id: string): boolean {
   const stmt = db.prepare('DELETE FROM plans WHERE id = ?');
   const result = stmt.run(id);
   return result.changes > 0;
+}
+
+export function createShareToken(planId: string): string | null {
+  const db = getDb();
+  const plan = getPlan(planId);
+  if (!plan) return null;
+  if (plan.share_token) return plan.share_token;
+  const token = crypto.randomUUID();
+  db.prepare('UPDATE plans SET share_token = ? WHERE id = ?').run(token, planId);
+  return token;
+}
+
+export function removeShareToken(planId: string): boolean {
+  const db = getDb();
+  const result = db.prepare('UPDATE plans SET share_token = NULL WHERE id = ?').run(planId);
+  return result.changes > 0;
+}
+
+export function getPlanByShareToken(token: string): PlanRow | undefined {
+  const db = getDb();
+  return db.prepare('SELECT * FROM plans WHERE share_token = ?').get(token) as PlanRow | undefined;
 }

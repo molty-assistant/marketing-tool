@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  // Skip auth for shared plan routes
+  if (request.nextUrl.pathname.startsWith('/shared/') || request.nextUrl.pathname.startsWith('/api/shared/')) {
+    return NextResponse.next();
+  }
+
   const user = process.env.BASIC_AUTH_USER;
   const pass = process.env.BASIC_AUTH_PASS;
 

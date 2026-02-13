@@ -18,6 +18,7 @@ export async function GET(
       generated: row.generated,
       stages: JSON.parse(row.stages),
       createdAt: row.created_at,
+      shareToken: row.share_token || null,
     };
     return NextResponse.json(plan);
   } catch (error) {

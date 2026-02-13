@@ -238,6 +238,10 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   const router = useRouter();
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
   const [loadingDb, setLoadingDb] = useState(false);
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
 
   useEffect(() => {
     // Try sessionStorage first (just generated)
@@ -258,6 +262,10 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
       })
       .then((data) => {
         setPlan(data);
+        if (data.shareToken) {
+          setShareToken(data.shareToken);
+          setShareUrl(`${window.location.origin}/shared/${data.shareToken}`);
+        }
         // Cache in sessionStorage for subsequent navigations
         sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
       })
@@ -314,6 +322,36 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
     }, 500);
   };
 
+  const handleShare = async () => {
+    setShareLoading(true);
+    try {
+      const res = await fetch(`/api/plans/${id}/share`, { method: 'POST' });
+      const data = await res.json();
+      const fullUrl = `${window.location.origin}${data.shareUrl}`;
+      setShareToken(data.token);
+      setShareUrl(fullUrl);
+      await navigator.clipboard.writeText(fullUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const handleUnshare = async () => {
+    await fetch(`/api/plans/${id}/share`, { method: 'DELETE' });
+    setShareToken(null);
+    setShareUrl(null);
+  };
+
+  const handleCopyShareUrl = async () => {
+    if (shareUrl) {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }
+  };
+
   const stageLabels = [
     { key: 'research' as const, title: '🔍 Stage 1: Research', isAssets: false },
     { key: 'foundation' as const, title: '🏗️ Stage 2: Foundation', isAssets: false },
@@ -353,6 +391,31 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           >
             📄 Export PDF
           </button>
+          {!shareToken ? (
+            <button
+              onClick={handleShare}
+              disabled={shareLoading}
+              className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {shareLoading ? '...' : shareCopied ? '✓ Link copied!' : '🔗 Share'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleCopyShareUrl}
+                className="bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-l-lg transition-colors"
+              >
+                {shareCopied ? '✓ Copied!' : '🔗 Copy link'}
+              </button>
+              <button
+                onClick={handleUnshare}
+                className="bg-red-800 hover:bg-red-700 text-white text-sm px-3 py-2 rounded-r-lg transition-colors"
+                title="Unshare"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <a
             href={`/plan/${id}/assets`}
             className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
