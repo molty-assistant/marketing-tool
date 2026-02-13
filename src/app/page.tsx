@@ -94,9 +94,10 @@ export default function Home() {
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="text-xs text-slate-500">Try:</span>
           {[
-            { label: 'App Store', url: 'https://apps.apple.com/gb/app/whatsapp-messenger/id310633997' },
-            { label: 'Google Play', url: 'https://play.google.com/store/apps/details?id=com.spotify.music' },
-            { label: 'Website', url: 'https://linear.app' },
+            { label: 'LightScout AI', url: 'https://apps.apple.com/gb/app/lightscout-ai/id6748341779' },
+            { label: 'Spotify', url: 'https://play.google.com/store/apps/details?id=com.spotify.music' },
+            { label: 'Linear', url: 'https://linear.app' },
+            { label: 'Notion', url: 'https://www.notion.so' },
           ].map((example) => (
             <button
               key={example.label}
@@ -110,7 +111,7 @@ export default function Home() {
       </div>
 
       {/* How it works */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {[
           { icon: '🔍', title: 'Scrape', desc: 'Extract app info, features, metadata from any URL' },
           { icon: '📋', title: 'Plan', desc: '5-stage marketing brief using Vibe Marketing methodology' },
@@ -122,6 +123,65 @@ export default function Home() {
             <p className="text-sm text-slate-400">{step.desc}</p>
           </div>
         ))}
+      </div>
+
+      <div className="text-center text-slate-500 text-sm mb-10">
+        Used to generate marketing briefs for 5+ apps
+      </div>
+
+      {/* Feature preview */}
+      <div className="mb-12">
+        <h2 className="text-lg font-semibold text-white mb-1">What you get</h2>
+        <p className="text-sm text-slate-400 mb-4">
+          A practical, shippable plan — plus copy and assets you can reuse.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            {
+              icon: '🧭',
+              title: '5-stage brief',
+              desc: 'Research → Foundation → Structure → Copy Templates → Distribution',
+            },
+            {
+              icon: '🎛️',
+              title: 'Tone selection',
+              desc: 'AI-enhanced copy tailored to your brand voice.',
+            },
+            {
+              icon: '🧪',
+              title: 'A/B variants',
+              desc: 'Generate 3 copy options and pick the best.',
+            },
+            {
+              icon: '🔗',
+              title: 'Shareable links',
+              desc: 'Create public links you can send to your team.',
+            },
+            {
+              icon: '📄',
+              title: 'PDF & Markdown export',
+              desc: 'Download a clean brief for docs and decks.',
+            },
+            {
+              icon: '📈',
+              title: 'Competitive + SEO',
+              desc: 'Competitor scan with keyword ideas for discovery.',
+            },
+          ].map((feature) => (
+            <div
+              key={feature.title}
+              className="bg-slate-800/20 border border-slate-700/30 rounded-xl p-4"
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-lg leading-none mt-0.5">{feature.icon}</div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white">{feature.title}</div>
+                  <div className="text-xs text-slate-400 mt-1">{feature.desc}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Recent Analyses */}
