@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MarketingPlan } from '@/lib/types';
 
 export default function DashboardPage() {
   const [plans, setPlans] = useState<MarketingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchPlans();
@@ -44,6 +46,16 @@ export default function DashboardPage() {
     website: '🌐 Website',
   };
 
+  const filteredPlans = useMemo(() => {
+    return plans.filter((plan) => {
+      const matchesSearch = !search.trim() ||
+        plan.config.app_name.toLowerCase().includes(search.toLowerCase()) ||
+        plan.config.one_liner?.toLowerCase().includes(search.toLowerCase());
+      const matchesSource = sourceFilter === 'all' || plan.scraped.source === sourceFilter;
+      return matchesSearch && matchesSource;
+    });
+  }, [plans, search, sourceFilter]);
+
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto text-center py-20">
@@ -76,6 +88,29 @@ export default function DashboardPage() {
         </a>
       </div>
 
+      {/* Search & Filter */}
+      {plans.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search plans..."
+            className="flex-1 bg-slate-900 border border-slate-600 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
+          <select
+            value={sourceFilter}
+            onChange={(e) => setSourceFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-600 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          >
+            <option value="all">All sources</option>
+            <option value="appstore">🍎 App Store</option>
+            <option value="googleplay">🤖 Google Play</option>
+            <option value="website">🌐 Website</option>
+          </select>
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 text-red-400 text-sm">
@@ -98,10 +133,17 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* No results */}
+      {plans.length > 0 && filteredPlans.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-slate-400">No plans match your search.</p>
+        </div>
+      )}
+
       {/* Plans grid */}
-      {plans.length > 0 && (
+      {filteredPlans.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans.map((plan) => (
+          {filteredPlans.map((plan) => (
             <div
               key={plan.id}
               className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 hover:bg-slate-800/70 transition-colors group"
