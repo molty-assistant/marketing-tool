@@ -4,6 +4,7 @@ import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { MarketingPlan } from '@/lib/types';
 import EnhanceButton from '@/components/EnhanceButton';
+import VariantPicker from '@/components/VariantPicker';
 
 // Simple markdown to HTML converter for our structured content
 function renderMarkdown(md: string): string {
@@ -154,11 +155,17 @@ function TemplateCard({
       {open && (
         <div className="px-4 pb-4 border-t border-slate-700/30">
           {/* Enhance controls */}
-          <div className="mt-3 mb-3">
+          <div className="mt-3 mb-3 space-y-3">
             <EnhanceButton
               text={content}
               appContext={appContext}
               onTextChange={handleTextChange}
+            />
+
+            <VariantPicker
+              text={displayContent}
+              appContext={appContext}
+              onPick={handleTextChange}
             />
           </div>
           <div
