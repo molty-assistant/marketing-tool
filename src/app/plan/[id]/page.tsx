@@ -424,8 +424,14 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
             </div>
           )}
           <a
-            href={`/plan/${id}/assets`}
+            href={`/plan/${id}/draft`}
             className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
+          >
+            📝 Generate Draft
+          </a>
+          <a
+            href={`/plan/${id}/assets`}
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
           >
             🎨 Assets
           </a>
