@@ -163,7 +163,9 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
 
     let parsed: unknown;
     try {
-      parsed = JSON.parse(text);
+      // Strip markdown code fences if present (common Gemini behaviour)
+      const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      parsed = JSON.parse(cleaned);
     } catch (e) {
       console.error('Failed to parse Gemini JSON:', text.slice(0, 500));
       return NextResponse.json(

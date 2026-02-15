@@ -223,7 +223,8 @@ Quality/safety:
 
     let parsed: unknown;
     try {
-      parsed = JSON.parse(text);
+      const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      parsed = JSON.parse(cleaned);
     } catch {
       console.error('Failed to parse Gemini JSON:', text.slice(0, 500));
       return NextResponse.json(
