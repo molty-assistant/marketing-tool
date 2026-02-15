@@ -192,6 +192,7 @@ Quality/safety:
         generationConfig: {
           temperature: 0.6,
           maxOutputTokens: 4096,
+          responseMimeType: 'application/json',
         },
       }),
     });
@@ -223,14 +224,30 @@ Quality/safety:
 
     let parsed: unknown;
     try {
-      const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      let cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      if (!cleaned.startsWith('{') && !cleaned.startsWith('[')) {
+        cleaned = '{' + cleaned + '}';
+      }
       parsed = JSON.parse(cleaned);
     } catch {
-      console.error('Failed to parse Gemini JSON:', text.slice(0, 500));
-      return NextResponse.json(
-        { error: 'Model returned invalid JSON. Please try again.' },
-        { status: 502 }
-      );
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[0]);
+        } catch {
+          console.error('Failed to parse Gemini JSON (both attempts):', text.slice(0, 500));
+          return NextResponse.json(
+            { error: 'Model returned invalid JSON. Please try again.' },
+            { status: 502 }
+          );
+        }
+      } else {
+        console.error('Failed to parse Gemini JSON (no JSON found):', text.slice(0, 500));
+        return NextResponse.json(
+          { error: 'Model returned invalid JSON. Please try again.' },
+          { status: 502 }
+        );
+      }
     }
 
     const translations: Record<string, Record<string, string>> = {};

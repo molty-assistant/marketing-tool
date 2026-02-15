@@ -137,6 +137,7 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 2048,
+          responseMimeType: 'application/json',
         },
       }),
     });
@@ -164,14 +165,32 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
     let parsed: unknown;
     try {
       // Strip markdown code fences if present (common Gemini behaviour)
-      const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      let cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+      // If Gemini omitted the outer braces, try wrapping
+      if (!cleaned.startsWith('{') && !cleaned.startsWith('[')) {
+        cleaned = '{' + cleaned + '}';
+      }
       parsed = JSON.parse(cleaned);
     } catch (e) {
-      console.error('Failed to parse Gemini JSON:', text.slice(0, 500));
-      return NextResponse.json(
-        { error: 'Model returned invalid JSON. Please try again.' },
-        { status: 502 }
-      );
+      // Second attempt: extract JSON object with regex
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[0]);
+        } catch {
+          console.error('Failed to parse Gemini JSON (both attempts):', text.slice(0, 500));
+          return NextResponse.json(
+            { error: 'Model returned invalid JSON. Please try again.' },
+            { status: 502 }
+          );
+        }
+      } else {
+        console.error('Failed to parse Gemini JSON (no JSON found):', text.slice(0, 500));
+        return NextResponse.json(
+          { error: 'Model returned invalid JSON. Please try again.' },
+          { status: 502 }
+        );
+      }
     }
 
     const draft: Record<string, string> = {};
