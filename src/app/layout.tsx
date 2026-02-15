@@ -46,10 +46,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span>Marketing Tool</span>
             </a>
             <div className="flex items-center gap-4 text-sm">
+              <a href="/wizard" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+                🧭 Wizard
+              </a>
               <a href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
                 📊 Dashboard
               </a>
-              <span className="text-slate-600 hidden sm:inline">Vibe Marketing Playbook</span>
             </div>
           </div>
         </nav>
