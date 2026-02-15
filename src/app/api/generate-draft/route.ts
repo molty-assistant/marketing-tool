@@ -136,7 +136,7 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
         ],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
           responseMimeType: 'application/json',
         },
       }),
