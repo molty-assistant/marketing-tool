@@ -436,6 +436,12 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
             🔍 SERP Preview
           </a>
           <a
+            href={`/plan/${id}/translate`}
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
+          >
+            🌍 Translate
+          </a>
+          <a
             href={`/plan/${id}/assets`}
             className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
           >
