@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ScrapedApp, AppConfig, RecentAnalysis } from '@/lib/types';
+import { useToast } from '@/components/Toast';
+import ErrorRetry from '@/components/ErrorRetry';
 
 const APP_TYPES: AppConfig['app_type'][] = ['web', 'mobile', 'saas', 'desktop', 'cli', 'api', 'browser-extension'];
 
@@ -96,6 +98,7 @@ function AnalyzeContent() {
   const [error, setError] = useState('');
   const [data, setData] = useState<ScrapedApp | null>(null);
   const [generating, setGenerating] = useState(false);
+  const { success: toastSuccess, error: toastError } = useToast();
 
   // Editable config state
   const [configReady, setConfigReady] = useState(false);
@@ -158,8 +161,11 @@ function AnalyzeContent() {
         const filtered = recent.filter((r: RecentAnalysis) => r.url !== url);
         filtered.unshift(entry);
         localStorage.setItem('recent-analyses', JSON.stringify(filtered.slice(0, 20)));
+        toastSuccess(`Scraped ${result.name || url} successfully`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to scrape');
+        const msg = err instanceof Error ? err.message : 'Failed to scrape';
+        setError(msg);
+        toastError(msg);
       } finally {
         setLoading(false);
       }
@@ -202,9 +208,12 @@ function AnalyzeContent() {
 
       // Store plan in sessionStorage and navigate
       sessionStorage.setItem(`plan-${plan.id}`, JSON.stringify(plan));
+      toastSuccess('Marketing plan generated!');
       router.push(`/plan/${plan.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate plan');
+      const msg = err instanceof Error ? err.message : 'Failed to generate plan';
+      setError(msg);
+      toastError(msg);
     } finally {
       setGenerating(false);
     }
@@ -228,8 +237,8 @@ function AnalyzeContent() {
   if (error && !data) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-red-400 text-lg mb-4">⚠️ {error}</div>
-        <button onClick={() => router.push('/')} className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <ErrorRetry error={error} onRetry={() => window.location.reload()} />
+        <button onClick={() => router.push('/')} className="text-indigo-400 hover:text-indigo-300 transition-colors mt-4 block mx-auto">
           ← Go back
         </button>
       </div>

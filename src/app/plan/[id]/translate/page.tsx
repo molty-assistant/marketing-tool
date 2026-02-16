@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState, use } from 'react';
 import type { MarketingPlan } from '@/lib/types';
 import PlanNav from '@/components/PlanNav';
+import { DraftSkeleton } from '@/components/Skeleton';
+import ErrorRetry from '@/components/ErrorRetry';
+import { useToast } from '@/components/Toast';
 
 type TranslationSection =
   | 'app_store_description'
@@ -117,32 +120,40 @@ export default function TranslatePage({
   const [activeLang, setActiveLang] = useState<LanguageCode>('es');
 
   const [loading, setLoading] = useState(false);
+  const [planLoading, setPlanLoading] = useState(true);
+  const [planError, setPlanError] = useState('');
   const [error, setError] = useState('');
   const [copiedAll, setCopiedAll] = useState(false);
+  const { success: toastSuccess, error: toastError } = useToast();
 
-  useEffect(() => {
+  const loadPlan = () => {
+    setPlanLoading(true);
+    setPlanError('');
     const stored = sessionStorage.getItem(`plan-${id}`);
     if (stored) {
       try {
         setPlan(JSON.parse(stored));
+        setPlanLoading(false);
         return;
-      } catch {
-        /* fall through */
-      }
+      } catch { /* fall through */ }
     }
-
     fetch(`/api/plans/${id}`)
       .then((res) => {
-        if (!res.ok) throw new Error('Not found');
+        if (!res.ok) throw new Error('Failed to load plan');
         return res.json();
       })
       .then((data) => {
         setPlan(data);
         sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
       })
-      .catch(() => {
-        // ignore
-      });
+      .catch((err) => {
+        setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
+      })
+      .finally(() => setPlanLoading(false));
+  };
+
+  useEffect(() => {
+    loadPlan();
   }, [id]);
 
   const requestedLanguages = useMemo(() => {
@@ -201,8 +212,11 @@ export default function TranslatePage({
       setTranslations(next);
       const first = requestedLanguages[0] || 'es';
       setActiveLang(first);
+      toastSuccess('Translations generated successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate translations');
+      const msg = err instanceof Error ? err.message : 'Failed to generate translations';
+      setError(msg);
+      toastError(msg);
     } finally {
       setLoading(false);
     }
@@ -225,6 +239,18 @@ export default function TranslatePage({
     setCopiedAll(true);
     setTimeout(() => setCopiedAll(false), 2000);
   };
+
+  if (planLoading) {
+    return <DraftSkeleton />;
+  }
+
+  if (planError) {
+    return (
+      <div className="max-w-3xl mx-auto py-20">
+        <ErrorRetry error={planError} onRetry={loadPlan} />
+      </div>
+    );
+  }
 
   if (!plan) {
     return (

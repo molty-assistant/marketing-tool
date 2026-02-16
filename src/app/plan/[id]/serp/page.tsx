@@ -4,11 +4,14 @@ import { useState, useEffect, use } from 'react';
 import { MarketingPlan } from '@/lib/types';
 import { SerpPreview } from '@/components/SerpPreview';
 import PlanNav from '@/components/PlanNav';
+import { SerpSkeleton } from '@/components/Skeleton';
+import ErrorRetry from '@/components/ErrorRetry';
 
 export default function SerpPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
@@ -29,22 +32,27 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
     }
 
     // Fall back to DB
+    loadFromDb();
+  }, [id]);
+
+  const loadFromDb = () => {
+    setLoading(true);
+    setFetchError('');
     fetch(`/api/plans/${id}`)
       .then((res) => {
-        if (!res.ok) throw new Error('Not found');
+        if (!res.ok) throw new Error('Failed to load plan');
         return res.json();
       })
       .then((data) => {
         setPlan(data);
         initializeFields(data);
-        // Cache in sessionStorage for subsequent navigations
         sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
       })
-      .catch(() => {
-        // Plan not found
+      .catch((err) => {
+        setFetchError(err instanceof Error ? err.message : 'Failed to load plan');
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  };
 
   const initializeFields = (planData: MarketingPlan) => {
     // Extract app name, one-liner, and URL from plan config
@@ -59,27 +67,13 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
   };
 
   if (loading) {
+    return <SerpSkeleton />;
+  }
+
+  if (fetchError) {
     return (
-      <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="inline-flex items-center gap-3 text-lg text-slate-300">
-          <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="none"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-          Loading plan...
-        </div>
+      <div className="max-w-3xl mx-auto py-20">
+        <ErrorRetry error={fetchError} onRetry={loadFromDb} />
       </div>
     );
   }

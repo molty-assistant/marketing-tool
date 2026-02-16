@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { MarketingPlan } from '@/lib/types';
+import { DashboardSkeleton } from '@/components/Skeleton';
+import ErrorRetry from '@/components/ErrorRetry';
+import { useToast } from '@/components/Toast';
 
 export default function DashboardPage() {
   const [plans, setPlans] = useState<MarketingPlan[]>([]);
@@ -9,6 +12,7 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const { success: toastSuccess, error: toastError } = useToast();
 
   useEffect(() => {
     fetchPlans();
@@ -35,8 +39,11 @@ export default function DashboardPage() {
       const res = await fetch(`/api/plans/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setPlans((prev) => prev.filter((p) => p.id !== id));
+      toastSuccess(`Deleted "${name}"`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete plan');
+      const msg = err instanceof Error ? err.message : 'Failed to delete plan';
+      setError(msg);
+      toastError(msg);
     }
   };
 
@@ -57,15 +64,13 @@ export default function DashboardPage() {
   }, [plans, search, sourceFilter]);
 
   if (loading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (error && plans.length === 0) {
     return (
-      <div className="max-w-5xl mx-auto text-center py-20">
-        <div className="inline-flex items-center gap-3 text-lg text-slate-300">
-          <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Loading plans...
-        </div>
+      <div className="max-w-5xl mx-auto py-20">
+        <ErrorRetry error={error} onRetry={fetchPlans} />
       </div>
     );
   }

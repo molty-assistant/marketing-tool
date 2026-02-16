@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useToast } from '@/components/Toast';
 
 type Tone = 'professional' | 'casual' | 'technical' | 'enthusiastic';
 
@@ -27,6 +28,7 @@ export default function EnhanceButton({ text, appContext, onTextChange }: Enhanc
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(false);
   const originalRef = useRef(text);
+  const { success: toastSuccess, error: toastError } = useToast();
 
   // Keep original in sync if parent text changes while not enhanced
   if (!enhanced && text !== originalRef.current) {
@@ -58,9 +60,11 @@ export default function EnhanceButton({ text, appContext, onTextChange }: Enhanc
 
       onTextChange(data.enhanced);
       setEnhanced(true);
+      toastSuccess('Copy enhanced with AI');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
       setError(message);
+      toastError(message);
       // Auto-clear error after 4 seconds
       setTimeout(() => setError(null), 4000);
     } finally {
