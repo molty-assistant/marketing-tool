@@ -1,301 +1,504 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface Goal {
-  id: string;
-  icon: string;
-  title: string;
-  desc: string;
-  hint: string;
-  urlRequired: boolean;
-  route: (url: string) => string;
-}
+type WizardStep = 0 | 1 | 2 | 3 | 4;
 
+type Platform = 'X' | 'Instagram' | 'TikTok' | 'LinkedIn' | 'Facebook' | 'Threads';
+const PLATFORMS: Platform[] = ['X', 'Instagram', 'TikTok', 'LinkedIn', 'Facebook', 'Threads'];
+
+type Goal =
+  | 'Launch campaign'
+  | 'Ongoing content'
+  | 'ASO optimization'
+  | 'Competitive analysis'
+  | 'Full marketing pack';
 const GOALS: Goal[] = [
-  {
-    id: 'full-brief',
-    icon: '🧭',
-    title: 'Full Marketing Brief',
-    desc: 'Complete 5-stage plan: research, positioning, structure, copy templates, and distribution.',
-    hint: 'Best for new apps or products you haven\'t marketed yet.',
-    urlRequired: true,
-    route: (url) => `/analyze?url=${encodeURIComponent(url)}`,
-  },
-  {
-    id: 'aso',
-    icon: '📱',
-    title: 'App Store Optimisation',
-    desc: 'Keyword research, competitor analysis, and optimised App Store / Play Store copy.',
-    hint: 'Best for live mobile apps that need better discoverability.',
-    urlRequired: true,
-    route: (url) => `/analyze?url=${encodeURIComponent(url)}&focus=aso`,
-  },
-  {
-    id: 'social-pack',
-    icon: '📣',
-    title: 'Social Media Pack',
-    desc: 'Generate OG images, social cards, and platform-sized graphics ready to post.',
-    hint: 'Best when you need launch or promo visuals fast.',
-    urlRequired: true,
-    route: (url) => `/analyze?url=${encodeURIComponent(url)}&focus=assets`,
-  },
-  {
-    id: 'competitor-intel',
-    icon: '🔍',
-    title: 'Competitor Intelligence',
-    desc: 'Scrape and compare competitors — pricing, positioning, features, and gaps.',
-    hint: 'Best when you want to understand the landscape before deciding what to build.',
-    urlRequired: true,
-    route: (url) => `/analyze?url=${encodeURIComponent(url)}&focus=competitors`,
-  },
-  {
-    id: 'copy-enhance',
-    icon: '✍️',
-    title: 'Enhance Existing Copy',
-    desc: 'Paste your current marketing copy and get AI-improved variants in multiple tones.',
-    hint: 'Best when you already have copy but it needs punching up.',
-    urlRequired: false,
-    route: () => '/dashboard',
-  },
-  {
-    id: 'review-monitor',
-    icon: '⭐',
-    title: 'Review Monitoring',
-    desc: 'Track App Store reviews, sentiment trends, and generate response templates.',
-    hint: 'Best for live apps with reviews you want to stay on top of.',
-    urlRequired: true,
-    route: () => '/marketing/reviews',
-  },
+  'Launch campaign',
+  'Ongoing content',
+  'ASO optimization',
+  'Competitive analysis',
+  'Full marketing pack',
 ];
 
-type Step = 'goal' | 'url' | 'confirm';
+type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
+const TONES: { id: Tone; label: string; desc: string }[] = [
+  { id: 'professional', label: 'Professional', desc: 'Clear, credible, confident.' },
+  { id: 'casual', label: 'Casual', desc: 'Friendly, conversational, approachable.' },
+  { id: 'bold', label: 'Bold', desc: 'Direct, high-energy, punchy.' },
+  { id: 'minimal', label: 'Minimal', desc: 'Short, crisp, low-fluff.' },
+];
+
+type WizardState = {
+  url: string;
+  platforms: Platform[];
+  goals: Goal[];
+  tone: Tone;
+};
+
+const STORAGE_KEY = 'onboarding-wizard-v2';
+
+const DEFAULT_STATE: WizardState = {
+  url: '',
+  platforms: ['X', 'Instagram'],
+  goals: ['Full marketing pack'],
+  tone: 'professional',
+};
+
+function safeParse<T>(value: string | null): T | null {
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+}
+
+function isValidUrl(input: string) {
+  try {
+    // eslint-disable-next-line no-new
+    new URL(input);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function WizardPage() {
-  const [step, setStep] = useState<Step>('goal');
-  const [selected, setSelected] = useState<Goal | null>(null);
-  const [url, setUrl] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
 
-  const selectGoal = (goal: Goal) => {
-    setSelected(goal);
+  const [step, setStep] = useState<WizardStep>(0);
+  const [state, setState] = useState<WizardState>(DEFAULT_STATE);
+
+  const [error, setError] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  // Restore from sessionStorage
+  useEffect(() => {
+    const stored = safeParse<Partial<WizardState>>(sessionStorage.getItem(STORAGE_KEY));
+    if (!stored) return;
+
+    setState((prev) => ({
+      ...prev,
+      ...stored,
+      platforms: Array.isArray(stored.platforms) ? (stored.platforms as Platform[]) : prev.platforms,
+      goals: Array.isArray(stored.goals) ? (stored.goals as Goal[]) : prev.goals,
+    }));
+  }, []);
+
+  // Persist to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [state]);
+
+  const stepMeta = useMemo(
+    () => [
+      { title: 'URL', subtitle: 'App Store, Play Store, or website' },
+      { title: 'Platforms', subtitle: 'Where should we market?' },
+      { title: 'Goals', subtitle: 'What are we trying to achieve?' },
+      { title: 'Tone', subtitle: 'How should it sound?' },
+      { title: 'Confirm', subtitle: 'Generate everything' },
+    ],
+    []
+  );
+
+  const canContinue = useMemo(() => {
+    if (step === 0) return state.url.trim().length > 0 && isValidUrl(state.url.trim());
+    if (step === 1) return state.platforms.length > 0;
+    if (step === 2) return state.goals.length > 0;
+    if (step === 3) return !!state.tone;
+    return true;
+  }, [step, state]);
+
+  const goNext = () => {
     setError('');
-    if (!goal.urlRequired) {
-      router.push(goal.route(''));
-      return;
+
+    if (step === 0) {
+      const url = state.url.trim();
+      if (!url) return setError('Please enter a URL.');
+      if (!isValidUrl(url)) return setError("That doesn't look like a valid URL.");
+      setState((s) => ({ ...s, url }));
     }
-    setStep('url');
+
+    if (step === 1 && state.platforms.length === 0) {
+      return setError('Select at least one platform.');
+    }
+
+    if (step === 2 && state.goals.length === 0) {
+      return setError('Select at least one goal.');
+    }
+
+    if (step < 4) setStep((s) => (s + 1) as WizardStep);
   };
 
-  const handleBack = () => {
-    setStep('goal');
+  const goBack = () => {
     setError('');
+    if (step > 0) setStep((s) => (s - 1) as WizardStep);
   };
 
-  const handleGo = () => {
-    if (!url.trim()) {
-      setError('Please enter a URL.');
-      return;
-    }
+  const togglePlatform = (p: Platform) => {
+    setError('');
+    setState((prev) => ({
+      ...prev,
+      platforms: prev.platforms.includes(p) ? prev.platforms.filter((x) => x !== p) : [...prev.platforms, p],
+    }));
+  };
+
+  const toggleGoal = (g: Goal) => {
+    setError('');
+    setState((prev) => ({
+      ...prev,
+      goals: prev.goals.includes(g) ? prev.goals.filter((x) => x !== g) : [...prev.goals, g],
+    }));
+  };
+
+  const handleGenerateEverything = async () => {
+    setGenerating(true);
+    setError('');
+
     try {
-      new URL(url);
-    } catch {
-      setError('That doesn\'t look like a valid URL.');
-      return;
+      // 1) Scrape
+      const scrapeRes = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: state.url.trim() }),
+      });
+      const scraped = await scrapeRes.json();
+      if (!scrapeRes.ok) throw new Error(scraped.error || 'Failed to scrape URL');
+
+      // 2) Generate plan
+      const planRes = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scraped,
+          config: {
+            distribution_channels: state.platforms,
+          },
+        }),
+      });
+      const plan = await planRes.json();
+      if (!planRes.ok) throw new Error(plan.error || 'Generation failed');
+
+      // Keep plan + wizard context available for the plan page
+      sessionStorage.setItem(`plan-${plan.id}`, JSON.stringify(plan));
+      sessionStorage.setItem(`${STORAGE_KEY}:last-run`, JSON.stringify({ ...state, planId: plan.id }));
+
+      router.push(`/plan/${plan.id}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to generate plan';
+      setError(msg);
+    } finally {
+      setGenerating(false);
     }
-    if (!selected) return;
-    setStep('confirm');
   };
 
-  const handleLaunch = () => {
-    if (!selected) return;
-    router.push(selected.route(url.trim()));
-  };
+  const percent = ((step + 1) / stepMeta.length) * 100;
 
   return (
     <div className="max-w-2xl mx-auto mt-6">
       {/* Header */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
-          What do you need?
+          Let&apos;s set up your marketing
         </h1>
-        <p className="text-slate-400 max-w-md mx-auto">
-          Pick a goal and we&apos;ll run the right pipeline — no blank-page syndrome.
+        <p className="text-slate-400 max-w-lg mx-auto">
+          A quick guided flow — we&apos;ll generate a full plan tailored to your URL, platforms, goals and tone.
         </p>
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center justify-center gap-2 mb-8 text-xs text-slate-500">
-        {['Goal', 'Details', 'Go'].map((label, i) => {
-          const stepIndex = ['goal', 'url', 'confirm'].indexOf(step);
-          const active = i <= stepIndex;
-          return (
-            <span key={label} className="flex items-center gap-2">
-              {i > 0 && <span className={active ? 'text-indigo-500' : 'text-slate-700'}>—</span>}
-              <span
-                className={`px-2.5 py-1 rounded-full font-medium ${
-                  active
-                    ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                    : 'bg-slate-800/50 text-slate-600 border border-slate-700/50'
-                }`}
-              >
-                {label}
-              </span>
-            </span>
-          );
-        })}
+      {/* Stepper */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between gap-2 text-xs text-slate-500 mb-3">
+          {stepMeta.map((s, i) => {
+            const active = i <= step;
+            return (
+              <div key={s.title} className="flex-1 min-w-0">
+                <div
+                  className={
+                    'w-full px-2.5 py-1 rounded-full font-medium border text-center truncate ' +
+                    (active
+                      ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500/30'
+                      : 'bg-slate-800/50 text-slate-600 border-slate-700/50')
+                  }
+                  title={s.title}
+                >
+                  {i + 1}. {s.title}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="h-2 bg-slate-800/60 border border-slate-700/50 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-indigo-600 transition-all"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+
+        <div className="mt-3 text-sm">
+          <div className="text-white font-semibold">Step {step + 1} of {stepMeta.length}: {stepMeta[step].title}</div>
+          <div className="text-slate-400 text-xs">{stepMeta[step].subtitle}</div>
+        </div>
       </div>
 
-      {/* STEP 1 — Goal picker */}
-      {step === 'goal' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {GOALS.map((goal) => (
-            <button
-              key={goal.id}
-              onClick={() => selectGoal(goal)}
-              className="text-left bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/50 hover:border-indigo-500/40 rounded-xl p-5 transition-all group"
-            >
-              <div className="text-2xl mb-2">{goal.icon}</div>
-              <div className="font-semibold text-white mb-1 group-hover:text-indigo-300 transition-colors">
-                {goal.title}
-              </div>
-              <div className="text-xs text-slate-400 leading-relaxed mb-2">{goal.desc}</div>
-              <div className="text-[11px] text-slate-500 italic">{goal.hint}</div>
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Panel */}
+      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8">
+        {/* STEP 1 — URL */}
+        {step === 0 && (
+          <div>
+            <label htmlFor="wizard-url" className="block text-sm font-medium text-slate-300 mb-2">
+              Paste your App Store / Play Store / website URL
+            </label>
+            <input
+              id="wizard-url"
+              type="url"
+              value={state.url}
+              onChange={(e) => {
+                setState((s) => ({ ...s, url: e.target.value }));
+                setError('');
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && goNext()}
+              placeholder="https://apps.apple.com/app/... or https://play.google.com/store/apps/details?id=... or https://yourdomain.com"
+              className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all mb-3"
+              autoFocus
+            />
 
-      {/* STEP 2 — URL input */}
-      {step === 'url' && selected && (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8">
-          <div className="flex items-center gap-3 mb-5">
-            <span className="text-2xl">{selected.icon}</span>
-            <div>
-              <div className="font-semibold text-white">{selected.title}</div>
-              <div className="text-xs text-slate-400">{selected.hint}</div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="text-xs text-slate-500">Try:</span>
+              {[
+                { label: 'LightScout AI', url: 'https://apps.apple.com/gb/app/lightscout-ai/id6748341779' },
+                { label: 'Spotify', url: 'https://play.google.com/store/apps/details?id=com.spotify.music' },
+                { label: 'Linear', url: 'https://linear.app' },
+              ].map((ex) => (
+                <button
+                  key={ex.label}
+                  onClick={() => {
+                    setState((s) => ({ ...s, url: ex.url }));
+                    setError('');
+                  }}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1 rounded-full transition-colors"
+                >
+                  {ex.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="text-xs text-slate-500">
+              We&apos;ll scrape metadata + features from this URL, then generate the full plan.
             </div>
           </div>
+        )}
 
-          <label htmlFor="wizard-url" className="block text-sm font-medium text-slate-300 mb-2">
-            Enter the URL to analyse
-          </label>
-          <input
-            id="wizard-url"
-            type="url"
-            value={url}
-            onChange={(e) => { setUrl(e.target.value); setError(''); }}
-            onKeyDown={(e) => e.key === 'Enter' && handleGo()}
-            placeholder="https://apps.apple.com/app/... or any URL"
-            className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all mb-3"
-            autoFocus
-          />
-          {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+        {/* STEP 2 — Platforms */}
+        {step === 1 && (
+          <div>
+            <div className="text-sm text-slate-300 mb-4">
+              Choose the social platforms you want to target. This becomes your default distribution channel set.
+            </div>
 
-          {/* Quick examples */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            <span className="text-xs text-slate-500">Try:</span>
-            {[
-              { label: 'LightScout AI', url: 'https://apps.apple.com/gb/app/lightscout-ai/id6748341779' },
-              { label: 'Spotify', url: 'https://play.google.com/store/apps/details?id=com.spotify.music' },
-              { label: 'Linear', url: 'https://linear.app' },
-            ].map((ex) => (
-              <button
-                key={ex.label}
-                onClick={() => { setUrl(ex.url); setError(''); }}
-                className="text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1 rounded-full transition-colors"
-              >
-                {ex.label}
-              </button>
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {PLATFORMS.map((p) => {
+                const checked = state.platforms.includes(p);
+                return (
+                  <button
+                    key={p}
+                    onClick={() => togglePlatform(p)}
+                    className={
+                      'text-left rounded-xl border p-4 transition-all ' +
+                      (checked
+                        ? 'bg-indigo-600/15 border-indigo-500/40'
+                        : 'bg-slate-900/30 border-slate-700/60 hover:border-indigo-500/30 hover:bg-slate-900/50')
+                    }
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={
+                          'w-5 h-5 rounded border flex items-center justify-center ' +
+                          (checked ? 'bg-indigo-600 border-indigo-400' : 'bg-transparent border-slate-600')
+                        }
+                        aria-hidden
+                      >
+                        {checked && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="font-semibold text-white">{p}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 text-xs text-slate-500">
+              Tip: you can change this later on the plan page.
+            </div>
           </div>
+        )}
 
-          <div className="flex items-center gap-3">
+        {/* STEP 3 — Goals */}
+        {step === 2 && (
+          <div>
+            <div className="text-sm text-slate-300 mb-4">
+              What do you want from this run? (Pick one or more.)
+            </div>
+
+            <div className="space-y-2">
+              {GOALS.map((g) => {
+                const checked = state.goals.includes(g);
+                return (
+                  <button
+                    key={g}
+                    onClick={() => toggleGoal(g)}
+                    className={
+                      'w-full text-left rounded-xl border p-4 transition-all ' +
+                      (checked
+                        ? 'bg-indigo-600/15 border-indigo-500/40'
+                        : 'bg-slate-900/30 border-slate-700/60 hover:border-indigo-500/30 hover:bg-slate-900/50')
+                    }
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={
+                          'w-5 h-5 rounded border flex items-center justify-center ' +
+                          (checked ? 'bg-indigo-600 border-indigo-400' : 'bg-transparent border-slate-600')
+                        }
+                        aria-hidden
+                      >
+                        {checked && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="font-semibold text-white">{g}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 text-xs text-slate-500">
+              We store your goals for context. The initial plan generation always runs the core pipeline.
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4 — Tone */}
+        {step === 3 && (
+          <div>
+            <div className="text-sm text-slate-300 mb-4">
+              Pick the voice you want across generated copy.
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {TONES.map((t) => {
+                const selected = state.tone === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      setState((s) => ({ ...s, tone: t.id }));
+                      setError('');
+                    }}
+                    className={
+                      'text-left rounded-xl border p-4 transition-all ' +
+                      (selected
+                        ? 'bg-indigo-600/15 border-indigo-500/40'
+                        : 'bg-slate-900/30 border-slate-700/60 hover:border-indigo-500/30 hover:bg-slate-900/50')
+                    }
+                  >
+                    <div className="font-semibold text-white">{t.label}</div>
+                    <div className="text-xs text-slate-400 mt-1">{t.desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5 — Confirm */}
+        {step === 4 && (
+          <div>
+            <div className="text-sm text-slate-300 mb-5">
+              Confirm your selections. When you click <span className="text-white font-semibold">Generate Everything</span>, we&apos;ll scrape the URL and generate a full marketing plan.
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 mb-6">
+              <div className="text-xs text-slate-500 uppercase tracking-wide mb-3">Summary</div>
+
+              <div className="space-y-3 text-sm">
+                <div>
+                  <div className="text-slate-400 text-xs mb-1">URL</div>
+                  <div className="text-indigo-400 font-mono break-all">{state.url}</div>
+                </div>
+
+                <div>
+                  <div className="text-slate-400 text-xs mb-1">Platforms</div>
+                  <div className="text-white">{state.platforms.join(', ')}</div>
+                </div>
+
+                <div>
+                  <div className="text-slate-400 text-xs mb-1">Goals</div>
+                  <div className="text-white">{state.goals.join(', ')}</div>
+                </div>
+
+                <div>
+                  <div className="text-slate-400 text-xs mb-1">Tone</div>
+                  <div className="text-white">{state.tone}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-xs text-slate-500 mb-5">
+              Note: goals + tone are saved for downstream generators. The plan generation uses your selected distribution channels immediately.
+            </div>
+
             <button
-              onClick={handleBack}
-              className="text-sm text-slate-400 hover:text-white transition-colors"
+              onClick={handleGenerateEverything}
+              disabled={generating}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold px-6 py-3 rounded-xl transition-all text-lg"
             >
-              ← Back
+              {generating ? 'Generating…' : 'Generate Everything'}
             </button>
+          </div>
+        )}
+
+        {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
+
+        {/* Nav */}
+        <div className="flex items-center gap-3 mt-8">
+          <button
+            onClick={goBack}
+            disabled={step === 0 || generating}
+            className="text-sm text-slate-400 hover:text-white disabled:text-slate-600 transition-colors"
+          >
+            ← Back
+          </button>
+
+          {step < 4 ? (
             <button
-              onClick={handleGo}
-              disabled={!url.trim()}
+              onClick={goNext}
+              disabled={!canContinue || generating}
               className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold px-6 py-3 rounded-xl transition-all"
             >
               Continue →
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3 — Confirm & launch */}
-      {step === 'confirm' && selected && (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8 text-center">
-          <div className="text-4xl mb-4">{selected.icon}</div>
-          <h2 className="text-xl font-bold text-white mb-2">{selected.title}</h2>
-          <p className="text-sm text-slate-400 mb-1">We&apos;ll analyse:</p>
-          <p className="text-indigo-400 font-mono text-sm mb-6 break-all">{url}</p>
-
-          <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 mb-6 text-left">
-            <div className="text-xs text-slate-500 uppercase tracking-wide mb-2">Pipeline</div>
-            <ul className="text-sm text-slate-300 space-y-1.5">
-              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Scrape URL for metadata, features, and copy</li>
-              {selected.id === 'full-brief' && (
-                <>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Generate 5-stage marketing brief</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Competitive landscape scan</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> SEO keyword research</li>
-                </>
-              )}
-              {selected.id === 'aso' && (
-                <>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> App Store keyword analysis</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Competitor comparison</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Optimised title, subtitle, description</li>
-                </>
-              )}
-              {selected.id === 'social-pack' && (
-                <>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Generate OG images and social cards</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Platform-sized graphics (Twitter, IG, LinkedIn, FB)</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Download as PNG or ZIP</li>
-                </>
-              )}
-              {selected.id === 'competitor-intel' && (
-                <>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Scrape top competitors</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Compare pricing, features, positioning</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Identify gaps and opportunities</li>
-                </>
-              )}
-              {selected.id === 'review-monitor' && (
-                <>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Fetch recent App Store reviews</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Sentiment analysis</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Response templates</li>
-                </>
-              )}
-            </ul>
-          </div>
-
-          <div className="flex items-center gap-3">
+          ) : (
             <button
-              onClick={() => setStep('url')}
-              className="text-sm text-slate-400 hover:text-white transition-colors"
+              onClick={() => setStep(0)}
+              disabled={generating}
+              className="flex-1 bg-slate-900/40 hover:bg-slate-900/70 border border-slate-700/60 text-slate-200 font-semibold px-6 py-3 rounded-xl transition-all"
             >
-              ← Back
+              Start over
             </button>
-            <button
-              onClick={handleLaunch}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl transition-all text-lg"
-            >
-              🚀 Launch
-            </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Skip link */}
       <div className="text-center mt-8">
