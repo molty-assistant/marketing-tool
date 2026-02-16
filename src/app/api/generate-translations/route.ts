@@ -191,7 +191,7 @@ Quality/safety:
         ],
         generationConfig: {
           temperature: 0.6,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
           responseMimeType: 'application/json',
         },
       }),
