@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
-import { getPlan } from '@/lib/db';
+import { getDb, getPlan } from '@/lib/db';
 import { generateAssets } from '@/lib/asset-generator';
 import type { AppConfig, AssetConfig } from '@/lib/types';
 
@@ -457,6 +457,24 @@ export async function POST(request: NextRequest) {
 
     const briefMd = typeof row.generated === 'string' ? row.generated : '';
 
+    // Pull approved items to control what gets exported
+    const db = getDb();
+    const approvedRows = db
+      .prepare(
+        `SELECT section_type, section_label,
+                COALESCE(NULLIF(edited_content, ''), content) as final_content
+         FROM approval_queue
+         WHERE plan_id = ? AND status = 'approved'`
+      )
+      .all(planId) as { section_type: string; section_label: string; final_content: string }[];
+
+    const approvedMap = new Map<string, string>();
+    for (const r of approvedRows) {
+      if (typeof r?.section_type === 'string' && typeof r?.section_label === 'string') {
+        approvedMap.set(`${r.section_type}||${r.section_label}`, String(r.final_content || ''));
+      }
+    }
+
     const exportErrors: {
       tones?: Record<string, string>;
       languages?: Record<string, string>;
@@ -515,6 +533,39 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 2b) Filter/override with approvals: only export approved items
+    // Convention:
+    // - Draft section approvals use section_type = `draft:${tone}`, section_label = section key
+    // - Translation approvals use section_type = `translation:${lang}`, section_label = section key
+    for (const tone of Object.keys(copyByTone)) {
+      const sectionType = `draft:${tone}`;
+      const out: Record<string, string> = {};
+      for (const [section, generatedValue] of Object.entries(copyByTone[tone] || {})) {
+        const approved = approvedMap.get(`${sectionType}||${section}`);
+        if (typeof approved === 'string' && approved.trim().length > 0) {
+          out[section] = approved.trim();
+        } else {
+          // Not approved -> omit
+          void generatedValue;
+        }
+      }
+      copyByTone[tone] = out;
+    }
+
+    for (const lang of Object.keys(translationsByLang)) {
+      const sectionType = `translation:${lang}`;
+      const out: Record<string, string> = {};
+      for (const [section, generatedValue] of Object.entries(translationsByLang[lang] || {})) {
+        const approved = approvedMap.get(`${sectionType}||${section}`);
+        if (typeof approved === 'string' && approved.trim().length > 0) {
+          out[section] = approved.trim();
+        } else {
+          void generatedValue;
+        }
+      }
+      translationsByLang[lang] = out;
+    }
+
     // 3) Assets (best-effort)
     let pngBuffers: { filename: string; buffer: Buffer }[] = [];
     if (includeAssets) {
@@ -548,18 +599,33 @@ export async function POST(request: NextRequest) {
     // brief
     archive.append(briefMd || '', { name: `${root}/brief.md` });
 
-    // copy
+    // copy (approved only)
     for (const tone of Object.keys(copyByTone)) {
-      archive.append(JSON.stringify(copyByTone[tone], null, 2), {
+      const obj = copyByTone[tone];
+      if (!obj || Object.keys(obj).length === 0) continue;
+      archive.append(JSON.stringify(obj, null, 2), {
         name: `${root}/copy/${tone}.json`,
       });
     }
 
-    // translations
+    // translations (approved only)
     for (const lang of Object.keys(translationsByLang)) {
-      archive.append(JSON.stringify(translationsByLang[lang], null, 2), {
+      const obj = translationsByLang[lang];
+      if (!obj || Object.keys(obj).length === 0) continue;
+      archive.append(JSON.stringify(obj, null, 2), {
         name: `${root}/translations/${lang}.json`,
       });
+    }
+
+    // approvals (raw approved content)
+    if (approvedRows.length > 0) {
+      for (const r of approvedRows) {
+        const folder = safeFilenamePart(r.section_type || 'section');
+        const file = safeFilenamePart(r.section_label || 'content');
+        archive.append(String(r.final_content || ''), {
+          name: `${root}/approved/${folder}/${file}.md`,
+        });
+      }
     }
 
     // assets

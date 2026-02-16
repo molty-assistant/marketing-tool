@@ -32,9 +32,24 @@ export function getDb(): Database.Database {
       )
     `);
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS approval_queue (
+        id TEXT PRIMARY KEY,
+        plan_id TEXT NOT NULL,
+        section_type TEXT NOT NULL,
+        section_label TEXT NOT NULL,
+        content TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
+        edited_content TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(plan_id) REFERENCES plans(id) ON DELETE CASCADE
+      )
+    `);
+
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
-    if (!cols.some(c => c.name === 'share_token')) {
+    if (!cols.some((c) => c.name === 'share_token')) {
       db.exec("ALTER TABLE plans ADD COLUMN share_token TEXT");
     }
   }
@@ -50,6 +65,20 @@ export interface PlanRow {
   created_at: string;
   updated_at: string;
   share_token: string | null;
+}
+
+export type ApprovalQueueStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ApprovalQueueRow {
+  id: string;
+  plan_id: string;
+  section_type: string;
+  section_label: string;
+  content: string;
+  status: ApprovalQueueStatus;
+  edited_content: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function savePlan(plan: {

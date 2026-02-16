@@ -1,0 +1,452 @@
+'use client';
+
+import { useEffect, useMemo, useState, use } from 'react';
+import Link from 'next/link';
+import PlanNav from '@/components/PlanNav';
+import ErrorRetry from '@/components/ErrorRetry';
+import { useToast } from '@/components/Toast';
+import type { MarketingPlan } from '@/lib/types';
+
+type ApprovalQueueStatus = 'pending' | 'approved' | 'rejected';
+
+type ApprovalItem = {
+  id: string;
+  plan_id: string;
+  section_type: string;
+  section_label: string;
+  content: string;
+  status: ApprovalQueueStatus;
+  edited_content: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type Stats = {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+};
+
+function badgeClasses(status: ApprovalQueueStatus) {
+  switch (status) {
+    case 'approved':
+      return 'bg-emerald-500/15 border-emerald-500/30 text-emerald-200';
+    case 'rejected':
+      return 'bg-red-500/15 border-red-500/30 text-red-200';
+    case 'pending':
+    default:
+      return 'bg-amber-500/15 border-amber-500/30 text-amber-200';
+  }
+}
+
+export default function ApprovalsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const { success: toastSuccess, error: toastError } = useToast();
+
+  const [plan, setPlan] = useState<MarketingPlan | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
+  const [planError, setPlanError] = useState('');
+
+  const [items, setItems] = useState<ApprovalItem[]>([]);
+  const [stats, setStats] = useState<Stats>({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [loadingQueue, setLoadingQueue] = useState(true);
+  const [queueError, setQueueError] = useState('');
+
+  const [creating, setCreating] = useState(false);
+  const [newItem, setNewItem] = useState({
+    sectionType: 'draft:professional',
+    sectionLabel: 'app_store_description',
+    content: '',
+  });
+
+  const [editing, setEditing] = useState<Record<string, boolean>>({});
+  const [editDraft, setEditDraft] = useState<Record<string, string>>({});
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const loadPlan = () => {
+    setPlanLoading(true);
+    setPlanError('');
+
+    const stored = sessionStorage.getItem(`plan-${id}`);
+    if (stored) {
+      try {
+        setPlan(JSON.parse(stored));
+        setPlanLoading(false);
+        return;
+      } catch {
+        // fall through
+      }
+    }
+
+    fetch(`/api/plans/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load plan');
+        return res.json();
+      })
+      .then((data) => {
+        setPlan(data);
+        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
+      })
+      .catch((err) => setPlanError(err instanceof Error ? err.message : 'Failed to load plan'))
+      .finally(() => setPlanLoading(false));
+  };
+
+  const loadQueue = () => {
+    setLoadingQueue(true);
+    setQueueError('');
+    fetch(`/api/approval-queue?planId=${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load queue');
+        return res.json();
+      })
+      .then((data) => {
+        setItems(Array.isArray(data?.items) ? data.items : []);
+        setStats(data?.stats || { total: 0, pending: 0, approved: 0, rejected: 0 });
+      })
+      .catch((err) => setQueueError(err instanceof Error ? err.message : 'Failed to load queue'))
+      .finally(() => setLoadingQueue(false));
+  };
+
+  useEffect(() => {
+    loadPlan();
+    loadQueue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const sortedItems = useMemo(() => {
+    const order: Record<ApprovalQueueStatus, number> = { pending: 0, rejected: 1, approved: 2 };
+    return [...items].sort((a, b) => {
+      const d = order[a.status] - order[b.status];
+      if (d !== 0) return d;
+      return (b.updated_at || '').localeCompare(a.updated_at || '');
+    });
+  }, [items]);
+
+  const post = async (payload: object) => {
+    const res = await fetch('/api/approval-queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || 'Request failed');
+    return data;
+  };
+
+  const handleCreate = async () => {
+    if (!newItem.content.trim()) {
+      toastError('Please add some content');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await post({
+        action: 'add',
+        planId: id,
+        sectionType: newItem.sectionType,
+        sectionLabel: newItem.sectionLabel,
+        content: newItem.content,
+      });
+      setNewItem((p) => ({ ...p, content: '' }));
+      toastSuccess('Added to queue');
+      loadQueue();
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : 'Failed to add item');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleApprove = async (itemId: string, status: 'approved' | 'rejected') => {
+    setBusyId(itemId);
+    try {
+      await post({ action: status === 'approved' ? 'approve' : 'reject', id: itemId });
+      toastSuccess(status === 'approved' ? 'Approved' : 'Rejected');
+      loadQueue();
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : 'Failed');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleSaveEdit = async (item: ApprovalItem) => {
+    const value = editDraft[item.id] ?? (item.edited_content ?? item.content);
+    setBusyId(item.id);
+    try {
+      await post({ action: 'update', id: item.id, editedContent: value });
+      setEditing((p) => ({ ...p, [item.id]: false }));
+      toastSuccess('Saved');
+      loadQueue();
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : 'Failed to save');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDelete = async (itemId: string) => {
+    if (!confirm('Delete this item?')) return;
+    setBusyId(itemId);
+    try {
+      await post({ action: 'delete', id: itemId });
+      toastSuccess('Deleted');
+      loadQueue();
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : 'Failed to delete');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  if (planLoading) {
+    return (
+      <div className="max-w-5xl mx-auto py-20">
+        <div className="text-slate-400">Loading…</div>
+      </div>
+    );
+  }
+
+  if (planError) {
+    return (
+      <div className="max-w-3xl mx-auto py-20">
+        <ErrorRetry error={planError} onRetry={loadPlan} />
+      </div>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-20">
+        <div className="text-slate-400 mb-4">Plan not found</div>
+        <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+          ← Start a new analysis
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      <PlanNav planId={id} appName={plan.config.app_name} />
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">✅ Approvals</h1>
+          <p className="text-slate-400">Approve, reject, and edit content before export.</p>
+        </div>
+        <button
+          onClick={loadQueue}
+          className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 rounded-xl transition-colors"
+        >
+          ↻ Refresh
+        </button>
+      </div>
+
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
+          <div className="text-xs text-slate-400">Total</div>
+          <div className="text-2xl font-semibold text-white mt-1">{stats.total}</div>
+        </div>
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
+          <div className="text-xs text-slate-400">Pending</div>
+          <div className="text-2xl font-semibold text-amber-200 mt-1">{stats.pending}</div>
+        </div>
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
+          <div className="text-xs text-slate-400">Approved</div>
+          <div className="text-2xl font-semibold text-emerald-200 mt-1">{stats.approved}</div>
+        </div>
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
+          <div className="text-xs text-slate-400">Rejected</div>
+          <div className="text-2xl font-semibold text-red-200 mt-1">{stats.rejected}</div>
+        </div>
+      </div>
+
+      {/* Create */}
+      <div className="bg-slate-800/30 border border-slate-700/60 rounded-2xl p-5 mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <div className="text-sm font-semibold text-white">Add to approval queue</div>
+            <div className="text-xs text-slate-500">Tip: use sectionType like draft:professional, draft:bold, translation:es, etc.</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Section type</label>
+            <input
+              value={newItem.sectionType}
+              onChange={(e) => setNewItem((p) => ({ ...p, sectionType: e.target.value }))}
+              className="w-full bg-slate-950/40 border border-slate-700/60 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Section label</label>
+            <input
+              value={newItem.sectionLabel}
+              onChange={(e) => setNewItem((p) => ({ ...p, sectionLabel: e.target.value }))}
+              className="w-full bg-slate-950/40 border border-slate-700/60 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-xs text-slate-400 mb-1">Content</label>
+          <textarea
+            value={newItem.content}
+            onChange={(e) => setNewItem((p) => ({ ...p, content: e.target.value }))}
+            placeholder="Paste generated content here…"
+            className="w-full min-h-[110px] bg-slate-950/40 border border-slate-700/60 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+          />
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={handleCreate}
+            disabled={creating}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+          >
+            {creating ? 'Adding…' : '➕ Add'}
+          </button>
+        </div>
+      </div>
+
+      {/* Queue */}
+      {queueError && (
+        <div className="mb-6">
+          <ErrorRetry error={queueError} onRetry={loadQueue} />
+        </div>
+      )}
+
+      {loadingQueue ? (
+        <div className="text-slate-400">Loading queue…</div>
+      ) : sortedItems.length === 0 ? (
+        <div className="bg-slate-900/20 border border-slate-700/40 rounded-2xl p-8 text-center text-slate-400">
+          No items yet. Add content above, then approve it for export.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {sortedItems.map((item) => {
+            const isEditing = !!editing[item.id];
+            const displayValue = (item.edited_content ?? item.content) || '';
+            const currentEditValue = editDraft[item.id] ?? displayValue;
+            const isBusy = busyId === item.id;
+
+            return (
+              <div
+                key={item.id}
+                className="rounded-2xl overflow-hidden border bg-slate-800/30 border-slate-700/60"
+              >
+                <div className="p-4 border-b border-slate-700/40 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="text-sm font-semibold text-white truncate">{item.section_label}</div>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full border ${badgeClasses(item.status)}`}
+                      >
+                        {item.status}
+                      </span>
+                      <span className="text-xs text-slate-500">{item.section_type}</span>
+                    </div>
+                    {item.edited_content && (
+                      <div className="text-xs text-slate-500 mt-1">Edited version set</div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 flex-wrap justify-end">
+                    <button
+                      onClick={() => handleApprove(item.id, 'approved')}
+                      disabled={isBusy}
+                      className="text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      ✓ Approve
+                    </button>
+                    <button
+                      onClick={() => handleApprove(item.id, 'rejected')}
+                      disabled={isBusy}
+                      className="text-xs bg-red-600/15 hover:bg-red-600/25 border border-red-500/30 text-red-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      ✕ Reject
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditing((p) => ({ ...p, [item.id]: !p[item.id] }));
+                        setEditDraft((p) => ({ ...p, [item.id]: displayValue }));
+                      }}
+                      disabled={isBusy}
+                      className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {isEditing ? 'Close' : '✏️ Edit'}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      disabled={isBusy}
+                      className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                      title="Delete"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  {isEditing ? (
+                    <>
+                      <textarea
+                        value={currentEditValue}
+                        onChange={(e) => setEditDraft((p) => ({ ...p, [item.id]: e.target.value }))}
+                        className="w-full min-h-[140px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                      />
+                      <div className="flex justify-between items-center gap-3 mt-3 flex-wrap">
+                        <button
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(currentEditValue);
+                            toastSuccess('Copied');
+                          }}
+                          className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          📋 Copy
+                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditing((p) => ({ ...p, [item.id]: false }));
+                              setEditDraft((p) => ({ ...p, [item.id]: displayValue }));
+                            }}
+                            disabled={isBusy}
+                            className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSaveEdit(item)}
+                            disabled={isBusy}
+                            className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            {isBusy ? 'Saving…' : 'Save'}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm text-slate-200 whitespace-pre-wrap break-words">
+                      {displayValue || <span className="text-slate-500">(Empty)</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+        Export only includes approved items (plus brief/assets).
+      </div>
+    </div>
+  );
+}
