@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, use, useCallback } from 'react';
+import Link from 'next/link';
 import { MarketingPlan, GeneratedAsset, AssetConfig } from '@/lib/types';
 import PlanNav from '@/components/PlanNav';
 import {
@@ -855,12 +856,12 @@ export default function AssetsPage({
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
         <div className="text-slate-400 mb-4">Plan not found</div>
-        <a
+        <Link
           href="/"
           className="text-indigo-400 hover:text-indigo-300 transition-colors"
         >
           ← Start a new analysis
-        </a>
+        </Link>
       </div>
     );
   }

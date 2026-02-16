@@ -126,7 +126,7 @@ Rules:
       themes: themes
         .filter(Boolean)
         .slice(0, 10)
-        .map((t: any) => ({
+        .map((t: Record<string, unknown>) => ({
           topic: typeof t.topic === 'string' ? t.topic : 'Theme',
           count: Number.isFinite(Number(t.count)) ? Number(t.count) : 0,
           sentiment:

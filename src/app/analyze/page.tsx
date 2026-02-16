@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ScrapedApp, AppConfig, RecentAnalysis } from '@/lib/types';
 import { useToast } from '@/components/Toast';
 import ErrorRetry from '@/components/ErrorRetry';
@@ -252,9 +253,9 @@ function AnalyzeContent() {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
-      <a href="/" className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-6 inline-block">
+      <Link href="/" className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-6 inline-block">
         ← Back to home
-      </a>
+      </Link>
 
       {/* App Card */}
       <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8 mb-6">

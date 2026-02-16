@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, use } from 'react';
+import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import PlanNav from '@/components/PlanNav';
 import { DraftSkeleton } from '@/components/Skeleton';
@@ -219,12 +220,12 @@ export default function DraftPage({
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
         <div className="text-slate-400 mb-4">Plan not found</div>
-        <a
+        <Link
           href="/"
           className="text-indigo-400 hover:text-indigo-300 transition-colors"
         >
           ← Start a new analysis
-        </a>
+        </Link>
       </div>
     );
   }

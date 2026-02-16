@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
-import { getDb, getPlan, getContent, saveContent } from '@/lib/db';
+import { getPlan, getContent, saveContent } from '@/lib/db';
 import { generateAssets } from '@/lib/asset-generator';
 import type { AppConfig, AssetConfig } from '@/lib/types';
 
@@ -482,10 +482,12 @@ export async function POST(request: NextRequest) {
     // Load previously generated content (plan_content)
     const savedDraftsRaw = getContent(planId, 'draft');
     const savedDrafts: Record<string, Record<string, string>> = {};
+    type StoredContentItem = { contentKey?: unknown; content?: unknown };
+
     if (Array.isArray(savedDraftsRaw)) {
       for (const item of savedDraftsRaw) {
-        const tone = (item as any)?.contentKey;
-        const content = (item as any)?.content;
+        const { contentKey, content } = item as StoredContentItem;
+        const tone = contentKey;
         if (typeof tone === 'string' && content && typeof content === 'object') {
           savedDrafts[tone] = content as Record<string, string>;
         }
@@ -496,8 +498,8 @@ export async function POST(request: NextRequest) {
     const savedTranslations: Record<string, Record<string, string>> = {};
     if (Array.isArray(savedTranslationsRaw)) {
       for (const item of savedTranslationsRaw) {
-        const lang = (item as any)?.contentKey;
-        const content = (item as any)?.content;
+        const { contentKey, content } = item as StoredContentItem;
+        const lang = contentKey;
         if (typeof lang === 'string' && content && typeof content === 'object') {
           savedTranslations[lang] = content as Record<string, string>;
         }

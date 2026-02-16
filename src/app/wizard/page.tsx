@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type WizardStep = 0 | 1 | 2 | 3 | 4;
 
@@ -502,9 +503,9 @@ export default function WizardPage() {
 
       {/* Skip link */}
       <div className="text-center mt-8">
-        <a href="/" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+        <Link href="/" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
           or paste a URL directly on the home page →
-        </a>
+        </Link>
       </div>
     </div>
   );

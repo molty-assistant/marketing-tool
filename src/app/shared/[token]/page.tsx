@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
+import Link from 'next/link';
 
 function renderMarkdown(md: string): string {
   return md
@@ -109,9 +110,9 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
       <div className="max-w-3xl mx-auto text-center py-20">
         <div className="text-slate-400 mb-4">Shared plan not found</div>
         <p className="text-sm text-slate-500 mb-4">This link may have expired or been removed.</p>
-        <a href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Create your own marketing brief
-        </a>
+        </Link>
       </div>
     );
   }
@@ -144,9 +145,9 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
       <div className="bg-indigo-600/20 border border-indigo-500/30 rounded-2xl p-4 mb-6 text-center">
         <p className="text-sm text-indigo-300">
           📋 This is a shared marketing brief.{' '}
-          <a href="/" className="underline hover:text-indigo-200 font-medium">
+          <Link href="/" className="underline hover:text-indigo-200 font-medium">
             Create your own →
-          </a>
+          </Link>
         </p>
       </div>
 

@@ -24,7 +24,6 @@ export default class ErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Keep it simple: log to console for local debugging.
     // (No external error reporting services by design.)
-    // eslint-disable-next-line no-console
     console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
