@@ -263,13 +263,15 @@ export async function POST(request: NextRequest) {
         })
         .filter((x) => x.title.trim() && x.detail.trim()),
       nextActions: actionsRaw
-        .map((x) => {
+        .map((x): { action: string; why: string; priority: 'high' | 'medium' | 'low' } => {
           const r = x && typeof x === 'object' ? (x as Record<string, unknown>) : {};
           const p = r.priority;
+          const priority: 'high' | 'medium' | 'low' =
+            p === 'high' || p === 'medium' || p === 'low' ? (p as 'high' | 'medium' | 'low') : 'medium';
           return {
             action: typeof r.action === 'string' ? r.action : '',
             why: typeof r.why === 'string' ? r.why : '',
-            priority: p === 'high' || p === 'medium' || p === 'low' ? p : 'medium',
+            priority,
           };
         })
         .filter((x) => x.action.trim()),
