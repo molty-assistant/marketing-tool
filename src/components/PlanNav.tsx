@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '', label: '📋 Brief', exact: true },
   { href: '/foundation', label: '🧱 Foundation' },
   { href: '/draft', label: '📝 Draft' },
+  { href: '/approvals', label: '✅ Approvals' },
   { href: '/emails', label: '✉️ Emails' },
   { href: '/distribute', label: '📣 Distribute' },
   { href: '/translate', label: '🌍 Translate' },

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
-import { getPlan, getContent, saveContent } from '@/lib/db';
+import { getDb, getPlan, getContent, saveContent } from '@/lib/db';
 import { generateAssets } from '@/lib/asset-generator';
 import type { AppConfig, AssetConfig } from '@/lib/types';
 
