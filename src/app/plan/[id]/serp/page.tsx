@@ -1,41 +1,48 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
+import Link from 'next/link';
 import { MarketingPlan } from '@/lib/types';
 import { SerpPreview } from '@/components/SerpPreview';
 import PlanNav from '@/components/PlanNav';
 import { SerpSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 
+function readSessionPlan(id: string): MarketingPlan | null {
+  try {
+    const stored = sessionStorage.getItem(`plan-${id}`);
+    if (!stored) return null;
+    return JSON.parse(stored) as MarketingPlan;
+  } catch {
+    return null;
+  }
+}
+
 export default function SerpPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  const [plan, setPlan] = useState<MarketingPlan | null>(() => readSessionPlan(id));
+  const [loading, setLoading] = useState(() => !readSessionPlan(id));
   const [fetchError, setFetchError] = useState('');
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState(() => {
+    const p = readSessionPlan(id);
+    if (!p) return '';
+    return `${p.config.app_name || ''} — ${p.config.one_liner || ''}`;
+  });
+  const [url, setUrl] = useState(() => readSessionPlan(id)?.config.app_url || '');
+  const [description, setDescription] = useState(() => readSessionPlan(id)?.config.one_liner || '');
 
-  useEffect(() => {
-    // Try sessionStorage first (just generated)
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        const planData = JSON.parse(stored);
-        setPlan(planData);
-        initializeFields(planData);
-        setLoading(false);
-        return;
-      } catch {
-        /* fall through to DB */
-      }
-    }
+  const initializeFields = useCallback((planData: MarketingPlan) => {
+    const appName = planData.config.app_name || '';
+    const oneLiner = planData.config.one_liner || '';
+    const appUrl = planData.config.app_url || '';
 
-    // Fall back to DB
-    loadFromDb();
-  }, [id]);
+    setTitle(`${appName} — ${oneLiner}`);
+    setUrl(appUrl);
+    setDescription(oneLiner);
+  }, []);
 
-  const loadFromDb = () => {
+  const loadFromDb = useCallback(() => {
     setLoading(true);
     setFetchError('');
     fetch(`/api/plans/${id}`)
@@ -52,19 +59,14 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
         setFetchError(err instanceof Error ? err.message : 'Failed to load plan');
       })
       .finally(() => setLoading(false));
-  };
+  }, [id, initializeFields]);
 
-  const initializeFields = (planData: MarketingPlan) => {
-    // Extract app name, one-liner, and URL from plan config
-    const appName = planData.config.app_name || '';
-    const oneLiner = planData.config.one_liner || '';
-    const appUrl = planData.config.app_url || '';
-
-    // Set initial values
-    setTitle(`${appName} — ${oneLiner}`);
-    setUrl(appUrl);
-    setDescription(oneLiner);
-  };
+  useEffect(() => {
+    // If we already loaded from sessionStorage, skip
+    if (plan) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState calls are in async .then() callbacks, not synchronous
+    loadFromDb();
+  }, [plan, loadFromDb]);
 
   if (loading) {
     return <SerpSkeleton />;
@@ -82,12 +84,10 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
         <div className="text-slate-400 mb-4">Plan not found</div>
-        <p className="text-sm text-slate-500 mb-4">
-          This plan may have been deleted or doesn&apos;t exist.
-        </p>
-        <a href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <p className="text-sm text-slate-500 mb-4">This plan may have been deleted or doesn&apos;t exist.</p>
+        <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
-        </a>
+        </Link>
       </div>
     );
   }
@@ -96,24 +96,16 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
     <div className="max-w-4xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
-      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 min-w-0 mb-2">
-          {plan.config.icon && (
-            <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
-          )}
+          {plan.config.icon && <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />}
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-white break-words">
-              SERP Preview: {plan.config.app_name}
-            </h1>
-            <p className="text-slate-400 break-words">
-              Preview how your site appears in Google search results
-            </p>
+            <h1 className="text-2xl font-bold text-white break-words">SERP Preview: {plan.config.app_name}</h1>
+            <p className="text-slate-400 break-words">Preview how your site appears in Google search results</p>
           </div>
         </div>
       </div>
 
-      {/* Info box */}
       <div className="bg-indigo-950/30 border border-indigo-800/50 rounded-xl p-5 mb-8">
         <div className="flex items-start gap-3">
           <span className="text-2xl">💡</span>
@@ -129,7 +121,6 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </div>
 
-      {/* SERP Preview Component */}
       <SerpPreview
         title={title}
         url={url}
@@ -140,7 +131,6 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
         onDescriptionChange={setDescription}
       />
 
-      {/* Footer */}
       <div className="mt-8 text-center">
         <div className="inline-flex gap-3">
           <a

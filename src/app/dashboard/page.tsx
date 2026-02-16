@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RecentAnalysis } from '@/lib/types';
 
@@ -8,19 +8,18 @@ export default function DashboardPage() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [recent, setRecent] = useState<RecentAnalysis[]>([]);
-  const router = useRouter();
-
-  useEffect(() => {
-    const stored = localStorage.getItem('recent-analyses');
-    if (stored) {
-      try {
-        setRecent(JSON.parse(stored));
-      } catch {
-        // ignore
-      }
+  const [recent, setRecent] = useState<RecentAnalysis[]>(() => {
+    // Initialize from localStorage (client-only)
+    try {
+      const stored = localStorage.getItem('recent-analyses');
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? (parsed as RecentAnalysis[]) : [];
+    } catch {
+      return [];
     }
-  }, []);
+  });
+  const router = useRouter();
 
   const handleAnalyze = async () => {
     if (!url.trim()) return;

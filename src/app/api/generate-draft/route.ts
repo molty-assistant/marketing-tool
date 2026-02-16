@@ -171,7 +171,7 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
         cleaned = '{' + cleaned + '}';
       }
       parsed = JSON.parse(cleaned);
-    } catch (e) {
+    } catch {
       // Second attempt: extract JSON object with regex
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {

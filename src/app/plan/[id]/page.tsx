@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { MarketingPlan } from '@/lib/types';
 import EnhanceButton from '@/components/EnhanceButton';
 import VariantPicker from '@/components/VariantPicker';
@@ -312,9 +313,9 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
       <div className="max-w-3xl mx-auto text-center py-20">
         <div className="text-slate-400 mb-4">Plan not found</div>
         <p className="text-sm text-slate-500 mb-4">This plan may have been deleted or doesn&apos;t exist.</p>
-        <a href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+        <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
-        </a>
+        </Link>
       </div>
     );
   }

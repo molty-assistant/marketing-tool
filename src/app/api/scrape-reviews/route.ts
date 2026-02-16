@@ -164,7 +164,7 @@ Rules:
   }
 
   const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-  let parsed: any;
+  let parsed: Record<string, unknown>;
   try {
     parsed = JSON.parse(cleaned);
   } catch {
@@ -177,7 +177,7 @@ Rules:
     ? parsed.reviews
         .filter(Boolean)
         .slice(0, 20)
-        .map((rv: any) => ({
+        .map((rv: Record<string, unknown>) => ({
           author: typeof rv.author === 'string' && rv.author.trim() ? rv.author.trim() : 'Anonymous',
           rating: Number.isFinite(Number(rv.rating)) ? Math.max(1, Math.min(5, Number(rv.rating))) : 0,
           title: typeof rv.title === 'string' && rv.title.trim() ? rv.title.trim() : '(No title)',

@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ competitors: [], opportunities: [], marketGaps: [] });
     }
 
-    const parsed = JSON.parse(row.content || '{}');
+    const parsed = typeof row === 'string' ? JSON.parse(row) : row;
     return NextResponse.json(parsed);
   } catch (err) {
     console.error('competitive-intel GET error:', err);
