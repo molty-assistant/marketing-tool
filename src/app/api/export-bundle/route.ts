@@ -363,7 +363,7 @@ function buildDefaultAssetConfig(planConfig: Partial<AppConfig> | null | undefin
 async function renderAssetsToPngBuffers(assets: { type: string; width: number; height: number; html: string }[]) {
   let chromium;
   try {
-    const pw = await import('playwright-core');
+    const pw = await import('playwright');
     chromium = pw.chromium;
   } catch {
     throw new Error(

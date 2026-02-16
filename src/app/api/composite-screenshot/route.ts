@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     let chromium;
     try {
-      const pw = await import('playwright-core');
+      const pw = await import('playwright');
       chromium = pw.chromium;
     } catch {
       return NextResponse.json({ error: 'Playwright is not installed.' }, { status: 500 });

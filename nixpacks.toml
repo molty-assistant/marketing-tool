@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ['nodejs_20', 'nss', 'freetype', 'harfbuzz', 'ca-certificates', 'fontconfig', 'liberation_ttf']
+apt = ['libnss3', 'libatk-bridge2.0-0', 'libdrm2', 'libxkbcommon0', 'libgbm1', 'libasound2']
+
+[phases.install]
+cmds = ['npm ci', 'npx playwright install chromium --with-deps']
+
+[phases.build]
+cmds = ['npm run build']
+
+[variables]
+PLAYWRIGHT_BROWSERS_PATH = '/app/.cache/ms-playwright'

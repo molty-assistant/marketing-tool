@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, saveContent } from '@/lib/db';
+import { getPlan, saveContent, updatePlanContent } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -128,6 +128,9 @@ Constraints:
     }
 
     saveContent(planId, 'positioning', null, JSON.stringify(parsed));
+
+    // Persist the generated positioning
+    updatePlanContent(planId, 'positioning', parsed);
 
     return NextResponse.json({ positioning: parsed, metadata: { model: 'gemini-2.5-flash' } });
   } catch (err) {

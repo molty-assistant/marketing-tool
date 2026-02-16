@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, saveContent } from '@/lib/db';
+import { getPlan, saveContent, updatePlanContent } from '@/lib/db';
 
 interface AtomizeContentRequest {
   planId: string;
@@ -208,6 +208,9 @@ Do not include any keys besides corePiece, atoms, metadata.`;
         { status: 502 }
       );
     }
+
+    // Persist the generated atoms
+    updatePlanContent(planId, 'atoms', parsed);
 
     return NextResponse.json(parsed);
   } catch (err) {

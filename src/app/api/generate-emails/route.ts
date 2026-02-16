@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, saveContent } from '@/lib/db';
+import { getPlan, saveContent, updatePlanContent, getPlanContent } from '@/lib/db';
 
 type SequenceType = 'welcome' | 'launch' | 'nurture';
 
@@ -229,6 +229,11 @@ Do not include any keys besides sequence and metadata.`;
         { status: 502 }
       );
     }
+
+    // Persist the generated email sequence (keyed by sequenceType)
+    const existingEmails = (getPlanContent(planId).emails || {}) as Record<string, unknown>;
+    existingEmails[sequenceType] = parsed;
+    updatePlanContent(planId, 'emails', existingEmails);
 
     return NextResponse.json(parsed);
   } catch (err) {
