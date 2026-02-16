@@ -110,6 +110,25 @@ export function removeShareToken(planId: string): boolean {
   return result.changes > 0;
 }
 
+export function updatePlanContent(
+  planId: string,
+  updates: { stages?: object; generated?: string; config?: object; scraped?: object }
+): boolean {
+  const db = getDb();
+  const plan = getPlan(planId);
+  if (!plan) return false;
+
+  const newStages = updates.stages ? JSON.stringify(updates.stages) : plan.stages;
+  const newGenerated = updates.generated ?? plan.generated;
+  const newConfig = updates.config ? JSON.stringify(updates.config) : plan.config;
+  const newScraped = updates.scraped ? JSON.stringify(updates.scraped) : plan.scraped;
+
+  const result = db.prepare(
+    `UPDATE plans SET stages = ?, generated = ?, config = ?, scraped = ?, updated_at = datetime('now') WHERE id = ?`
+  ).run(newStages, newGenerated, newConfig, newScraped, planId);
+  return result.changes > 0;
+}
+
 export function getPlanByShareToken(token: string): PlanRow | undefined {
   const db = getDb();
   return db.prepare('SELECT * FROM plans WHERE share_token = ?').get(token) as PlanRow | undefined;

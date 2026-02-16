@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/emails', label: '✉️ Emails' },
   { href: '/distribute', label: '📣 Distribute' },
   { href: '/translate', label: '🌍 Translate' },
+  { href: '/keywords', label: '🔑 Keywords' },
   { href: '/serp', label: '🔍 SERP' },
   { href: '/assets', label: '🎨 Assets' },
 ];
