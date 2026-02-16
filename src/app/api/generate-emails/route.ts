@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, updatePlanContent } from '@/lib/db';
+import { getPlan, saveContent } from '@/lib/db';
 
 type SequenceType = 'welcome' | 'launch' | 'nurture';
 
@@ -220,7 +220,7 @@ Do not include any keys besides sequence and metadata.`;
     }
 
     if (Array.isArray(emails) && emails.length > 0) {
-      updatePlanContent(planId, 'emails', parsed);
+      saveContent(planId, 'emails', null, JSON.stringify(parsed));
     }
 
     if (!Array.isArray(emails) || emails.length === 0) {

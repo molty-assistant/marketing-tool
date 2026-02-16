@@ -32,6 +32,19 @@ export function getDb(): Database.Database {
       )
     `);
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS plan_content (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plan_id TEXT NOT NULL,
+        content_type TEXT NOT NULL,
+        content_key TEXT,
+        content TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(plan_id, content_type, content_key)
+      )
+    `);
+
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some(c => c.name === 'share_token')) {
@@ -110,44 +123,7 @@ export function removeShareToken(planId: string): boolean {
   return result.changes > 0;
 }
 
-export function updatePlanContent(planId: string, key: string, value: unknown): void {
-  const db = getDb();
-  const row = getPlan(planId);
-  if (!row) return;
-
-  // Ensure content column exists
-  const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
-  if (!cols.some(c => c.name === 'content')) {
-    db.exec("ALTER TABLE plans ADD COLUMN content TEXT DEFAULT '{}'");
-  }
-
-  const existing = JSON.parse((row as unknown as Record<string, unknown>).content as string || '{}');
-  existing[key] = value;
-  db.prepare('UPDATE plans SET content = ?, updated_at = datetime(\'now\') WHERE id = ?')
-    .run(JSON.stringify(existing), planId);
-}
-
-export function getPlanContent(planId: string): Record<string, unknown> {
-  const db = getDb();
-  // Ensure content column exists
-  const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
-  if (!cols.some(c => c.name === 'content')) {
-    db.exec("ALTER TABLE plans ADD COLUMN content TEXT DEFAULT '{}'");
-  }
-  const row = db.prepare('SELECT content FROM plans WHERE id = ?').get(planId) as { content: string } | undefined;
-  if (!row) return {};
-  return JSON.parse(row.content || '{}');
-}
-
-export function getPlanByShareToken(token: string): PlanRow | undefined {
-  const db = getDb();
-  return db.prepare('SELECT * FROM plans WHERE share_token = ?').get(token) as PlanRow | undefined;
-}
-
-/**
- * Partial update helper used by the generate-all pipeline.
- * Merges stagesPatch into the existing stages JSON.
- */
+export function updatePlanContent(planId: string, key: string, value: unknown): void;
 export function updatePlanContent(
   planId: string,
   patch: {
@@ -156,8 +132,51 @@ export function updatePlanContent(
     generated?: string;
     stagesPatch?: Record<string, unknown>;
   }
-): boolean {
+): boolean;
+/**
+ * Update helper used by a few endpoints:
+ * - updatePlanContent(planId, key, value) stores extra JSON in plans.content (legacy).
+ * - updatePlanContent(planId, patch) partially updates plans fields (generate-all pipeline).
+ */
+export function updatePlanContent(planId: string, arg2: unknown, arg3?: unknown): boolean | void {
   const db = getDb();
+
+  // Signature: (planId, key, value)
+  if (typeof arg2 === 'string') {
+    const key = arg2;
+    const value = arg3;
+
+    const row = getPlan(planId);
+    if (!row) return;
+
+    // Ensure content column exists
+    const cols = db.prepare('PRAGMA table_info(plans)').all() as { name: string }[];
+    if (!cols.some((c) => c.name === 'content')) {
+      db.exec("ALTER TABLE plans ADD COLUMN content TEXT DEFAULT '{}'");
+    }
+
+    const existing = JSON.parse(
+      ((row as unknown as Record<string, unknown>).content as string) || '{}'
+    ) as Record<string, unknown>;
+
+    existing[key] = value;
+
+    db.prepare("UPDATE plans SET content = ?, updated_at = datetime('now') WHERE id = ?").run(
+      JSON.stringify(existing),
+      planId
+    );
+
+    return;
+  }
+
+  // Signature: (planId, patch)
+  const patch = (arg2 || {}) as {
+    config?: object;
+    scraped?: object;
+    generated?: string;
+    stagesPatch?: Record<string, unknown>;
+  };
+
   const row = getPlan(planId);
   if (!row) return false;
 
@@ -185,4 +204,116 @@ export function updatePlanContent(
     .run(nextConfig, nextScraped, nextGenerated, nextStages, planId);
 
   return res.changes > 0;
+}
+
+export function getPlanContent(planId: string): Record<string, unknown> {
+  const db = getDb();
+  // Ensure content column exists
+  const cols = db.prepare('PRAGMA table_info(plans)').all() as { name: string }[];
+  if (!cols.some((c) => c.name === 'content')) {
+    db.exec("ALTER TABLE plans ADD COLUMN content TEXT DEFAULT '{}'");
+  }
+  const row = db
+    .prepare('SELECT content FROM plans WHERE id = ?')
+    .get(planId) as { content: string } | undefined;
+  if (!row) return {};
+  return JSON.parse(row.content || '{}');
+}
+
+export function getPlanByShareToken(token: string): PlanRow | undefined {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM plans WHERE share_token = ?')
+    .get(token) as PlanRow | undefined;
+}
+
+export interface PlanContentRow {
+  id: number;
+  plan_id: string;
+  content_type: string;
+  content_key: string | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+function normaliseContentKey(contentKey?: string | null): string {
+  // SQLite UNIQUE constraints treat NULL values as distinct, which breaks upserts
+  // for single-result content types. We normalise "no key" to an empty string.
+  return typeof contentKey === 'string' ? contentKey : '';
+}
+
+export function saveContent(
+  planId: string,
+  contentType: string,
+  contentKey: string | null | undefined,
+  content: string
+): void {
+  const db = getDb();
+  const key = normaliseContentKey(contentKey);
+
+  db.prepare(
+    `INSERT INTO plan_content (plan_id, content_type, content_key, content, created_at, updated_at)
+     VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+     ON CONFLICT(plan_id, content_type, content_key)
+     DO UPDATE SET content = excluded.content, updated_at = datetime('now')`
+  ).run(planId, contentType, key, content);
+}
+
+export function getContent(
+  planId: string,
+  contentType: string,
+  contentKey?: string | null
+): unknown {
+  const db = getDb();
+  if (typeof contentKey === 'string' || contentKey === null) {
+    const key = normaliseContentKey(contentKey);
+    const row = db
+      .prepare(
+        'SELECT content FROM plan_content WHERE plan_id = ? AND content_type = ? AND content_key = ?'
+      )
+      .get(planId, contentType, key) as { content: string } | undefined;
+
+    if (!row) return null;
+    try {
+      return JSON.parse(row.content);
+    } catch {
+      return row.content;
+    }
+  }
+
+  const rows = db
+    .prepare(
+      'SELECT content_key, content FROM plan_content WHERE plan_id = ? AND content_type = ? ORDER BY content_key'
+    )
+    .all(planId, contentType) as { content_key: string | null; content: string }[];
+
+  return rows.map((r) => {
+    let parsed: unknown = r.content;
+    try {
+      parsed = JSON.parse(r.content);
+    } catch {
+      // ignore
+    }
+    return { contentKey: r.content_key, content: parsed };
+  });
+}
+
+export function getAllContent(planId: string): Array<{ contentType: string; contentKey: string | null; content: unknown }> {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      'SELECT content_type, content_key, content FROM plan_content WHERE plan_id = ? ORDER BY content_type, content_key'
+    )
+    .all(planId) as { content_type: string; content_key: string | null; content: string }[];
+
+  return rows.map((r) => {
+    let parsed: unknown = r.content;
+    try {
+      parsed = JSON.parse(r.content);
+    } catch {
+      // ignore
+    }
+    return { contentType: r.content_type, contentKey: r.content_key, content: parsed };
+  });
 }

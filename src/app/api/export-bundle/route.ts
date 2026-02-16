@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
-import { getPlan, getPlanContent } from '@/lib/db';
+import { getPlan, getContent, saveContent } from '@/lib/db';
 import { generateAssets } from '@/lib/asset-generator';
 import type { AppConfig, AssetConfig } from '@/lib/types';
 
@@ -479,37 +479,82 @@ export async function POST(request: NextRequest) {
       'keywords',
     ];
 
-    // 1) Drafts per tone (best-effort)
-    if (apiKey && tones.length > 0) {
-      for (const tone of tones) {
-        try {
-          copyByTone[tone] = await generateDraftForTone({
-            apiKey,
-            planRow: row,
-            tone,
-            sections: draftSections,
-          });
-        } catch (e) {
-          exportErrors.tones ||= {};
-          exportErrors.tones[tone] = e instanceof Error ? e.message : 'Unknown error';
+    // Load previously generated content (plan_content)
+    const savedDraftsRaw = getContent(planId, 'draft');
+    const savedDrafts: Record<string, Record<string, string>> = {};
+    if (Array.isArray(savedDraftsRaw)) {
+      for (const item of savedDraftsRaw) {
+        const tone = (item as any)?.contentKey;
+        const content = (item as any)?.content;
+        if (typeof tone === 'string' && content && typeof content === 'object') {
+          savedDrafts[tone] = content as Record<string, string>;
         }
       }
     }
 
-    // 2) Translations (best-effort)
-    if (apiKey && languages.length > 0) {
+    const savedTranslationsRaw = getContent(planId, 'translations');
+    const savedTranslations: Record<string, Record<string, string>> = {};
+    if (Array.isArray(savedTranslationsRaw)) {
+      for (const item of savedTranslationsRaw) {
+        const lang = (item as any)?.contentKey;
+        const content = (item as any)?.content;
+        if (typeof lang === 'string' && content && typeof content === 'object') {
+          savedTranslations[lang] = content as Record<string, string>;
+        }
+      }
+    }
+
+    const exportTones: Tone[] = tones.length > 0 ? tones : (Object.keys(savedDrafts) as Tone[]);
+    const exportLanguages: SupportedLanguage[] =
+      languages.length > 0 ? languages : (Object.keys(savedTranslations) as SupportedLanguage[]);
+
+    // 1) Drafts per tone (use saved, only regenerate missing)
+    for (const tone of exportTones) {
+      if (savedDrafts[tone]) {
+        copyByTone[tone] = savedDrafts[tone];
+        continue;
+      }
+
+      if (!apiKey) continue;
+
+      try {
+        const draft = await generateDraftForTone({
+          apiKey,
+          planRow: row,
+          tone,
+          sections: draftSections,
+        });
+        copyByTone[tone] = draft;
+        saveContent(planId, 'draft', tone, JSON.stringify(draft));
+      } catch (e) {
+        exportErrors.tones ||= {};
+        exportErrors.tones[tone] = e instanceof Error ? e.message : 'Unknown error';
+      }
+    }
+
+    // 2) Translations (use saved, only regenerate missing)
+    for (const [lang, content] of Object.entries(savedTranslations)) {
+      translationsByLang[lang] = content;
+    }
+
+    const missingLanguages = exportLanguages.filter((l) => !savedTranslations[l]);
+
+    if (apiKey && missingLanguages.length > 0) {
       try {
         const res = await generateTranslations({
           apiKey,
           planRow: row,
-          targetLanguages: languages,
+          targetLanguages: missingLanguages,
           sections: translationSections,
         });
-        Object.assign(translationsByLang, res);
+
+        for (const [lang, content] of Object.entries(res)) {
+          translationsByLang[lang] = content;
+          saveContent(planId, 'translations', lang, JSON.stringify(content));
+        }
       } catch (e) {
         exportErrors.languages ||= {};
-        // If the multi-language call fails, capture a general error per requested lang
-        for (const lang of languages) {
+        for (const lang of missingLanguages) {
           exportErrors.languages[lang] = e instanceof Error ? e.message : 'Unknown error';
         }
       }
@@ -545,94 +590,43 @@ export async function POST(request: NextRequest) {
     // Root folder
     const root = 'marketing-pack';
 
-    // Load persisted content from previous API calls
-    const savedContent = getPlanContent(planId);
-
     // brief
     archive.append(briefMd || '', { name: `${root}/brief.md` });
 
-    // brand voice
-    if (savedContent.brandVoice) {
-      archive.append(JSON.stringify(savedContent.brandVoice, null, 2), {
+    // Saved (non-tone/language) artefacts
+    const brandVoice = getContent(planId, 'brand-voice', null);
+    if (brandVoice) {
+      archive.append(JSON.stringify(brandVoice, null, 2), {
         name: `${root}/brand-voice.json`,
       });
     }
 
-    // positioning angles
-    if (savedContent.positioningAngles) {
-      archive.append(JSON.stringify(savedContent.positioningAngles, null, 2), {
-        name: `${root}/positioning-angles.json`,
+    const positioning = getContent(planId, 'positioning', null);
+    if (positioning) {
+      archive.append(JSON.stringify(positioning, null, 2), {
+        name: `${root}/positioning.json`,
       });
     }
 
-    // competitive analysis
-    if (savedContent.competitiveAnalysis) {
-      archive.append(JSON.stringify(savedContent.competitiveAnalysis, null, 2), {
+    const competitiveAnalysis = getContent(planId, 'competitive-analysis', null);
+    if (competitiveAnalysis) {
+      archive.append(JSON.stringify(competitiveAnalysis, null, 2), {
         name: `${root}/competitive-analysis.json`,
       });
     }
 
-    // draft
-    if (savedContent.draft) {
-      const draftData = savedContent.draft as Record<string, unknown>;
-      const sections = draftData.sections as Record<string, string> | undefined;
-      if (sections) {
-        let md = `# Draft Copy (${(draftData.tone as string) || 'professional'})\n\n`;
-        for (const [key, val] of Object.entries(sections)) {
-          md += `## ${key.replace(/_/g, ' ')}\n\n${val}\n\n`;
-        }
-        archive.append(md, { name: `${root}/draft.md` });
-      }
+    const atoms = getContent(planId, 'atoms', null);
+    if (atoms) {
+      archive.append(JSON.stringify(atoms, null, 2), {
+        name: `${root}/content-atoms.json`,
+      });
     }
 
-    // emails
-    if (savedContent.emails) {
-      const emailData = savedContent.emails as Record<string, unknown>;
-      const seq = emailData.sequence as Record<string, unknown> | undefined;
-      const emails = seq?.emails as Array<Record<string, unknown>> | undefined;
-      if (emails) {
-        let md = `# Email Sequence (${(seq?.type as string) || 'welcome'})\n\n`;
-        for (const email of emails) {
-          md += `## Email ${email.number}: ${email.subjectLine}\n`;
-          md += `**Preview:** ${email.previewText}\n`;
-          md += `**Send:** ${email.sendDelay}\n\n`;
-          md += `${email.body}\n\n`;
-          const cta = email.cta as Record<string, string> | undefined;
-          if (cta) md += `**CTA:** ${cta.text} → ${cta.action}\n\n`;
-          md += '---\n\n';
-        }
-        archive.append(md, { name: `${root}/emails.md` });
-      }
-    }
-
-    // content atoms
-    if (savedContent.contentAtoms) {
-      const atomData = savedContent.contentAtoms as Record<string, unknown>;
-      const corePiece = atomData.corePiece as Record<string, string> | undefined;
-      const atoms = atomData.atoms as Array<Record<string, unknown>> | undefined;
-      if (atoms) {
-        let md = '# Content Atoms\n\n';
-        if (corePiece) {
-          md += `## Core Piece: ${corePiece.title}\n\n${corePiece.content}\n\n---\n\n`;
-        }
-        for (const atom of atoms) {
-          md += `### ${atom.platform} — ${atom.format}\n\n${atom.content}\n\n`;
-          if (atom.notes) md += `_Notes: ${atom.notes}_\n\n`;
-        }
-        archive.append(md, { name: `${root}/content-atoms.md` });
-      }
-    }
-
-    // translations
-    if (savedContent.translations) {
-      const trans = savedContent.translations as Record<string, Record<string, string>>;
-      for (const [lang, sections] of Object.entries(trans)) {
-        let md = `# Translations — ${lang}\n\n`;
-        for (const [section, text] of Object.entries(sections)) {
-          md += `## ${section.replace(/_/g, ' ')}\n\n${text}\n\n`;
-        }
-        archive.append(md, { name: `${root}/translations/${lang}.md` });
-      }
+    const emails = getContent(planId, 'emails', null);
+    if (emails) {
+      archive.append(JSON.stringify(emails, null, 2), {
+        name: `${root}/emails.json`,
+      });
     }
 
     // copy
