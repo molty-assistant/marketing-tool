@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
-import { getDb, getPlan } from '@/lib/db';
+import { getDb, getPlan, getContent, saveContent } from '@/lib/db';
 import { generateAssets } from '@/lib/asset-generator';
 import type { AppConfig, AssetConfig } from '@/lib/types';
 
@@ -457,24 +457,6 @@ export async function POST(request: NextRequest) {
 
     const briefMd = typeof row.generated === 'string' ? row.generated : '';
 
-    // Pull approved items to control what gets exported
-    const db = getDb();
-    const approvedRows = db
-      .prepare(
-        `SELECT section_type, section_label,
-                COALESCE(NULLIF(edited_content, ''), content) as final_content
-         FROM approval_queue
-         WHERE plan_id = ? AND status = 'approved'`
-      )
-      .all(planId) as { section_type: string; section_label: string; final_content: string }[];
-
-    const approvedMap = new Map<string, string>();
-    for (const r of approvedRows) {
-      if (typeof r?.section_type === 'string' && typeof r?.section_label === 'string') {
-        approvedMap.set(`${r.section_type}||${r.section_label}`, String(r.final_content || ''));
-      }
-    }
-
     const exportErrors: {
       tones?: Record<string, string>;
       languages?: Record<string, string>;
@@ -497,73 +479,85 @@ export async function POST(request: NextRequest) {
       'keywords',
     ];
 
-    // 1) Drafts per tone (best-effort)
-    if (apiKey && tones.length > 0) {
-      for (const tone of tones) {
-        try {
-          copyByTone[tone] = await generateDraftForTone({
-            apiKey,
-            planRow: row,
-            tone,
-            sections: draftSections,
-          });
-        } catch (e) {
-          exportErrors.tones ||= {};
-          exportErrors.tones[tone] = e instanceof Error ? e.message : 'Unknown error';
+    // Load previously generated content (plan_content)
+    const savedDraftsRaw = getContent(planId, 'draft');
+    const savedDrafts: Record<string, Record<string, string>> = {};
+    if (Array.isArray(savedDraftsRaw)) {
+      for (const item of savedDraftsRaw) {
+        const tone = (item as any)?.contentKey;
+        const content = (item as any)?.content;
+        if (typeof tone === 'string' && content && typeof content === 'object') {
+          savedDrafts[tone] = content as Record<string, string>;
         }
       }
     }
 
-    // 2) Translations (best-effort)
-    if (apiKey && languages.length > 0) {
+    const savedTranslationsRaw = getContent(planId, 'translations');
+    const savedTranslations: Record<string, Record<string, string>> = {};
+    if (Array.isArray(savedTranslationsRaw)) {
+      for (const item of savedTranslationsRaw) {
+        const lang = (item as any)?.contentKey;
+        const content = (item as any)?.content;
+        if (typeof lang === 'string' && content && typeof content === 'object') {
+          savedTranslations[lang] = content as Record<string, string>;
+        }
+      }
+    }
+
+    const exportTones: Tone[] = tones.length > 0 ? tones : (Object.keys(savedDrafts) as Tone[]);
+    const exportLanguages: SupportedLanguage[] =
+      languages.length > 0 ? languages : (Object.keys(savedTranslations) as SupportedLanguage[]);
+
+    // 1) Drafts per tone (use saved, only regenerate missing)
+    for (const tone of exportTones) {
+      if (savedDrafts[tone]) {
+        copyByTone[tone] = savedDrafts[tone];
+        continue;
+      }
+
+      if (!apiKey) continue;
+
+      try {
+        const draft = await generateDraftForTone({
+          apiKey,
+          planRow: row,
+          tone,
+          sections: draftSections,
+        });
+        copyByTone[tone] = draft;
+        saveContent(planId, 'draft', tone, JSON.stringify(draft));
+      } catch (e) {
+        exportErrors.tones ||= {};
+        exportErrors.tones[tone] = e instanceof Error ? e.message : 'Unknown error';
+      }
+    }
+
+    // 2) Translations (use saved, only regenerate missing)
+    for (const [lang, content] of Object.entries(savedTranslations)) {
+      translationsByLang[lang] = content;
+    }
+
+    const missingLanguages = exportLanguages.filter((l) => !savedTranslations[l]);
+
+    if (apiKey && missingLanguages.length > 0) {
       try {
         const res = await generateTranslations({
           apiKey,
           planRow: row,
-          targetLanguages: languages,
+          targetLanguages: missingLanguages,
           sections: translationSections,
         });
-        Object.assign(translationsByLang, res);
+
+        for (const [lang, content] of Object.entries(res)) {
+          translationsByLang[lang] = content;
+          saveContent(planId, 'translations', lang, JSON.stringify(content));
+        }
       } catch (e) {
         exportErrors.languages ||= {};
-        // If the multi-language call fails, capture a general error per requested lang
-        for (const lang of languages) {
+        for (const lang of missingLanguages) {
           exportErrors.languages[lang] = e instanceof Error ? e.message : 'Unknown error';
         }
       }
-    }
-
-    // 2b) Filter/override with approvals: only export approved items
-    // Convention:
-    // - Draft section approvals use section_type = `draft:${tone}`, section_label = section key
-    // - Translation approvals use section_type = `translation:${lang}`, section_label = section key
-    for (const tone of Object.keys(copyByTone)) {
-      const sectionType = `draft:${tone}`;
-      const out: Record<string, string> = {};
-      for (const [section, generatedValue] of Object.entries(copyByTone[tone] || {})) {
-        const approved = approvedMap.get(`${sectionType}||${section}`);
-        if (typeof approved === 'string' && approved.trim().length > 0) {
-          out[section] = approved.trim();
-        } else {
-          // Not approved -> omit
-          void generatedValue;
-        }
-      }
-      copyByTone[tone] = out;
-    }
-
-    for (const lang of Object.keys(translationsByLang)) {
-      const sectionType = `translation:${lang}`;
-      const out: Record<string, string> = {};
-      for (const [section, generatedValue] of Object.entries(translationsByLang[lang] || {})) {
-        const approved = approvedMap.get(`${sectionType}||${section}`);
-        if (typeof approved === 'string' && approved.trim().length > 0) {
-          out[section] = approved.trim();
-        } else {
-          void generatedValue;
-        }
-      }
-      translationsByLang[lang] = out;
     }
 
     // 3) Assets (best-effort)
@@ -599,33 +593,54 @@ export async function POST(request: NextRequest) {
     // brief
     archive.append(briefMd || '', { name: `${root}/brief.md` });
 
-    // copy (approved only)
+    // Saved (non-tone/language) artefacts
+    const brandVoice = getContent(planId, 'brand-voice', null);
+    if (brandVoice) {
+      archive.append(JSON.stringify(brandVoice, null, 2), {
+        name: `${root}/brand-voice.json`,
+      });
+    }
+
+    const positioning = getContent(planId, 'positioning', null);
+    if (positioning) {
+      archive.append(JSON.stringify(positioning, null, 2), {
+        name: `${root}/positioning.json`,
+      });
+    }
+
+    const competitiveAnalysis = getContent(planId, 'competitive-analysis', null);
+    if (competitiveAnalysis) {
+      archive.append(JSON.stringify(competitiveAnalysis, null, 2), {
+        name: `${root}/competitive-analysis.json`,
+      });
+    }
+
+    const atoms = getContent(planId, 'atoms', null);
+    if (atoms) {
+      archive.append(JSON.stringify(atoms, null, 2), {
+        name: `${root}/content-atoms.json`,
+      });
+    }
+
+    const emails = getContent(planId, 'emails', null);
+    if (emails) {
+      archive.append(JSON.stringify(emails, null, 2), {
+        name: `${root}/emails.json`,
+      });
+    }
+
+    // copy
     for (const tone of Object.keys(copyByTone)) {
-      const obj = copyByTone[tone];
-      if (!obj || Object.keys(obj).length === 0) continue;
-      archive.append(JSON.stringify(obj, null, 2), {
+      archive.append(JSON.stringify(copyByTone[tone], null, 2), {
         name: `${root}/copy/${tone}.json`,
       });
     }
 
-    // translations (approved only)
+    // translations
     for (const lang of Object.keys(translationsByLang)) {
-      const obj = translationsByLang[lang];
-      if (!obj || Object.keys(obj).length === 0) continue;
-      archive.append(JSON.stringify(obj, null, 2), {
+      archive.append(JSON.stringify(translationsByLang[lang], null, 2), {
         name: `${root}/translations/${lang}.json`,
       });
-    }
-
-    // approvals (raw approved content)
-    if (approvedRows.length > 0) {
-      for (const r of approvedRows) {
-        const folder = safeFilenamePart(r.section_type || 'section');
-        const file = safeFilenamePart(r.section_label || 'content');
-        archive.append(String(r.final_content || ''), {
-          name: `${root}/approved/${folder}/${file}.md`,
-        });
-      }
     }
 
     // assets

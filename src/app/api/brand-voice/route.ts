@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan } from '@/lib/db';
+import { getPlan, saveContent } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -122,6 +122,9 @@ Constraints:
         return NextResponse.json({ error: 'Model returned invalid JSON. Please try again.' }, { status: 502 });
       }
     }
+
+    // Persist to plan
+    saveContent(planId, 'brand-voice', null, JSON.stringify(parsed));
 
     return NextResponse.json({ brandVoice: parsed, metadata: { model: 'gemini-2.5-flash' } });
   } catch (err) {

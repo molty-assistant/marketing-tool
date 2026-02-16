@@ -1,227 +1,397 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { RecentAnalysis } from '@/lib/types';
 
-export default function Home() {
+function Icon({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">
+      {children}
+    </div>
+  );
+}
+
+function Check() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-emerald-300">
+      <path
+        fillRule="evenodd"
+        d="M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.42 0l-3.5-3.5a1 1 0 011.42-1.42l2.79 2.79 6.79-6.79a1 1 0 011.42 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+export default function LandingPage() {
   const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [recent, setRecent] = useState<RecentAnalysis[]>([]);
   const router = useRouter();
 
-  useEffect(() => {
-    const stored = localStorage.getItem('recent-analyses');
-    if (stored) {
-      try { setRecent(JSON.parse(stored)); } catch { /* ignore */ }
-    }
-  }, []);
+  const features = useMemo(
+    () => [
+      {
+        title: 'AI Briefs',
+        desc: 'Generate a complete, structured marketing brief from any URL.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M8 6h10M8 10h10M8 14h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M6 4h12a2 2 0 012 2v14l-4-3H6a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Competitor Analysis',
+        desc: 'Quick scan of positioning, angles, and messaging in your space.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M4 19V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M8 19V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M12 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M16 19V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M20 19V9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Export Pack',
+        desc: 'Download your brief as clean Markdown and PDF-ready content.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M12 3v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M8 9l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 17v3h16v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Multi-Platform',
+        desc: 'Works for App Store, Google Play, and any website landing page.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M4 7a3 3 0 013-3h10a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7z" stroke="currentColor" strokeWidth="2" />
+            <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Brand Assets',
+        desc: 'Generate copy-friendly assets and visual direction you can reuse.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M4 19V5h16v14H4z" stroke="currentColor" strokeWidth="2" />
+            <path d="M8 9h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M8 13h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M16 13l2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ),
+      },
+      {
+        title: 'A/B Variants',
+        desc: 'Create multiple copy angles and iterate faster with your team.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M7 6h10M7 12h10M7 18h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5 4h14v16H5V4z" stroke="currentColor" strokeWidth="2" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Shareable Links',
+        desc: 'Send a single link to teammates or clients for review and edits.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M10 13a5 5 0 010-7l1-1a5 5 0 017 7l-1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M14 11a5 5 0 010 7l-1 1a5 5 0 01-7-7l1-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ),
+      },
+      {
+        title: 'SEO + Keywords',
+        desc: 'Discover messaging and keyword opportunities for growth channels.',
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+            <path d="M10 10a4 4 0 118 0 4 4 0 01-8 0z" stroke="currentColor" strokeWidth="2" />
+            <path d="M2 20l6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M14 14l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ),
+      },
+    ],
+    []
+  );
 
-  const handleAnalyze = async () => {
-    if (!url.trim()) return;
-    setLoading(true);
+  const handleStart = () => {
     setError('');
+    if (!url.trim()) {
+      setError('Paste a URL to generate your brief.');
+      return;
+    }
 
     try {
       new URL(url);
     } catch {
       setError('Please enter a valid URL');
-      setLoading(false);
       return;
     }
 
     router.push(`/analyze?url=${encodeURIComponent(url.trim())}`);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAnalyze();
-  };
-
-  const clearRecent = () => {
-    localStorage.removeItem('recent-analyses');
-    setRecent([]);
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleStart();
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Hero */}
-      <div className="text-center mb-12 mt-8">
-        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">
-          Marketing Brief Generator
-        </h1>
-        <p className="text-lg text-slate-400 max-w-xl mx-auto">
-          Paste an App Store URL, Google Play URL, or website link. Get a complete 5-stage marketing brief powered by the Vibe Marketing methodology.
-        </p>
-      </div>
-
-      {/* URL Input */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8 mb-8">
-        <label htmlFor="url-input" className="block text-sm font-medium text-slate-300 mb-3">
-          Enter URL to analyze
-        </label>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            id="url-input"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="https://apps.apple.com/app/... or any URL"
-            className="w-full sm:flex-1 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-            disabled={loading}
-          />
-          <button
-            onClick={handleAnalyze}
-            disabled={loading || !url.trim()}
-            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold px-6 py-3 rounded-xl transition-all whitespace-nowrap"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                Analyzing...
-              </span>
-            ) : (
-              'Analyze →'
-            )}
-          </button>
+    <div className="w-full">
+      {/* HERO */}
+      <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0d1117] p-6 sm:p-10">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
+          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-fuchsia-600/10 blur-3xl" />
         </div>
-        {error && (
-          <p className="text-red-400 text-sm mt-2">{error}</p>
-        )}
 
-        {/* Quick examples */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="text-xs text-slate-500">Try:</span>
+        <div className="relative mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-200">
+            <span className="text-indigo-300">New</span>
+            <span className="text-slate-300">Generate a brief in minutes, not days</span>
+          </div>
+
+          <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight text-white">
+            Turn Any URL into a Complete Marketing Brief
+          </h1>
+          <p className="mt-4 text-base sm:text-lg text-slate-300">
+            Paste an App Store, Google Play, or website link. We’ll extract the context, generate positioning and
+            copy angles, and package everything into a shippable brief you can share or export.
+          </p>
+
+          {/* CTA */}
+          <div className="mt-7 bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5">
+            <label htmlFor="landing-url" className="block text-sm font-medium text-slate-300 mb-3 text-left">
+              Paste a URL to generate your brief
+            </label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                id="landing-url"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder="https://linear.app (or an App Store / Play link)"
+                className="w-full sm:flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <button
+                onClick={handleStart}
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition-colors whitespace-nowrap"
+              >
+                Generate brief →
+              </button>
+            </div>
+            {error && <p className="text-red-400 text-sm mt-2 text-left">{error}</p>}
+
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400">
+              <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">No signup required</span>
+              <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">Export to Markdown/PDF</span>
+              <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">Built for founders & marketers</span>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href="/wizard"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/40 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-slate-900/70 transition-colors"
+              >
+                🧭 Guided wizard
+              </a>
+              <a
+                href="/dashboard"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-5 py-3 text-sm font-medium text-indigo-200 hover:bg-indigo-500/20 transition-colors"
+              >
+                📊 Go to dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section id="how" className="mt-12 scroll-mt-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">How it works</h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-400">
+            From link → brief → asset pack, in three simple steps.
+          </p>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { label: 'LightScout AI', url: 'https://apps.apple.com/gb/app/lightscout-ai/id6748341779' },
-            { label: 'Spotify', url: 'https://play.google.com/store/apps/details?id=com.spotify.music' },
-            { label: 'Linear', url: 'https://linear.app' },
-            { label: 'Notion', url: 'https://www.notion.so' },
-          ].map((example) => (
-            <button
-              key={example.label}
-              onClick={() => setUrl(example.url)}
-              className="text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1 rounded-full transition-colors"
+            {
+              step: '01',
+              title: 'Paste URL',
+              desc: 'Drop in an App Store, Google Play, or website URL.',
+            },
+            {
+              step: '02',
+              title: 'AI Generates',
+              desc: 'We draft positioning, messaging, copy angles, and structure.',
+            },
+            {
+              step: '03',
+              title: 'Download Pack',
+              desc: 'Export a clean brief and reuse the outputs anywhere.',
+            },
+          ].map((s) => (
+            <div
+              key={s.step}
+              className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
             >
-              {example.label}
-            </button>
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-semibold tracking-wider text-indigo-300">STEP {s.step}</div>
+                <div className="h-2 w-2 rounded-full bg-indigo-400/70" />
+              </div>
+              <div className="mt-3 text-lg font-semibold text-white">{s.title}</div>
+              <div className="mt-2 text-sm text-slate-400">{s.desc}</div>
+            </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* How it works */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        {[
-          { icon: '🔍', title: 'Scrape', desc: 'Extract app info, features, metadata from any URL' },
-          { icon: '📋', title: 'Plan', desc: '5-stage marketing brief using Vibe Marketing methodology' },
-          { icon: '🎨', title: 'Assets', desc: 'Generate OG images, social cards, and visual assets' },
-        ].map((step) => (
-          <div key={step.title} className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-5 text-center">
-            <div className="text-3xl mb-3">{step.icon}</div>
-            <h3 className="font-semibold text-white mb-1">{step.title}</h3>
-            <p className="text-sm text-slate-400">{step.desc}</p>
-          </div>
-        ))}
-      </div>
+      {/* FEATURES */}
+      <section id="features" className="mt-12 scroll-mt-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">Everything you need to ship marketing faster</h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-400">
+            Practical outputs — not generic advice — designed to drop straight into your workflow.
+          </p>
+        </div>
 
-      <div className="text-center mb-10">
-        <a
-          href="/wizard"
-          className="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-4 py-2 rounded-full transition-colors"
-        >
-          🧭 Not sure where to start? Try the guided wizard →
-        </a>
-      </div>
-
-      {/* Feature preview */}
-      <div className="mb-12">
-        <h2 className="text-lg font-semibold text-white mb-1">What you get</h2>
-        <p className="text-sm text-slate-400 mb-4">
-          A practical, shippable plan — plus copy and assets you can reuse.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            {
-              icon: '🧭',
-              title: '5-stage brief',
-              desc: 'Research → Foundation → Structure → Copy Templates → Distribution',
-            },
-            {
-              icon: '🎛️',
-              title: 'Tone selection',
-              desc: 'AI-enhanced copy tailored to your brand voice.',
-            },
-            {
-              icon: '🧪',
-              title: 'A/B variants',
-              desc: 'Generate 3 copy options and pick the best.',
-            },
-            {
-              icon: '🔗',
-              title: 'Shareable links',
-              desc: 'Create public links you can send to your team.',
-            },
-            {
-              icon: '📄',
-              title: 'PDF & Markdown export',
-              desc: 'Download a clean brief for docs and decks.',
-            },
-            {
-              icon: '📈',
-              title: 'Competitive + SEO',
-              desc: 'Competitor scan with keyword ideas for discovery.',
-            },
-          ].map((feature) => (
-            <div
-              key={feature.title}
-              className="bg-slate-800/20 border border-slate-700/30 rounded-xl p-4"
-            >
+        <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {features.map((f) => (
+            <div key={f.title} className="rounded-2xl border border-slate-800 bg-slate-900/30 p-5">
               <div className="flex items-start gap-3">
-                <div className="text-lg leading-none mt-0.5">{feature.icon}</div>
+                <Icon>{f.icon}</Icon>
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-white">{feature.title}</div>
-                  <div className="text-xs text-slate-400 mt-1">{feature.desc}</div>
+                  <div className="text-sm font-semibold text-white">{f.title}</div>
+                  <div className="mt-1 text-sm text-slate-400">{f.desc}</div>
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Recent Analyses */}
-      {recent.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Recent Analyses</h2>
-            <button onClick={clearRecent} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-              Clear all
-            </button>
-          </div>
-          <div className="space-y-2">
-            {recent.map((item) => (
-              <a
-                key={item.id}
-                href={`/analyze?url=${encodeURIComponent(item.url)}`}
-                className="flex items-center gap-4 bg-slate-800/30 border border-slate-700/50 rounded-xl p-4 hover:bg-slate-800/60 transition-colors"
-              >
-                {item.icon ? (
-                  <img src={item.icon} alt="" className="w-10 h-10 rounded-lg" />
-                ) : (
-                  <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center text-lg">🔗</div>
+      {/* PRICING */}
+      <section id="pricing" className="mt-12 scroll-mt-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">Pricing</h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-400">
+            Start free, then scale when you’re ready.
+          </p>
+        </div>
+
+        <div className="mt-7 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {[
+            {
+              name: 'Free',
+              price: '$0',
+              badge: 'Get started',
+              highlight: false,
+              items: ['1 brief / day', 'Core brief template', 'Markdown export'],
+            },
+            {
+              name: 'Launch',
+              price: '$29',
+              badge: 'Most popular',
+              highlight: true,
+              items: ['Unlimited briefs', 'Competitor scan', 'A/B copy variants', 'Shareable links'],
+            },
+            {
+              name: 'Growth',
+              price: '$99',
+              badge: 'For teams',
+              highlight: false,
+              items: ['Everything in Launch', 'Brand assets & visual direction', 'Priority generation', 'Advanced exports'],
+            },
+          ].map((tier) => (
+            <div
+              key={tier.name}
+              className={
+                tier.highlight
+                  ? 'rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-6'
+                  : 'rounded-2xl border border-slate-800 bg-slate-900/30 p-6'
+              }
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-lg font-semibold text-white">{tier.name}</div>
+                  <div className="mt-1 text-sm text-slate-400">{tier.badge}</div>
+                </div>
+                {tier.highlight && (
+                  <div className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">Best value</div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white truncate">{item.name}</div>
-                  <div className="text-sm text-slate-500 truncate">{item.url}</div>
-                </div>
-                <div className="text-xs text-slate-500 flex-shrink-0">
-                  {new Date(item.createdAt).toLocaleDateString()}
-                </div>
-              </a>
-            ))}
+              </div>
+
+              <div className="mt-5 flex items-end gap-2">
+                <div className="text-4xl font-bold text-white">{tier.price}</div>
+                <div className="pb-1 text-sm text-slate-400">/ month</div>
+              </div>
+
+              <ul className="mt-5 space-y-2 text-sm">
+                {tier.items.map((it) => (
+                  <li key={it} className="flex items-center gap-2 text-slate-300">
+                    <Check />
+                    <span>{it}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6">
+                <a
+                  href="#"
+                  className={
+                    tier.highlight
+                      ? 'inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors'
+                      : 'inline-flex w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-900/40 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900/70 transition-colors'
+                  }
+                >
+                  Choose {tier.name}
+                </a>
+                <p className="mt-2 text-center text-xs text-slate-500">
+                  Pricing UI only — wire up billing when ready.
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="mt-14 border-t border-slate-800 pt-8 pb-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div>
+            <div className="text-sm font-semibold text-white">Marketing Tool</div>
+            <div className="mt-1 text-sm text-slate-500">Turn any URL into a complete marketing brief.</div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">
+            <a href="/wizard" className="text-slate-400 hover:text-white transition-colors">
+              Wizard
+            </a>
+            <a href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
+              Dashboard
+            </a>
+            <a href="#features" className="text-slate-400 hover:text-white transition-colors">
+              Features
+            </a>
+            <a href="#pricing" className="text-slate-400 hover:text-white transition-colors">
+              Pricing
+            </a>
           </div>
         </div>
-      )}
+
+        <div className="mt-8 text-xs text-slate-600">
+          © {new Date().getFullYear()} Marketing Tool. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan } from '@/lib/db';
+import { getPlan, saveContent } from '@/lib/db';
 
 type TranslationSection =
   | 'app_store_description'
@@ -274,6 +274,10 @@ Quality/safety:
         { error: 'Model did not return the requested translations. Please try again.' },
         { status: 502 }
       );
+    }
+
+    for (const [lang, content] of Object.entries(translations)) {
+      saveContent(planId, 'translations', lang, JSON.stringify(content));
     }
 
     return NextResponse.json({

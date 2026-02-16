@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/distribute', label: '📣 Distribute' },
   { href: '/translate', label: '🌍 Translate' },
   { href: '/serp', label: '🔍 SERP' },
+  { href: '/competitors', label: '🧭 Competitors' },
   { href: '/assets', label: '🎨 Assets' },
 ];
 
