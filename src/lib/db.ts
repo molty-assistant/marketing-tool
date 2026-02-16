@@ -26,16 +26,20 @@ export function getDb(): Database.Database {
         scraped TEXT NOT NULL,
         generated TEXT NOT NULL,
         stages TEXT NOT NULL,
+        content TEXT NOT NULL DEFAULT '{}',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
         share_token TEXT
       )
     `);
 
-    // Migration: add share_token if missing
+    // Migrations
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some(c => c.name === 'share_token')) {
       db.exec("ALTER TABLE plans ADD COLUMN share_token TEXT");
+    }
+    if (!cols.some(c => c.name === 'content')) {
+      db.exec("ALTER TABLE plans ADD COLUMN content TEXT NOT NULL DEFAULT '{}'");
     }
   }
   return db;
@@ -47,6 +51,7 @@ export interface PlanRow {
   scraped: string;
   generated: string;
   stages: string;
+  content: string;
   created_at: string;
   updated_at: string;
   share_token: string | null;
@@ -113,4 +118,31 @@ export function removeShareToken(planId: string): boolean {
 export function getPlanByShareToken(token: string): PlanRow | undefined {
   const db = getDb();
   return db.prepare('SELECT * FROM plans WHERE share_token = ?').get(token) as PlanRow | undefined;
+}
+
+/**
+ * Shallow-merge a patch into the plan's `content` JSON column.
+ */
+export function updatePlanContent(
+  planId: string,
+  patch: Record<string, unknown>
+): { ok: boolean; content: Record<string, unknown> } {
+  const db = getDb();
+  const row = getPlan(planId);
+  if (!row) return { ok: false, content: {} };
+
+  let current: Record<string, unknown> = {};
+  try {
+    current = row.content ? JSON.parse(row.content) : {};
+  } catch {
+    current = {};
+  }
+
+  const next = { ...current, ...patch };
+
+  db.prepare(
+    "UPDATE plans SET content = ?, updated_at = datetime('now') WHERE id = ?"
+  ).run(JSON.stringify(next), planId);
+
+  return { ok: true, content: next };
 }
