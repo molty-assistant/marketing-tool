@@ -9,11 +9,62 @@ import { MarketingPlan } from '@/lib/types';
 
 type CompetitorIntel = {
   name: string;
-  description: string;
+  oneLiner: string;
   strengths: string[];
   weaknesses: string[];
   pricing: string;
 };
+
+type IntelResult = {
+  competitors: CompetitorIntel[];
+  opportunities: string[];
+  marketGaps: string[];
+};
+
+function IntelSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="h-5 w-36 bg-zinc-800 rounded" />
+              <div className="h-5 w-20 bg-zinc-800 rounded-full" />
+            </div>
+            <div className="h-4 w-full bg-zinc-800 rounded" />
+            <div className="h-4 w-3/4 bg-zinc-800 rounded" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="h-3 w-full bg-zinc-800 rounded" />
+                ))}
+              </div>
+              <div className="space-y-2">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="h-3 w-full bg-zinc-800 rounded" />
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 space-y-3">
+          <div className="h-5 w-32 bg-zinc-800 rounded" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-4 w-full bg-zinc-800 rounded" />
+          ))}
+        </div>
+        <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 space-y-3">
+          <div className="h-5 w-32 bg-zinc-800 rounded" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-4 w-full bg-zinc-800 rounded" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CompetitorsPage({
   params,
@@ -26,17 +77,17 @@ export default function CompetitorsPage({
   const [loadingPlan, setLoadingPlan] = useState(true);
   const [fetchError, setFetchError] = useState('');
 
-  const [competitors, setCompetitors] = useState<CompetitorIntel[]>([]);
+  const [intel, setIntel] = useState<IntelResult>({ competitors: [], opportunities: [], marketGaps: [] });
   const [loadingIntel, setLoadingIntel] = useState(false);
+  const [loadingSaved, setLoadingSaved] = useState(true);
   const [intelError, setIntelError] = useState('');
 
   useEffect(() => {
-    // Load plan (same pattern as other plan pages)
+    // Load plan
     const stored = sessionStorage.getItem(`plan-${id}`);
     if (stored) {
       try {
-        const planData = JSON.parse(stored);
-        setPlan(planData);
+        setPlan(JSON.parse(stored));
         setLoadingPlan(false);
       } catch {
         loadFromDb();
@@ -45,18 +96,20 @@ export default function CompetitorsPage({
       loadFromDb();
     }
 
-    // Load cached competitor intel (best-effort)
-    const cachedIntel = sessionStorage.getItem(`competitors-${id}`);
-    if (cachedIntel) {
-      try {
-        const parsed = JSON.parse(cachedIntel);
-        if (Array.isArray(parsed)) {
-          setCompetitors(parsed);
+    // Load saved intel from DB
+    fetch(`/api/competitive-intel?planId=${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.competitors?.length) {
+          setIntel({
+            competitors: data.competitors || [],
+            opportunities: data.opportunities || [],
+            marketGaps: data.marketGaps || [],
+          });
         }
-      } catch {
-        // ignore
-      }
-    }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSaved(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -94,13 +147,15 @@ export default function CompetitorsPage({
         throw new Error(data?.error || 'Failed to generate competitor intel');
       }
 
-      const list = data?.competitors;
-      if (!Array.isArray(list)) {
+      if (!Array.isArray(data?.competitors)) {
         throw new Error('Unexpected response shape');
       }
 
-      setCompetitors(list);
-      sessionStorage.setItem(`competitors-${id}`, JSON.stringify(list));
+      setIntel({
+        competitors: data.competitors,
+        opportunities: data.opportunities || [],
+        marketGaps: data.marketGaps || [],
+      });
     } catch (err) {
       setIntelError(err instanceof Error ? err.message : 'Failed to generate competitor intel');
     } finally {
@@ -134,6 +189,8 @@ export default function CompetitorsPage({
     );
   }
 
+  const hasResults = intel.competitors.length > 0;
+
   return (
     <div className="max-w-5xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
@@ -146,10 +203,10 @@ export default function CompetitorsPage({
           )}
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-white break-words">
-              Competitors: {plan.config.app_name}
+              🏆 Competitors: {plan.config.app_name}
             </h1>
             <p className="text-slate-400 break-words">
-              Generate a quick competitor snapshot (strengths, weaknesses, pricing).
+              Competitive landscape — strengths, weaknesses, pricing, opportunities &amp; market gaps.
             </p>
           </div>
         </div>
@@ -160,20 +217,17 @@ export default function CompetitorsPage({
             disabled={loadingIntel}
             className={`text-sm px-4 py-2 rounded-lg transition-colors font-medium ${
               loadingIntel
-                ? 'bg-slate-700 text-slate-300 cursor-not-allowed'
+                ? 'bg-zinc-700 text-zinc-300 cursor-not-allowed'
                 : 'bg-indigo-600 hover:bg-indigo-500 text-white'
             }`}
           >
-            {loadingIntel ? 'Generating…' : competitors.length ? 'Regenerate' : 'Generate competitor intel'}
+            {loadingIntel ? 'Analyzing competitors…' : hasResults ? 'Re-analyze Competitors' : 'Analyze Competitors'}
           </button>
 
-          {competitors.length > 0 && (
+          {hasResults && (
             <button
-              onClick={() => {
-                setCompetitors([]);
-                sessionStorage.removeItem(`competitors-${id}`);
-              }}
-              className="text-sm px-4 py-2 rounded-lg transition-colors font-medium bg-slate-800/50 border border-slate-700 text-slate-200 hover:bg-slate-700/50"
+              onClick={() => setIntel({ competitors: [], opportunities: [], marketGaps: [] })}
+              className="text-sm px-4 py-2 rounded-lg transition-colors font-medium bg-zinc-900/50 border border-zinc-700 text-zinc-200 hover:bg-zinc-800/50"
             >
               Clear
             </button>
@@ -185,71 +239,114 @@ export default function CompetitorsPage({
             {intelError}
           </div>
         )}
-
-        <div className="mt-5 bg-slate-800/40 border border-slate-700/60 rounded-xl p-4 text-sm text-slate-300">
-          <div className="flex items-start gap-3">
-            <span className="text-xl">🧭</span>
-            <div className="space-y-1">
-              <p className="font-medium text-slate-100">What this does</p>
-              <ul className="list-disc list-inside space-y-1 text-slate-300/90">
-                <li>Finds 5 direct competitors based on your category + one-liner</li>
-                <li>Summarises strengths/weaknesses and pricing model (high-level)</li>
-                <li>Useful for positioning and differentiator testing</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Results */}
-      {competitors.length === 0 ? (
-        <div className="text-slate-400 text-sm">
-          No competitor intel yet. Click <span className="text-slate-200 font-medium">Generate</span>.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {competitors.map((c) => (
-            <div
-              key={c.name}
-              className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5"
-            >
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <h2 className="text-lg font-semibold text-white break-words">
-                  {c.name}
-                </h2>
-                {c.pricing && (
-                  <span className="text-xs bg-slate-700/60 border border-slate-600 text-slate-200 px-2 py-1 rounded-full">
-                    {c.pricing}
-                  </span>
-                )}
-              </div>
+      {/* Loading skeleton */}
+      {(loadingIntel || loadingSaved) && !hasResults && <IntelSkeleton />}
 
-              {c.description && (
-                <p className="text-sm text-slate-300 mb-4 leading-relaxed">
-                  {c.description}
-                </p>
+      {/* Results */}
+      {hasResults && (
+        <div className="space-y-8">
+          {/* Competitor Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {intel.competitors.map((c) => (
+              <div
+                key={c.name}
+                className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5"
+              >
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <h2 className="text-lg font-semibold text-white break-words">
+                    {c.name}
+                  </h2>
+                  {c.pricing && (
+                    <span className="shrink-0 text-xs bg-blue-900/40 border border-blue-800/60 text-blue-200 px-2.5 py-1 rounded-full">
+                      {c.pricing}
+                    </span>
+                  )}
+                </div>
+
+                {c.oneLiner && (
+                  <p className="text-sm text-zinc-300 mb-4 leading-relaxed">
+                    {c.oneLiner}
+                  </p>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs font-semibold text-green-400 mb-2 uppercase tracking-wide">
+                      Strengths
+                    </div>
+                    <ul className="text-sm text-zinc-300 space-y-1.5">
+                      {(c.strengths || []).slice(0, 6).map((s, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-green-500 mt-0.5 shrink-0">+</span>
+                          <span>{s}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wide">
+                      Weaknesses
+                    </div>
+                    <ul className="text-sm text-zinc-300 space-y-1.5">
+                      {(c.weaknesses || []).slice(0, 6).map((w, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-red-500 mt-0.5 shrink-0">−</span>
+                          <span>{w}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Opportunities & Market Gaps */}
+          {(intel.opportunities.length > 0 || intel.marketGaps.length > 0) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {intel.opportunities.length > 0 && (
+                <div className="bg-zinc-900/60 border border-indigo-900/40 rounded-2xl p-5">
+                  <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-wide mb-3">
+                    💡 Positioning Opportunities
+                  </h3>
+                  <ul className="space-y-2">
+                    {intel.opportunities.map((o, idx) => (
+                      <li key={idx} className="text-sm text-zinc-300 flex items-start gap-2">
+                        <span className="text-indigo-400 mt-0.5 shrink-0">→</span>
+                        <span>{o}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs font-semibold text-slate-200 mb-2">Strengths</div>
-                  <ul className="text-sm text-slate-300 list-disc list-inside space-y-1">
-                    {(c.strengths || []).slice(0, 6).map((s, idx) => (
-                      <li key={idx}>{s}</li>
+              {intel.marketGaps.length > 0 && (
+                <div className="bg-zinc-900/60 border border-blue-900/40 rounded-2xl p-5">
+                  <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wide mb-3">
+                    🔍 Market Gaps
+                  </h3>
+                  <ul className="space-y-2">
+                    {intel.marketGaps.map((g, idx) => (
+                      <li key={idx} className="text-sm text-zinc-300 flex items-start gap-2">
+                        <span className="text-blue-400 mt-0.5 shrink-0">◇</span>
+                        <span>{g}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                <div>
-                  <div className="text-xs font-semibold text-slate-200 mb-2">Weaknesses</div>
-                  <ul className="text-sm text-slate-300 list-disc list-inside space-y-1">
-                    {(c.weaknesses || []).slice(0, 6).map((w, idx) => (
-                      <li key={idx}>{w}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              )}
             </div>
-          ))}
+          )}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!hasResults && !loadingIntel && !loadingSaved && (
+        <div className="text-center py-12 text-zinc-500">
+          <div className="text-4xl mb-3">🏆</div>
+          <p className="text-sm">No competitive intel yet. Click <span className="text-zinc-300 font-medium">Analyze Competitors</span> to get started.</p>
         </div>
       )}
 
@@ -258,7 +355,7 @@ export default function CompetitorsPage({
         <div className="inline-flex gap-3">
           <a
             href={`/plan/${id}`}
-            className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-5 py-2.5 rounded-lg transition-colors"
+            className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm px-5 py-2.5 rounded-lg transition-colors"
           >
             ← Back to Plan
           </a>
