@@ -186,6 +186,14 @@ export default function DashboardPage() {
                 })}
               </div>
 
+              {/* Quick actions */}
+              <div className="flex gap-1 mb-3">
+                <a href={`/plan/${plan.id}/draft`} title="Generate Draft" className="flex-1 text-center text-xs bg-slate-700/50 hover:bg-indigo-600/30 text-slate-400 hover:text-indigo-300 py-1.5 rounded-lg transition-colors">📝</a>
+                <a href={`/plan/${plan.id}/translate`} title="Translate" className="flex-1 text-center text-xs bg-slate-700/50 hover:bg-indigo-600/30 text-slate-400 hover:text-indigo-300 py-1.5 rounded-lg transition-colors">🌍</a>
+                <a href={`/plan/${plan.id}/serp`} title="SERP Preview" className="flex-1 text-center text-xs bg-slate-700/50 hover:bg-emerald-600/30 text-slate-400 hover:text-emerald-300 py-1.5 rounded-lg transition-colors">🔍</a>
+                <a href={`/plan/${plan.id}/assets`} title="Assets" className="flex-1 text-center text-xs bg-slate-700/50 hover:bg-indigo-600/30 text-slate-400 hover:text-indigo-300 py-1.5 rounded-lg transition-colors">🎨</a>
+              </div>
+
               <div className="flex items-center gap-2">
                 <a
                   href={`/plan/${plan.id}`}
