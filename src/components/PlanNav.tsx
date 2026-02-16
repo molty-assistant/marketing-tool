@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/draft', label: '📝 Draft' },
   { href: '/approvals', label: '✅ Approvals' },
   { href: '/emails', label: '✉️ Emails' },
+  { href: '/calendar', label: '📅 Calendar' },
   { href: '/distribute', label: '📣 Distribute' },
   { href: '/translate', label: '🌍 Translate' },
   { href: '/serp', label: '🔍 SERP' },
