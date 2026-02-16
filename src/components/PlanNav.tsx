@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/translate', label: '🌍 Translate' },
   { href: '/serp', label: '🔍 SERP' },
   { href: '/assets', label: '🎨 Assets' },
+  { href: '/video', label: '🎬 Video' },
 ];
 
 export default function PlanNav({ planId, appName }: PlanNavProps) {

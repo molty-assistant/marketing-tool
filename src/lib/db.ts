@@ -29,13 +29,26 @@ export function getDb(): Database.Database {
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
         share_token TEXT
-      )
+      );
+
+      CREATE TABLE IF NOT EXISTS digests (
+        id TEXT PRIMARY KEY,
+        week_start TEXT NOT NULL,
+        week_end TEXT NOT NULL,
+        content TEXT NOT NULL,
+        stats TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
     `);
 
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some(c => c.name === 'share_token')) {
       db.exec("ALTER TABLE plans ADD COLUMN share_token TEXT");
+    }
+    // Migration: add content column for persisted generated content
+    if (!cols.some(c => c.name === 'content')) {
+      db.exec("ALTER TABLE plans ADD COLUMN content TEXT DEFAULT '{}'");
     }
   }
   return db;
@@ -50,7 +63,17 @@ export interface PlanRow {
   created_at: string;
   updated_at: string;
   share_token: string | null;
+  content: string; // JSON object storing all generated content
 }
+
+// Content keys for the persisted content object
+export type ContentKey = 
+  | 'brandVoice'
+  | 'positioning'
+  | 'drafts'
+  | 'emails'
+  | 'atoms'
+  | 'translations';
 
 export function savePlan(plan: {
   id: string;
@@ -113,4 +136,98 @@ export function removeShareToken(planId: string): boolean {
 export function getPlanByShareToken(token: string): PlanRow | undefined {
   const db = getDb();
   return db.prepare('SELECT * FROM plans WHERE share_token = ?').get(token) as PlanRow | undefined;
+}
+
+/**
+ * Update a specific content key in the plan's content JSON object.
+ * This merges the new value into the existing content object.
+ */
+export function updatePlanContent(
+  planId: string,
+  key: ContentKey,
+  value: unknown
+): boolean {
+  const db = getDb();
+  const row = getPlan(planId);
+  if (!row) return false;
+
+  const existingContent = JSON.parse(row.content || '{}');
+  existingContent[key] = value;
+
+  const stmt = db.prepare(`
+    UPDATE plans 
+    SET content = ?, updated_at = datetime('now') 
+    WHERE id = ?
+  `);
+  const result = stmt.run(JSON.stringify(existingContent), planId);
+  return result.changes > 0;
+}
+
+/**
+ * Get all persisted content for a plan.
+ */
+export function getPlanContent(planId: string): Record<string, unknown> | null {
+  const row = getPlan(planId);
+  if (!row) return null;
+  return JSON.parse(row.content || '{}');
+}
+
+// Digest types and functions
+export interface DigestRow {
+  id: string;
+  week_start: string;
+  week_end: string;
+  content: string;
+  stats: string;
+  created_at: string;
+}
+
+export interface DigestStats {
+  totalPlans: number;
+  newPlans: number;
+  topCategories: { category: string; count: number }[];
+  topSources: { source: string; count: number }[];
+}
+
+export function saveDigest(digest: {
+  id: string;
+  weekStart: string;
+  weekEnd: string;
+  content: string;
+  stats: DigestStats;
+}): void {
+  const db = getDb();
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO digests (id, week_start, week_end, content, stats, created_at)
+    VALUES (?, ?, ?, ?, ?, datetime('now'))
+  `);
+  stmt.run(
+    digest.id,
+    digest.weekStart,
+    digest.weekEnd,
+    digest.content,
+    JSON.stringify(digest.stats)
+  );
+}
+
+export function getDigest(id: string): DigestRow | undefined {
+  const db = getDb();
+  return db.prepare('SELECT * FROM digests WHERE id = ?').get(id) as DigestRow | undefined;
+}
+
+export function getAllDigests(): DigestRow[] {
+  const db = getDb();
+  return db.prepare('SELECT * FROM digests ORDER BY created_at DESC').all() as DigestRow[];
+}
+
+export function getLatestDigest(): DigestRow | undefined {
+  const db = getDb();
+  return db.prepare('SELECT * FROM digests ORDER BY created_at DESC LIMIT 1').get() as DigestRow | undefined;
+}
+
+export function getPlansInRange(startDate: string, endDate: string): PlanRow[] {
+  const db = getDb();
+  return db.prepare(
+    'SELECT * FROM plans WHERE created_at >= ? AND created_at <= ? ORDER BY created_at DESC'
+  ).all(startDate, endDate) as PlanRow[];
 }
