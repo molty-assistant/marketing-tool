@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, saveContent } from '@/lib/db';
+import { getPlan, saveContent, updatePlanContent, getPlanContent } from '@/lib/db';
 
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
@@ -220,6 +220,11 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
           : null;
 
     saveContent(planId, 'draft', tone, JSON.stringify(draft));
+
+    // Persist the generated draft (keyed by tone)
+    const existingDrafts = (getPlanContent(planId).drafts || {}) as Record<string, unknown>;
+    existingDrafts[tone] = draft;
+    updatePlanContent(planId, 'drafts', existingDrafts);
 
     return NextResponse.json({
       draft,

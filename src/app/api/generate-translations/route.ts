@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, saveContent } from '@/lib/db';
+import { getPlan, saveContent, updatePlanContent, getPlanContent } from '@/lib/db';
 
 type TranslationSection =
   | 'app_store_description'
@@ -279,6 +279,13 @@ Quality/safety:
     for (const [lang, content] of Object.entries(translations)) {
       saveContent(planId, 'translations', lang, JSON.stringify(content));
     }
+
+    // Persist the generated translations (merge with existing)
+    const existingTranslations = (getPlanContent(planId).translations || {}) as Record<string, Record<string, string>>;
+    for (const lang of Object.keys(translations)) {
+      existingTranslations[lang] = { ...existingTranslations[lang], ...translations[lang] };
+    }
+    updatePlanContent(planId, 'translations', existingTranslations);
 
     return NextResponse.json({
       translations,

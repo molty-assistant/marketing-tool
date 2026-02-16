@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     // Render templates to png via Playwright (single browser, sequential pages)
     let chromium;
     try {
-      const pw = await import('playwright-core');
+      const pw = await import('playwright');
       chromium = pw.chromium;
     } catch {
       return NextResponse.json(

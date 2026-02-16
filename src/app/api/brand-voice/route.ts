@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, saveContent } from '@/lib/db';
+import { getPlan, saveContent, updatePlanContent } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -125,6 +125,9 @@ Constraints:
 
     // Persist to plan
     saveContent(planId, 'brand-voice', null, JSON.stringify(parsed));
+
+    // Persist the generated brand voice
+    updatePlanContent(planId, 'brandVoice', parsed);
 
     return NextResponse.json({ brandVoice: parsed, metadata: { model: 'gemini-2.5-flash' } });
   } catch (err) {
