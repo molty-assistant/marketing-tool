@@ -10,6 +10,7 @@ import { PlanDetailSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
 import ExportBundleButton from '@/components/ExportBundleButton';
+import GenerateAllButton from '@/components/GenerateAllButton';
 
 // Simple markdown to HTML converter for our structured content
 function renderMarkdown(md: string): string {
@@ -256,6 +257,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
+  const [packComplete, setPackComplete] = useState(false);
 
   useEffect(() => {
     // Try sessionStorage first (just generated)
@@ -434,6 +436,24 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           )}
         </div>
       </div>
+
+      {/* Generate Everything */}
+      <div className="mb-6 flex flex-col sm:flex-row items-start gap-4">
+        <GenerateAllButton
+          planId={id}
+          onComplete={() => setPackComplete(true)}
+        />
+      </div>
+
+      {packComplete && (
+        <div className="mb-6 bg-emerald-950/30 border border-emerald-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <div className="text-emerald-300 font-semibold text-sm">🎉 Marketing pack complete!</div>
+            <div className="text-slate-400 text-xs mt-1">All content has been generated. Download the full pack below.</div>
+          </div>
+          <ExportBundleButton planId={id} appName={plan.config.app_name} />
+        </div>
+      )}
 
       {/* Config summary */}
       <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6">
