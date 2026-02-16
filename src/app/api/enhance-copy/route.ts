@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-type Tone = 'professional' | 'casual' | 'technical' | 'enthusiastic';
+type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
 interface EnhanceRequest {
   text: string;
@@ -8,7 +8,18 @@ interface EnhanceRequest {
   context: string;
 }
 
-const VALID_TONES: Tone[] = ['professional', 'casual', 'technical', 'enthusiastic'];
+const VALID_TONES: Tone[] = ['professional', 'casual', 'bold', 'minimal'];
+
+const TONE_DESCRIPTIONS: Record<Tone, string> = {
+  professional:
+    'Polished, credible, authoritative. Use clear language, benefits-focused, confident but not over-the-top.',
+  casual:
+    'Friendly, conversational, approachable. Write like a knowledgeable friend recommending something. Contractions OK, light humour OK.',
+  bold:
+    'Punchy, high-energy, attention-grabbing. Short sentences. Strong verbs. No filler. Make every word hit. Think Nike/Apple ad copy.',
+  minimal:
+    'Ultra-concise. Strip to essentials. Maximum impact, minimum words. No fluff, no adjectives unless they earn their place. Haiku-like brevity.',
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +41,19 @@ export async function POST(request: NextRequest) {
     }
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-    const systemPrompt = `You are a marketing copywriter. Rewrite the following marketing copy to sound more natural, human, and engaging. Tone: ${tone}. Context about the app: ${context}. Return ONLY the improved copy, nothing else.`;
+    const toneGuide = TONE_DESCRIPTIONS[tone];
+    const systemPrompt = `You are an expert marketing copywriter. Rewrite the following marketing copy to match this tone:
+
+TONE: ${tone}
+GUIDE: ${toneGuide}
+
+${context ? `APP CONTEXT: ${context}` : ''}
+
+Rules:
+- Return ONLY the improved copy, nothing else.
+- No quotes around the output.
+- Keep the core message but transform the voice.
+- Each tone should feel distinctly different from the others.`;
 
     const geminiResponse = await fetch(url, {
       method: 'POST',
