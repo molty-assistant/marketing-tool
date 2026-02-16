@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, use } from 'react';
 import { MarketingPlan, GeneratedAsset, AssetConfig } from '@/lib/types';
+import PlanNav from '@/components/PlanNav';
 
 function Spinner({ className }: { className?: string }) {
   return (
@@ -344,15 +345,11 @@ export default function AssetsPage({
 
   return (
     <div className="max-w-5xl mx-auto">
+      <PlanNav planId={id} appName={plan.config.app_name} />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <a
-            href={`/plan/${id}`}
-            className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-2 inline-block"
-          >
-            ← Back to plan
-          </a>
           <h1 className="text-2xl font-bold text-white">🎨 Visual Assets</h1>
           <p className="text-slate-400">
             {plan.config.app_name} — Marketing visuals

@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { MarketingPlan } from '@/lib/types';
 import { SerpPreview } from '@/components/SerpPreview';
+import PlanNav from '@/components/PlanNav';
 
 export default function SerpPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -99,14 +100,10 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="max-w-4xl mx-auto">
+      <PlanNav planId={id} appName={plan.config.app_name} />
+
       {/* Header */}
       <div className="mb-8">
-        <a
-          href={`/plan/${id}`}
-          className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-3 inline-block"
-        >
-          ← Back to plan
-        </a>
         <div className="flex items-center gap-4 min-w-0 mb-2">
           {plan.config.icon && (
             <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />

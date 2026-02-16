@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { MarketingPlan } from '@/lib/types';
 import EnhanceButton from '@/components/EnhanceButton';
 import VariantPicker from '@/components/VariantPicker';
+import PlanNav from '@/components/PlanNav';
 
 // Simple markdown to HTML converter for our structured content
 function renderMarkdown(md: string): string {
@@ -369,12 +370,11 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="max-w-4xl mx-auto">
+      <PlanNav planId={id} appName={plan.config.app_name} />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 flex-wrap gap-4">
         <div>
-          <a href="/" className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-3 inline-block">
-            ← Back to home
-          </a>
           <div className="flex items-center gap-4 min-w-0">
             {plan.config.icon && (
               <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
@@ -423,30 +423,6 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
               </button>
             </div>
           )}
-          <a
-            href={`/plan/${id}/draft`}
-            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
-          >
-            📝 Generate Draft
-          </a>
-          <a
-            href={`/plan/${id}/serp`}
-            className="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
-          >
-            🔍 SERP Preview
-          </a>
-          <a
-            href={`/plan/${id}/translate`}
-            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
-          >
-            🌍 Translate
-          </a>
-          <a
-            href={`/plan/${id}/assets`}
-            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
-          >
-            🎨 Assets
-          </a>
         </div>
       </div>
 

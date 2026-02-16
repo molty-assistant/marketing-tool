@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import type { MarketingPlan } from '@/lib/types';
+import PlanNav from '@/components/PlanNav';
 
 type TranslationSection =
   | 'app_store_description'
@@ -240,15 +241,11 @@ export default function TranslatePage({
 
   return (
     <div className="max-w-5xl mx-auto">
+      <PlanNav planId={id} appName={plan.config.app_name} />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <a
-            href={`/plan/${id}`}
-            className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-2 inline-block"
-          >
-            ← Back to plan
-          </a>
           <h1 className="text-2xl font-bold text-white">🌍 Translate / Localise</h1>
           <p className="text-slate-400">
             {plan.config.app_name} — Generate localised app store copy in multiple languages
