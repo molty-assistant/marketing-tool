@@ -6,6 +6,7 @@ import { MarketingPlan } from '@/lib/types';
 import EnhanceButton from '@/components/EnhanceButton';
 import VariantPicker from '@/components/VariantPicker';
 import PlanNav from '@/components/PlanNav';
+import ExportBundleButton from '@/components/ExportBundleButton';
 
 // Simple markdown to HTML converter for our structured content
 function renderMarkdown(md: string): string {
@@ -386,6 +387,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <ExportBundleButton planId={id} appName={plan.config.app_name} />
           <button
             onClick={handleExportMarkdown}
             className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
