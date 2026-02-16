@@ -6,6 +6,9 @@ import { MarketingPlan } from '@/lib/types';
 import EnhanceButton from '@/components/EnhanceButton';
 import VariantPicker from '@/components/VariantPicker';
 import PlanNav from '@/components/PlanNav';
+import { PlanDetailSkeleton } from '@/components/Skeleton';
+import ErrorRetry from '@/components/ErrorRetry';
+import { useToast } from '@/components/Toast';
 
 // Simple markdown to HTML converter for our structured content
 function renderMarkdown(md: string): string {
@@ -246,7 +249,9 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   const router = useRouter();
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
   const [loadingDb, setLoadingDb] = useState(false);
+  const [fetchError, setFetchError] = useState('');
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const { success: toastSuccess, error: toastError } = useToast();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
@@ -262,10 +267,15 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
     }
 
     // Fall back to DB
+    loadFromDb();
+  }, [id]);
+
+  const loadFromDb = () => {
     setLoadingDb(true);
+    setFetchError('');
     fetch(`/api/plans/${id}`)
       .then((res) => {
-        if (!res.ok) throw new Error('Not found');
+        if (!res.ok) throw new Error('Failed to load plan');
         return res.json();
       })
       .then((data) => {
@@ -274,25 +284,22 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           setShareToken(data.shareToken);
           setShareUrl(`${window.location.origin}/shared/${data.shareToken}`);
         }
-        // Cache in sessionStorage for subsequent navigations
         sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
       })
-      .catch(() => {
-        // Plan not found anywhere
+      .catch((err) => {
+        setFetchError(err instanceof Error ? err.message : 'Failed to load plan');
       })
       .finally(() => setLoadingDb(false));
-  }, [id]);
+  };
 
   if (loadingDb) {
+    return <PlanDetailSkeleton />;
+  }
+
+  if (fetchError) {
     return (
-      <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="inline-flex items-center gap-3 text-lg text-slate-300">
-          <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Loading plan...
-        </div>
+      <div className="max-w-3xl mx-auto py-20">
+        <ErrorRetry error={fetchError} onRetry={loadFromDb} />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { ToastProvider } from '@/components/Toast';
 
 export const metadata: Metadata = {
   title: 'Marketing Tool — Vibe Marketing Brief Generator',
@@ -56,7 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
         <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          <ErrorBoundary>{children}</ErrorBoundary>
+          <ToastProvider>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </ToastProvider>
         </main>
       </body>
     </html>
