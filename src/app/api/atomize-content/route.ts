@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan } from '@/lib/db';
+import { getPlan, updatePlanContent } from '@/lib/db';
 
 interface AtomizeContentRequest {
   planId: string;
@@ -196,6 +196,10 @@ Do not include any keys besides corePiece, atoms, metadata.`;
       metadataRaw.tokens = tokens;
       metadataRaw.atomCount = atoms.length;
       obj.metadata = metadataRaw;
+    }
+
+    if (corePieceContent && atoms.length >= 8) {
+      updatePlanContent(planId, 'contentAtoms', parsed);
     }
 
     if (!corePieceContent || atoms.length < 8) {

@@ -110,6 +110,35 @@ export function removeShareToken(planId: string): boolean {
   return result.changes > 0;
 }
 
+export function updatePlanContent(planId: string, key: string, value: unknown): void {
+  const db = getDb();
+  const row = getPlan(planId);
+  if (!row) return;
+
+  // Ensure content column exists
+  const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
+  if (!cols.some(c => c.name === 'content')) {
+    db.exec("ALTER TABLE plans ADD COLUMN content TEXT DEFAULT '{}'");
+  }
+
+  const existing = JSON.parse((row as unknown as Record<string, unknown>).content as string || '{}');
+  existing[key] = value;
+  db.prepare('UPDATE plans SET content = ?, updated_at = datetime(\'now\') WHERE id = ?')
+    .run(JSON.stringify(existing), planId);
+}
+
+export function getPlanContent(planId: string): Record<string, unknown> {
+  const db = getDb();
+  // Ensure content column exists
+  const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
+  if (!cols.some(c => c.name === 'content')) {
+    db.exec("ALTER TABLE plans ADD COLUMN content TEXT DEFAULT '{}'");
+  }
+  const row = db.prepare('SELECT content FROM plans WHERE id = ?').get(planId) as { content: string } | undefined;
+  if (!row) return {};
+  return JSON.parse(row.content || '{}');
+}
+
 export function getPlanByShareToken(token: string): PlanRow | undefined {
   const db = getDb();
   return db.prepare('SELECT * FROM plans WHERE share_token = ?').get(token) as PlanRow | undefined;

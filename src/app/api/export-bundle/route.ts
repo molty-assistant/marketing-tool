@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
-import { getPlan } from '@/lib/db';
+import { getPlan, getPlanContent } from '@/lib/db';
 import { generateAssets } from '@/lib/asset-generator';
 import type { AppConfig, AssetConfig } from '@/lib/types';
 
@@ -545,8 +545,95 @@ export async function POST(request: NextRequest) {
     // Root folder
     const root = 'marketing-pack';
 
+    // Load persisted content from previous API calls
+    const savedContent = getPlanContent(planId);
+
     // brief
     archive.append(briefMd || '', { name: `${root}/brief.md` });
+
+    // brand voice
+    if (savedContent.brandVoice) {
+      archive.append(JSON.stringify(savedContent.brandVoice, null, 2), {
+        name: `${root}/brand-voice.json`,
+      });
+    }
+
+    // positioning angles
+    if (savedContent.positioningAngles) {
+      archive.append(JSON.stringify(savedContent.positioningAngles, null, 2), {
+        name: `${root}/positioning-angles.json`,
+      });
+    }
+
+    // competitive analysis
+    if (savedContent.competitiveAnalysis) {
+      archive.append(JSON.stringify(savedContent.competitiveAnalysis, null, 2), {
+        name: `${root}/competitive-analysis.json`,
+      });
+    }
+
+    // draft
+    if (savedContent.draft) {
+      const draftData = savedContent.draft as Record<string, unknown>;
+      const sections = draftData.sections as Record<string, string> | undefined;
+      if (sections) {
+        let md = `# Draft Copy (${(draftData.tone as string) || 'professional'})\n\n`;
+        for (const [key, val] of Object.entries(sections)) {
+          md += `## ${key.replace(/_/g, ' ')}\n\n${val}\n\n`;
+        }
+        archive.append(md, { name: `${root}/draft.md` });
+      }
+    }
+
+    // emails
+    if (savedContent.emails) {
+      const emailData = savedContent.emails as Record<string, unknown>;
+      const seq = emailData.sequence as Record<string, unknown> | undefined;
+      const emails = seq?.emails as Array<Record<string, unknown>> | undefined;
+      if (emails) {
+        let md = `# Email Sequence (${(seq?.type as string) || 'welcome'})\n\n`;
+        for (const email of emails) {
+          md += `## Email ${email.number}: ${email.subjectLine}\n`;
+          md += `**Preview:** ${email.previewText}\n`;
+          md += `**Send:** ${email.sendDelay}\n\n`;
+          md += `${email.body}\n\n`;
+          const cta = email.cta as Record<string, string> | undefined;
+          if (cta) md += `**CTA:** ${cta.text} → ${cta.action}\n\n`;
+          md += '---\n\n';
+        }
+        archive.append(md, { name: `${root}/emails.md` });
+      }
+    }
+
+    // content atoms
+    if (savedContent.contentAtoms) {
+      const atomData = savedContent.contentAtoms as Record<string, unknown>;
+      const corePiece = atomData.corePiece as Record<string, string> | undefined;
+      const atoms = atomData.atoms as Array<Record<string, unknown>> | undefined;
+      if (atoms) {
+        let md = '# Content Atoms\n\n';
+        if (corePiece) {
+          md += `## Core Piece: ${corePiece.title}\n\n${corePiece.content}\n\n---\n\n`;
+        }
+        for (const atom of atoms) {
+          md += `### ${atom.platform} — ${atom.format}\n\n${atom.content}\n\n`;
+          if (atom.notes) md += `_Notes: ${atom.notes}_\n\n`;
+        }
+        archive.append(md, { name: `${root}/content-atoms.md` });
+      }
+    }
+
+    // translations
+    if (savedContent.translations) {
+      const trans = savedContent.translations as Record<string, Record<string, string>>;
+      for (const [lang, sections] of Object.entries(trans)) {
+        let md = `# Translations — ${lang}\n\n`;
+        for (const [section, text] of Object.entries(sections)) {
+          md += `## ${section.replace(/_/g, ' ')}\n\n${text}\n\n`;
+        }
+        archive.append(md, { name: `${root}/translations/${lang}.md` });
+      }
+    }
 
     // copy
     for (const tone of Object.keys(copyByTone)) {

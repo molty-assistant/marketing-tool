@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan } from '@/lib/db';
+import { getPlan, updatePlanContent } from '@/lib/db';
 
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
@@ -218,6 +218,8 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
             typeof usage?.candidatesTokenCount === 'number'
           ? usage.promptTokenCount + usage.candidatesTokenCount
           : null;
+
+    updatePlanContent(planId, 'draft', { tone, sections: draft });
 
     return NextResponse.json({
       draft,
