@@ -53,6 +53,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
                 📊 Dashboard
               </a>
+              <a href="/marketing/reviews" className="text-slate-400 hover:text-white transition-colors">
+                ⭐ Reviews
+              </a>
             </div>
           </div>
         </nav>
