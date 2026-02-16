@@ -9,12 +9,14 @@ interface PlanNavProps {
 
 const NAV_ITEMS = [
   { href: '', label: '📋 Brief', exact: true },
+  { href: '/digest', label: '🗓️ Digest' },
   { href: '/foundation', label: '🧱 Foundation' },
   { href: '/draft', label: '📝 Draft' },
   { href: '/emails', label: '✉️ Emails' },
   { href: '/distribute', label: '📣 Distribute' },
   { href: '/translate', label: '🌍 Translate' },
   { href: '/serp', label: '🔍 SERP' },
+  { href: '/reviews', label: '⭐ Reviews' },
   { href: '/assets', label: '🎨 Assets' },
 ];
 
