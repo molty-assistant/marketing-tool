@@ -282,7 +282,7 @@ type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
 function sectionLabel(section: DraftSection): string {
   const labels: Record<DraftSection, string> = {
-    app_store_description: 'App Store description',
+    app_store_description: 'App Store / Play Store description',
     short_description: 'Short description',
     keywords: 'Keywords',
     whats_new: "What's New",
