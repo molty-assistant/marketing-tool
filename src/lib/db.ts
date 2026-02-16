@@ -143,3 +143,46 @@ export function getPlanByShareToken(token: string): PlanRow | undefined {
   const db = getDb();
   return db.prepare('SELECT * FROM plans WHERE share_token = ?').get(token) as PlanRow | undefined;
 }
+
+/**
+ * Partial update helper used by the generate-all pipeline.
+ * Merges stagesPatch into the existing stages JSON.
+ */
+export function updatePlanContent(
+  planId: string,
+  patch: {
+    config?: object;
+    scraped?: object;
+    generated?: string;
+    stagesPatch?: Record<string, unknown>;
+  }
+): boolean {
+  const db = getDb();
+  const row = getPlan(planId);
+  if (!row) return false;
+
+  const nextConfig = patch.config ? JSON.stringify(patch.config) : row.config;
+  const nextScraped = patch.scraped ? JSON.stringify(patch.scraped) : row.scraped;
+  const nextGenerated = typeof patch.generated === 'string' ? patch.generated : row.generated;
+
+  let nextStagesObj: Record<string, unknown>;
+  try {
+    nextStagesObj = JSON.parse(row.stages || '{}');
+  } catch {
+    nextStagesObj = {};
+  }
+
+  if (patch.stagesPatch && typeof patch.stagesPatch === 'object') {
+    nextStagesObj = { ...nextStagesObj, ...patch.stagesPatch };
+  }
+
+  const nextStages = JSON.stringify(nextStagesObj);
+
+  const res = db
+    .prepare(
+      `UPDATE plans SET config = ?, scraped = ?, generated = ?, stages = ?, updated_at = datetime('now') WHERE id = ?`
+    )
+    .run(nextConfig, nextScraped, nextGenerated, nextStages, planId);
+
+  return res.changes > 0;
+}
