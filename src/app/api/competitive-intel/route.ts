@@ -5,18 +5,16 @@ type PerplexityResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
 };
 
-type PlanConfig = {
-  app_name?: string;
-  one_liner?: string;
-  category?: string;
-};
-
-export type CompetitorIntel = {
-  name: string;
-  description: string;
-  strengths: string[];
-  weaknesses: string[];
-  pricing: string;
+export type CompetitiveIntelResult = {
+  competitors: Array<{
+    name: string;
+    oneLiner: string;
+    strengths: string[];
+    weaknesses: string[];
+    pricing: string;
+  }>;
+  opportunities: string[];
+  marketGaps: string[];
 };
 
 function safeJsonParse(input: string): unknown {
@@ -28,48 +26,107 @@ function safeJsonParse(input: string): unknown {
   try {
     return JSON.parse(cleaned);
   } catch {
-    const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
+    const objMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (objMatch) return JSON.parse(objMatch[0]);
     throw new Error('Model returned invalid JSON');
   }
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((v): v is string => typeof v === 'string')
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+function normaliseResult(parsed: unknown): CompetitiveIntelResult {
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Model returned invalid JSON shape (expected object)');
+  }
+
+  const obj = parsed as Record<string, unknown>;
+  const competitorsRaw = obj.competitors;
+  if (!Array.isArray(competitorsRaw)) {
+    throw new Error('Model returned invalid JSON shape (expected competitors array)');
+  }
+
+  const competitors = competitorsRaw
+    .filter((c) => c && typeof c === 'object')
+    .map((c) => {
+      const item = c as Record<string, unknown>;
+      return {
+        name: typeof item.name === 'string' ? item.name.trim() : '',
+        oneLiner:
+          typeof item.oneLiner === 'string'
+            ? item.oneLiner.trim()
+            : typeof item.description === 'string'
+              ? item.description.trim()
+              : '',
+        strengths: asStringArray(item.strengths),
+        weaknesses: asStringArray(item.weaknesses),
+        pricing: typeof item.pricing === 'string' ? item.pricing.trim() : '',
+      };
+    })
+    .filter((c) => c.name);
+
+  const opportunities = asStringArray(obj.opportunities);
+  const marketGaps = asStringArray(obj.marketGaps);
+
+  if (competitors.length === 0) {
+    throw new Error('Model returned empty competitors');
+  }
+
+  return {
+    competitors: competitors.slice(0, 5),
+    opportunities,
+    marketGaps,
+  };
 }
 
 async function fetchCompetitiveIntel(params: {
   appName: string;
   category: string;
   oneLiner: string;
-}): Promise<CompetitorIntel[]> {
+}): Promise<CompetitiveIntelResult> {
   const apiKey = process.env.PERPLEXITY_API_KEY;
   if (!apiKey) {
     throw new Error('PERPLEXITY_API_KEY is not set');
   }
 
   const systemPrompt =
-    'You are a meticulous competitive intelligence analyst. Prefer well-known, direct competitors. Be specific and concise. Output valid JSON only.';
+    'You are a meticulous competitive intelligence analyst. Prefer well-known, direct competitors. Be specific and concise. Output valid JSON only (no markdown, no commentary, no citations).';
 
-  const userPrompt = `Find the TOP 5 direct competitors for this product.
+  const userPrompt = `Research competitors for this product and category.
 
 Product:
 - Name: ${params.appName}
 - Category: ${params.category}
 - One-liner: ${params.oneLiner}
 
-Return ONLY a JSON array of exactly 5 objects. Each object MUST match this shape:
+Return ONLY valid JSON matching this exact shape:
 {
-  "name": "Competitor name",
-  "description": "1-2 sentence description",
-  "strengths": ["...", "..."],
-  "weaknesses": ["...", "..."],
-  "pricing": "Their pricing model (e.g., free, freemium, subscription tiers)"
+  "competitors": [
+    {
+      "name": "Competitor name",
+      "oneLiner": "Short 1 sentence positioning summary",
+      "strengths": ["..."],
+      "weaknesses": ["..."],
+      "pricing": "Pricing model (free/freemium/subscription/usage-based, include tiers if you know them)"
+    }
+  ],
+  "opportunities": ["Actionable opportunity 1"],
+  "marketGaps": ["Market gap 1"]
 }
 
 Constraints:
-- strengths: 3-6 items
-- weaknesses: 3-6 items
-- Keep pricing high-level if exact numbers are uncertain.
-- Do not include markdown, citations, or extra keys.`;
+- competitors: EXACTLY 5
+- strengths: 3-6 items per competitor
+- weaknesses: 3-6 items per competitor
+- opportunities: 4-10 items
+- marketGaps: 4-10 items
+- If exact pricing is uncertain, describe the model at a high level.
+- Do not add extra keys.`;
 
   const resp = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
@@ -99,39 +156,17 @@ Constraints:
   }
 
   const parsed = safeJsonParse(content);
-  if (!Array.isArray(parsed)) {
-    throw new Error('Model returned invalid JSON shape (expected array)');
-  }
-
-  const competitors: CompetitorIntel[] = parsed
-    .filter((c) => c && typeof c === 'object')
-    .map((c) => {
-      const obj = c as Record<string, unknown>;
-      return {
-        name: typeof obj.name === 'string' ? obj.name : '',
-        description: typeof obj.description === 'string' ? obj.description : '',
-        strengths: Array.isArray(obj.strengths)
-          ? obj.strengths.filter((s): s is string => typeof s === 'string')
-          : [],
-        weaknesses: Array.isArray(obj.weaknesses)
-          ? obj.weaknesses.filter((s): s is string => typeof s === 'string')
-          : [],
-        pricing: typeof obj.pricing === 'string' ? obj.pricing : '',
-      };
-    })
-    .filter((c) => c.name && c.description);
-
-  if (competitors.length === 0) {
-    throw new Error('Model returned empty competitors');
-  }
-
-  return competitors.slice(0, 5);
+  return normaliseResult(parsed);
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { planId?: unknown };
+    const body = (await request.json()) as Record<string, unknown>;
+
     const planId = typeof body.planId === 'string' ? body.planId : '';
+    const appName = typeof body.appName === 'string' ? body.appName : '';
+    const category = typeof body.category === 'string' ? body.category : '';
+    const oneLiner = typeof body.oneLiner === 'string' ? body.oneLiner : '';
 
     if (!planId) {
       return NextResponse.json({ error: 'Missing "planId"' }, { status: 400 });
@@ -142,24 +177,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    const config = JSON.parse(row.config || '{}') as PlanConfig;
-    const appName = config.app_name || '';
-    const category = config.category || '';
-    const oneLiner = config.one_liner || '';
-
     if (!appName || !category || !oneLiner) {
       return NextResponse.json(
-        { error: 'Plan is missing required fields (app_name, category, one_liner)' },
+        { error: 'Missing required fields: appName, category, oneLiner' },
         { status: 400 }
       );
     }
 
-    const competitors = await fetchCompetitiveIntel({ appName, category, oneLiner });
+    const result = await fetchCompetitiveIntel({ appName, category, oneLiner });
 
-    saveContent(planId, 'competitive-intel', null, JSON.stringify({ competitors }));
+    saveContent(planId, 'competitive-intel', null, JSON.stringify(result));
 
     return NextResponse.json({
-      competitors,
+      ...result,
       metadata: {
         provider: 'perplexity',
         model: 'sonar',
