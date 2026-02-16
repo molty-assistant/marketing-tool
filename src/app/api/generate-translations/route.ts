@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan } from '@/lib/db';
+import { getPlan, updatePlanContent } from '@/lib/db';
 
 type TranslationSection =
   | 'app_store_description'
@@ -275,6 +275,8 @@ Quality/safety:
         { status: 502 }
       );
     }
+
+    updatePlanContent(planId, 'translations', translations);
 
     return NextResponse.json({
       translations,

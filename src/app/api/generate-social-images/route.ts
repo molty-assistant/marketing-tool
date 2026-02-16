@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { Readable, PassThrough } from 'stream';
-import { getPlan } from '@/lib/db';
+import { getPlan, updatePlanContent } from '@/lib/db';
 import type { MarketingPlan } from '@/lib/types';
 import {
   generateSocialTemplates,
@@ -152,6 +152,15 @@ export async function POST(request: NextRequest) {
 
       await archive.finalize();
       const zipBuffer = await finishPromise;
+
+      // Save metadata about generated images
+      updatePlanContent(planId, 'socialImages', {
+        platforms,
+        style,
+        accentColor,
+        files: pngBuffers.map(p => p.filename),
+        generatedAt: new Date().toISOString(),
+      });
 
       return new NextResponse(new Uint8Array(zipBuffer), {
         headers: {

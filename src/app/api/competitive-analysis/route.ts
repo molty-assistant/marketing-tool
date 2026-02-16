@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan } from '@/lib/db';
+import { getPlan, updatePlanContent } from '@/lib/db';
 
 type PerplexityResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
@@ -215,6 +215,10 @@ Constraints:
       } else {
         return NextResponse.json({ error: 'Model returned invalid JSON. Please try again.' }, { status: 502 });
       }
+    }
+
+    if (planId) {
+      updatePlanContent(planId, 'competitiveAnalysis', parsed);
     }
 
     return NextResponse.json({ competitive: parsed, metadata: { model: 'gemini-2.5-flash', perplexityUsed } });
