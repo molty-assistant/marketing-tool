@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, updatePlanContent } from '@/lib/db';
+import { getPlan, saveContent } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -127,7 +127,7 @@ Constraints:
       }
     }
 
-    updatePlanContent(planId, 'positioningAngles', parsed);
+    saveContent(planId, 'positioning', null, JSON.stringify(parsed));
 
     return NextResponse.json({ positioning: parsed, metadata: { model: 'gemini-2.5-flash' } });
   } catch (err) {

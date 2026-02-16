@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan } from '@/lib/db';
+import { getPlan, saveContent } from '@/lib/db';
 
 type PerplexityResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
@@ -155,6 +155,8 @@ export async function POST(request: NextRequest) {
     }
 
     const competitors = await fetchCompetitiveIntel({ appName, category, oneLiner });
+
+    saveContent(planId, 'competitive-intel', null, JSON.stringify({ competitors }));
 
     return NextResponse.json({
       competitors,

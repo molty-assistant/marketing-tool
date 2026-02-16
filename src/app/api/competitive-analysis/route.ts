@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, updatePlanContent } from '@/lib/db';
+import { getPlan, saveContent } from '@/lib/db';
 
 type PerplexityResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
@@ -218,7 +218,7 @@ Constraints:
     }
 
     if (planId) {
-      updatePlanContent(planId, 'competitiveAnalysis', parsed);
+      saveContent(planId, 'competitive-analysis', null, JSON.stringify(parsed));
     }
 
     return NextResponse.json({ competitive: parsed, metadata: { model: 'gemini-2.5-flash', perplexityUsed } });

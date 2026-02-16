@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, updatePlanContent } from '@/lib/db';
+import { getPlan, saveContent } from '@/lib/db';
 
 type TranslationSection =
   | 'app_store_description'
@@ -276,7 +276,9 @@ Quality/safety:
       );
     }
 
-    updatePlanContent(planId, 'translations', translations);
+    for (const [lang, content] of Object.entries(translations)) {
+      saveContent(planId, 'translations', lang, JSON.stringify(content));
+    }
 
     return NextResponse.json({
       translations,
