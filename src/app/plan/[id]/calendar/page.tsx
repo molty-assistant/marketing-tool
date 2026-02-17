@@ -422,6 +422,62 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
                   </div>
                 </div>
               </div>
+
+              {(selected.platform === 'instagram' || selected.platform === 'tiktok') && (
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/post-to-buffer', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            platform: selected.platform,
+                            caption: selected.draft_copy,
+                            hashtags: selected.hashtags,
+                          }),
+                        });
+                        if (res.ok) {
+                          toastSuccess('Queued to Buffer');
+                        } else {
+                          toastError('Failed to queue');
+                        }
+                      } catch {
+                        toastError('Network error');
+                      }
+                    }}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    📤 Queue to Buffer
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/post-to-buffer', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            platform: selected.platform,
+                            caption: selected.draft_copy,
+                            hashtags: selected.hashtags,
+                            publishNow: true,
+                          }),
+                        });
+                        if (res.ok) {
+                          toastSuccess('Posted now!');
+                        } else {
+                          toastError('Failed to post');
+                        }
+                      } catch {
+                        toastError('Network error');
+                      }
+                    }}
+                    className="px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    ⚡ Post Now
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
