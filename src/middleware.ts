@@ -10,6 +10,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // API key auth for automation (crons, scripts)
+  const apiKey = process.env.API_KEY;
+  if (apiKey) {
+    const headerKey = request.headers.get('x-api-key');
+    const queryKey = request.nextUrl.searchParams.get('api_key');
+    if (headerKey === apiKey || queryKey === apiKey) {
+      return NextResponse.next();
+    }
+  }
+
   const user = process.env.BASIC_AUTH_USER;
   const pass = process.env.BASIC_AUTH_PASS;
 
