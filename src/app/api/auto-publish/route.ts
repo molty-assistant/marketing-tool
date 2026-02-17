@@ -112,6 +112,25 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
       generated = JSON.parse(match[0]);
     }
 
+    // Step 1.5: Generate a social image
+    let imageUrl: string | null = null;
+    try {
+      const imgPlatform = platform === 'tiktok' ? 'instagram-story' : 'instagram-post';
+      const imgRes = await fetch(`${request.nextUrl.origin}/api/generate-post-image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId,
+          platform: imgPlatform,
+          caption: generated.caption,
+        }),
+      });
+      if (imgRes.ok) {
+        const imgData = await imgRes.json();
+        imageUrl = imgData.fullUrl || null;
+      }
+    } catch { /* continue without image */ }
+
     // Step 2: Post to Buffer via Zapier MCP
     const fullCaption = generated.hashtags?.length > 0
       ? `${generated.caption}\n\n${generated.hashtags.map((h: string) => h.startsWith('#') ? h : `#${h}`).join(' ')}`
@@ -131,7 +150,10 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
         name: 'buffer_add_to_queue',
         arguments: {
           instructions: `${channelInstruction}. Method: ${method}.`,
+          output_hint: 'confirmation that the post was queued or sent, including any post ID or URL',
           text: fullCaption,
+          method: method === 'now' ? 'Share Now' : 'Add to Queue',
+          ...(imageUrl ? { attachment: imageUrl } : {}),
         },
       },
     };

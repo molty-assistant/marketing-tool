@@ -43,8 +43,10 @@ export async function POST(request: NextRequest) {
         name: 'buffer_add_to_queue',
         arguments: {
           instructions: `${channelInstruction}. Method: ${method}.`,
+          output_hint: 'confirmation that the post was queued or sent, including any post ID or URL',
           text: fullText,
-          ...(body.mediaUrl ? { media: body.mediaUrl } : {}),
+          method: method === 'now' ? 'Share Now' : 'Add to Queue',
+          ...(body.mediaUrl ? { attachment: body.mediaUrl } : {}),
         },
       },
     };
