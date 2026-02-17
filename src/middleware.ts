@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Skip auth for shared plan routes
-  if (request.nextUrl.pathname.startsWith('/shared/') || request.nextUrl.pathname.startsWith('/api/shared/')) {
+  // Skip auth for shared plan routes and healthcheck
+  if (
+    request.nextUrl.pathname.startsWith('/shared/') ||
+    request.nextUrl.pathname.startsWith('/api/shared/') ||
+    request.nextUrl.pathname === '/api/health'
+  ) {
     return NextResponse.next();
   }
 
