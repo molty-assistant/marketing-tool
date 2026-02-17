@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { href: '/competitors', label: '🏆 Competitors' },
   { href: '/assets', label: '🎨 Assets' },
   { href: '/reviews', label: '⭐ Reviews' },
+  { href: '/keywords', label: '🔑 Keywords' },
 ];
 
 export default function PlanNav({ planId, appName }: PlanNavProps) {
