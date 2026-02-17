@@ -1,369 +1,467 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
-import PlanNav from '@/components/PlanNav';
-import { PageSkeleton } from '@/components/Skeleton';
-import ErrorRetry from '@/components/ErrorRetry';
+import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
-import { MarketingPlan } from '@/lib/types';
+import PlanNav from '@/components/PlanNav';
+import ErrorRetry from '@/components/ErrorRetry';
+import { DraftSkeleton } from '@/components/Skeleton';
+import type { MarketingPlan } from '@/lib/types';
+import { useToast } from '@/components/Toast';
 
-type CompetitorIntel = {
+type Competitor = {
   name: string;
-  oneLiner: string;
-  strengths: string[];
-  weaknesses: string[];
-  pricing: string;
+  url?: string;
+  positioning?: string;
+  pricing?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  keyMessaging?: string[];
 };
 
-type IntelResult = {
-  competitors: CompetitorIntel[];
-  opportunities: string[];
-  marketGaps: string[];
+type Competitive = {
+  competitors: Competitor[];
+  gaps?: string[];
+  opportunities?: string[];
+  keywordGaps?: string[];
 };
 
-function IntelSkeleton() {
+type ContentRow = {
+  contentType: string;
+  contentKey: string | null;
+  content: unknown;
+};
+
+function CellList({ items, kind }: { items: string[]; kind: 'good' | 'bad' | 'neutral' }) {
+  if (!items?.length) return <span className="text-slate-500 text-sm">—</span>;
+
+  const icon = kind === 'bad' ? '❌' : kind === 'good' ? '✅' : '•';
+  const color = kind === 'bad' ? 'text-red-200' : kind === 'good' ? 'text-emerald-200' : 'text-slate-200';
+
   return (
-    <div className="space-y-6 animate-pulse">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <ul className={`space-y-1.5 text-sm ${color}`}>
+      {items.slice(0, 8).map((it, i) => (
+        <li key={`${it}-${i}`} className="flex items-start gap-2">
+          <span className={kind === 'bad' ? 'text-red-400 mt-0.5 shrink-0' : kind === 'good' ? 'text-emerald-400 mt-0.5 shrink-0' : 'text-slate-400 mt-0.5 shrink-0'}>
+            {icon}
+          </span>
+          <span className="text-slate-200">{it}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PricingBadge({ text, highlight }: { text: string; highlight?: 'good' | 'bad' }) {
+  const base = 'inline-flex items-center text-xs px-2.5 py-1 rounded-full border';
+  if (highlight === 'good') {
+    return <span className={`${base} bg-emerald-950/40 border-emerald-800/50 text-emerald-200`}>{text}</span>;
+  }
+  if (highlight === 'bad') {
+    return <span className={`${base} bg-red-950/30 border-red-900/60 text-red-200`}>{text}</span>;
+  }
+  return <span className={`${base} bg-slate-900/40 border-slate-700/50 text-slate-200`}>{text}</span>;
+}
+
+function isFreeish(pricing?: string) {
+  const p = (pricing || '').toLowerCase();
+  return p.includes('free') || p.includes('freemium');
+}
+
+function CompetitiveSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-7 w-60 bg-slate-800 rounded mb-3" />
+      <div className="h-4 w-full bg-slate-900/50 rounded mb-6" />
+      <div className="border border-slate-700/50 rounded-2xl overflow-hidden">
+        <div className="h-12 bg-slate-800/40" />
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 space-y-4">
-            <div className="flex items-start justify-between">
-              <div className="h-5 w-36 bg-zinc-800 rounded" />
-              <div className="h-5 w-20 bg-zinc-800 rounded-full" />
-            </div>
-            <div className="h-4 w-full bg-zinc-800 rounded" />
-            <div className="h-4 w-3/4 bg-zinc-800 rounded" />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                {[1, 2, 3].map((j) => (
-                  <div key={j} className="h-3 w-full bg-zinc-800 rounded" />
-                ))}
-              </div>
-              <div className="space-y-2">
-                {[1, 2, 3].map((j) => (
-                  <div key={j} className="h-3 w-full bg-zinc-800 rounded" />
-                ))}
-              </div>
-            </div>
-          </div>
+          <div key={i} className="h-16 bg-slate-900/30 border-t border-slate-800/60" />
         ))}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 space-y-3">
-          <div className="h-5 w-32 bg-zinc-800 rounded" />
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-4 w-full bg-zinc-800 rounded" />
-          ))}
-        </div>
-        <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 space-y-3">
-          <div className="h-5 w-32 bg-zinc-800 rounded" />
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-4 w-full bg-zinc-800 rounded" />
-          ))}
-        </div>
       </div>
     </div>
   );
 }
 
-export default function CompetitorsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function CompetitorsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [loadingPlan, setLoadingPlan] = useState(true);
-  const [fetchError, setFetchError] = useState('');
+  const [planLoading, setPlanLoading] = useState(true);
+  const [planError, setPlanError] = useState('');
 
-  const [intel, setIntel] = useState<IntelResult>({ competitors: [], opportunities: [], marketGaps: [] });
-  const [loadingIntel, setLoadingIntel] = useState(false);
+  const [competitive, setCompetitive] = useState<Competitive | null>(null);
+  const [loadingCompetitive, setLoadingCompetitive] = useState(false);
   const [loadingSaved, setLoadingSaved] = useState(true);
-  const [intelError, setIntelError] = useState('');
+  const [competitiveError, setCompetitiveError] = useState('');
 
-  useEffect(() => {
-    // Load plan
+  const { success: toastOk, error: toastErr } = useToast();
+
+  const loadPlan = () => {
+    setPlanLoading(true);
+    setPlanError('');
+
     const stored = sessionStorage.getItem(`plan-${id}`);
     if (stored) {
       try {
         setPlan(JSON.parse(stored));
-        setLoadingPlan(false);
+        setPlanLoading(false);
+        return;
       } catch {
-        loadFromDb();
+        // fall through
       }
-    } else {
-      loadFromDb();
     }
 
-    // Load saved intel from DB
-    fetch(`/api/competitive-intel?planId=${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.competitors?.length) {
-          setIntel({
-            competitors: data.competitors || [],
-            opportunities: data.opportunities || [],
-            marketGaps: data.marketGaps || [],
-          });
+    fetch(`/api/plans/${id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('Failed to load plan');
+        return r.json();
+      })
+      .then((d) => {
+        setPlan(d);
+        sessionStorage.setItem(`plan-${id}`, JSON.stringify(d));
+      })
+      .catch((e) => setPlanError(e instanceof Error ? e.message : 'Failed to load plan'))
+      .finally(() => setPlanLoading(false));
+  };
+
+  const restoreCached = () => {
+    try {
+      const cached = sessionStorage.getItem(`competitive-analysis-${id}`);
+      if (cached) setCompetitive(JSON.parse(cached));
+    } catch {
+      // ignore
+    }
+  };
+
+  const persistCached = (value: Competitive | null) => {
+    try {
+      if (!value) {
+        sessionStorage.removeItem(`competitive-analysis-${id}`);
+      } else {
+        sessionStorage.setItem(`competitive-analysis-${id}`, JSON.stringify(value));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    loadPlan();
+    restoreCached();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // Load saved competitive analysis from DB (best-effort)
+  useEffect(() => {
+    fetch(`/api/plans/${id}/content`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const rows = (d?.content || []) as ContentRow[];
+        const row = rows.find((x) => x.contentType === 'competitive-analysis');
+        if (row?.content && typeof row.content === 'string') {
+          try {
+            const parsed = JSON.parse(row.content) as Competitive;
+            setCompetitive(parsed);
+            persistCached(parsed);
+          } catch {
+            // ignore
+          }
         }
       })
       .catch(() => {})
       .finally(() => setLoadingSaved(false));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const loadFromDb = () => {
-    setLoadingPlan(true);
-    setFetchError('');
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((err) => {
-        setFetchError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setLoadingPlan(false));
-  };
-
-  const generateIntel = async () => {
-    setLoadingIntel(true);
-    setIntelError('');
-
+  const generateCompetitive = async () => {
+    setLoadingCompetitive(true);
+    setCompetitiveError('');
     try {
-      const res = await fetch('/api/competitive-intel', {
+      const r = await fetch('/api/competitive-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId: id }),
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error || 'Failed to generate competitor intel');
-      }
-
-      if (!Array.isArray(data?.competitors)) {
-        throw new Error('Unexpected response shape');
-      }
-
-      setIntel({
-        competitors: data.competitors,
-        opportunities: data.opportunities || [],
-        marketGaps: data.marketGaps || [],
-      });
-    } catch (err) {
-      setIntelError(err instanceof Error ? err.message : 'Failed to generate competitor intel');
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.error || 'Failed to generate competitive analysis');
+      setCompetitive(d.competitive);
+      persistCached(d.competitive);
+      toastOk('Competitive analysis generated');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to generate competitive analysis';
+      setCompetitiveError(msg);
+      toastErr(msg);
     } finally {
-      setLoadingIntel(false);
+      setLoadingCompetitive(false);
     }
   };
 
-  if (loadingPlan) {
-    return <PageSkeleton />;
-  }
+  const cols = useMemo(() => {
+    const competitors = competitive?.competitors || [];
+    const max = 6; // keep table readable
+    return competitors.slice(0, max);
+  }, [competitive]);
 
-  if (fetchError) {
-    return (
-      <div className="max-w-3xl mx-auto py-20">
-        <ErrorRetry error={fetchError} onRetry={loadFromDb} />
-      </div>
-    );
-  }
+  const ourPricing = plan?.config?.pricing || '';
+  const ourRating = typeof plan?.scraped?.rating === 'number' ? plan?.scraped?.rating : null;
+  const ourFeatures = (plan?.scraped?.features?.length ? plan.scraped.features : plan?.config?.differentiators) || [];
 
+  const ourFree = isFreeish(ourPricing);
+  const anyCompetitorFree = cols.some((c) => isFreeish(c.pricing));
+
+  if (planLoading) return <DraftSkeleton />;
+  if (planError) return <div className="max-w-3xl mx-auto py-20"><ErrorRetry error={planError} onRetry={loadPlan} /></div>;
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
         <div className="text-slate-400 mb-4">Plan not found</div>
-        <p className="text-sm text-slate-500 mb-4">
-          This plan may have been deleted or doesn&apos;t exist.
-        </p>
-        <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
-          ← Start a new analysis
-        </Link>
+        <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">← Start a new analysis</Link>
       </div>
     );
   }
 
-  const hasResults = intel.competitors.length > 0;
+  const hasResults = (competitive?.competitors?.length || 0) > 0;
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-4 min-w-0 mb-2">
-          {plan.config.icon && (
-            <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
-          )}
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-white break-words">
-              🏆 Competitors: {plan.config.app_name}
-            </h1>
-            <p className="text-slate-400 break-words">
-              Competitive landscape — strengths, weaknesses, pricing, opportunities &amp; market gaps.
-            </p>
-          </div>
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-8">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-white break-words">🏆 Competitors</h1>
+          <p className="text-slate-400 break-words">
+            Side-by-side comparison for <span className="text-slate-200 font-semibold">{plan.config.app_name}</span>.
+          </p>
         </div>
-
-        <div className="flex flex-wrap gap-3 mt-4">
+        <div className="flex items-center gap-2">
           <button
-            onClick={generateIntel}
-            disabled={loadingIntel}
-            className={`text-sm px-4 py-2 rounded-lg transition-colors font-medium ${
-              loadingIntel
-                ? 'bg-zinc-700 text-zinc-300 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-            }`}
+            onClick={generateCompetitive}
+            disabled={loadingCompetitive}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
           >
-            {loadingIntel ? 'Analyzing competitors…' : hasResults ? 'Re-analyze Competitors' : 'Analyze Competitors'}
+            {loadingCompetitive ? 'Analyzing…' : hasResults ? '🔄 Refresh' : '✨ Analyze'}
           </button>
-
           {hasResults && (
             <button
-              onClick={() => setIntel({ competitors: [], opportunities: [], marketGaps: [] })}
-              className="text-sm px-4 py-2 rounded-lg transition-colors font-medium bg-zinc-900/50 border border-zinc-700 text-zinc-200 hover:bg-zinc-800/50"
+              onClick={() => {
+                setCompetitive(null);
+                persistCached(null);
+              }}
+              className="bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/50 text-slate-200 text-sm px-4 py-2.5 rounded-xl transition-colors"
             >
               Clear
             </button>
           )}
         </div>
-
-        {intelError && (
-          <div className="mt-4 bg-red-950/30 border border-red-900/60 rounded-xl p-4 text-sm text-red-200">
-            {intelError}
-          </div>
-        )}
       </div>
 
-      {/* Loading skeleton */}
-      {(loadingIntel || loadingSaved) && !hasResults && <IntelSkeleton />}
+      {competitiveError && (
+        <div className="mb-6 bg-red-950/30 border border-red-900/60 rounded-2xl p-4 text-sm text-red-200">
+          {competitiveError}
+        </div>
+      )}
 
-      {/* Results */}
+      {(loadingCompetitive || loadingSaved) && !hasResults && <CompetitiveSkeleton />}
+
       {hasResults && (
-        <div className="space-y-8">
-          {/* Competitor Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {intel.competitors.map((c) => (
-              <div
-                key={c.name}
-                className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5"
-              >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h2 className="text-lg font-semibold text-white break-words">
-                    {c.name}
-                  </h2>
-                  {c.pricing && (
-                    <span className="shrink-0 text-xs bg-blue-900/40 border border-blue-800/60 text-blue-200 px-2.5 py-1 rounded-full">
-                      {c.pricing}
-                    </span>
-                  )}
-                </div>
-
-                {c.oneLiner && (
-                  <p className="text-sm text-zinc-300 mb-4 leading-relaxed">
-                    {c.oneLiner}
-                  </p>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs font-semibold text-green-400 mb-2 uppercase tracking-wide">
-                      Strengths
-                    </div>
-                    <ul className="text-sm text-zinc-300 space-y-1.5">
-                      {(c.strengths || []).slice(0, 6).map((s, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-green-500 mt-0.5 shrink-0">+</span>
-                          <span>{s}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wide">
-                      Weaknesses
-                    </div>
-                    <ul className="text-sm text-zinc-300 space-y-1.5">
-                      {(c.weaknesses || []).slice(0, 6).map((w, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-red-500 mt-0.5 shrink-0">−</span>
-                          <span>{w}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Comparison table</h2>
+              <p className="text-sm text-slate-500">
+                Scroll horizontally on mobile. Strengths are highlighted in green; weaknesses in red.
+              </p>
+            </div>
+            <div className="text-xs text-slate-500">
+              Showing {Math.min(cols.length, 6)} competitor{cols.length === 1 ? '' : 's'}
+            </div>
           </div>
 
-          {/* Opportunities & Market Gaps */}
-          {(intel.opportunities.length > 0 || intel.marketGaps.length > 0) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {intel.opportunities.length > 0 && (
-                <div className="bg-zinc-900/60 border border-indigo-900/40 rounded-2xl p-5">
-                  <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-wide mb-3">
-                    💡 Positioning Opportunities
-                  </h3>
+          <div className="overflow-x-auto -mx-5 px-5">
+            <table className="min-w-[900px] w-full border-separate border-spacing-0">
+              <thead>
+                <tr>
+                  <th className="sticky left-0 z-10 bg-slate-900/80 backdrop-blur border border-slate-700/60 rounded-tl-xl px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">
+                    Feature / Aspect
+                  </th>
+                  <th className="bg-slate-900/40 border border-slate-700/60 px-4 py-3 text-left text-xs font-semibold text-white">
+                    {plan.config.app_name} <span className="text-slate-400 font-normal">(Our App)</span>
+                  </th>
+                  {cols.map((c, idx) => (
+                    <th key={`${c.name}-${idx}`} className="bg-slate-900/40 border border-slate-700/60 px-4 py-3 text-left text-xs font-semibold text-white">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="truncate">{c.name}</div>
+                          {c.url && (
+                            <a href={c.url} target="_blank" rel="noreferrer" className="text-[11px] text-indigo-300 hover:text-indigo-200 truncate block">
+                              {c.url}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {/* Pricing */}
+                <tr>
+                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                    Pricing
+                  </td>
+                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                    {ourPricing ? (
+                      <PricingBadge
+                        text={ourPricing}
+                        highlight={ourFree && !anyCompetitorFree ? 'good' : !ourFree && anyCompetitorFree ? 'bad' : undefined}
+                      />
+                    ) : (
+                      <span className="text-slate-500 text-sm">—</span>
+                    )}
+                  </td>
+                  {cols.map((c, idx) => (
+                    <td key={`pricing-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                      {c.pricing ? (
+                        <PricingBadge
+                          text={c.pricing}
+                          highlight={!ourFree && isFreeish(c.pricing) ? 'good' : ourFree && !isFreeish(c.pricing) ? 'bad' : undefined}
+                        />
+                      ) : (
+                        <span className="text-slate-500 text-sm">—</span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Rating */}
+                <tr>
+                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                    Rating
+                  </td>
+                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                    {ourRating !== null ? (
+                      <div className="text-sm text-slate-200">
+                        <span className="text-amber-300">★</span> {ourRating.toFixed(1)}
+                        {typeof plan.scraped.ratingCount === 'number' && (
+                          <span className="text-slate-500 text-xs ml-2">({plan.scraped.ratingCount.toLocaleString()} ratings)</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-slate-500 text-sm">—</span>
+                    )}
+                  </td>
+                  {cols.map((_, idx) => (
+                    <td key={`rating-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                      <span className="text-slate-500 text-sm">—</span>
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Key Features */}
+                <tr>
+                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                    Key Features
+                  </td>
+                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                    <CellList items={ourFeatures} kind="good" />
+                  </td>
+                  {cols.map((c, idx) => (
+                    <td key={`features-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                      <CellList items={c.keyMessaging || (c.positioning ? [c.positioning] : [])} kind="good" />
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Strengths */}
+                <tr>
+                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                    Strengths
+                  </td>
+                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                    <CellList items={plan.config.differentiators || []} kind="good" />
+                  </td>
+                  {cols.map((c, idx) => (
+                    <td key={`strengths-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                      <CellList items={c.strengths || []} kind="good" />
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Weaknesses */}
+                <tr>
+                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 rounded-bl-xl px-4 py-4 text-sm font-semibold text-slate-200">
+                    Weaknesses
+                  </td>
+                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                    <span className="text-slate-500 text-sm">—</span>
+                  </td>
+                  {cols.map((c, idx) => (
+                    <td key={`weaknesses-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                      <CellList items={c.weaknesses || []} kind="bad" />
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Extra insights (optional, useful on this page) */}
+          {(competitive?.opportunities?.length || competitive?.gaps?.length) ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+              {competitive?.opportunities?.length ? (
+                <div className="bg-slate-900/40 border border-indigo-900/40 rounded-2xl p-4">
+                  <div className="text-sm font-semibold text-indigo-200 mb-2">💡 Opportunities</div>
                   <ul className="space-y-2">
-                    {intel.opportunities.map((o, idx) => (
-                      <li key={idx} className="text-sm text-zinc-300 flex items-start gap-2">
+                    {competitive.opportunities.slice(0, 8).map((o, i) => (
+                      <li key={`${o}-${i}`} className="text-sm text-slate-200 flex items-start gap-2">
                         <span className="text-indigo-400 mt-0.5 shrink-0">→</span>
                         <span>{o}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-              )}
+              ) : null}
 
-              {intel.marketGaps.length > 0 && (
-                <div className="bg-zinc-900/60 border border-blue-900/40 rounded-2xl p-5">
-                  <h3 className="text-sm font-semibold text-blue-300 uppercase tracking-wide mb-3">
-                    🔍 Market Gaps
-                  </h3>
+              {competitive?.gaps?.length ? (
+                <div className="bg-slate-900/40 border border-blue-900/40 rounded-2xl p-4">
+                  <div className="text-sm font-semibold text-blue-200 mb-2">🔍 Gaps</div>
                   <ul className="space-y-2">
-                    {intel.marketGaps.map((g, idx) => (
-                      <li key={idx} className="text-sm text-zinc-300 flex items-start gap-2">
+                    {competitive.gaps.slice(0, 8).map((g, i) => (
+                      <li key={`${g}-${i}`} className="text-sm text-slate-200 flex items-start gap-2">
                         <span className="text-blue-400 mt-0.5 shrink-0">◇</span>
                         <span>{g}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-              )}
+              ) : null}
             </div>
-          )}
-        </div>
+          ) : null}
+        </section>
       )}
 
-      {/* Empty state */}
-      {!hasResults && !loadingIntel && !loadingSaved && (
-        <div className="text-center py-12 text-zinc-500">
+      {!hasResults && !loadingCompetitive && !loadingSaved && (
+        <div className="text-center py-14 text-slate-500">
           <div className="text-4xl mb-3">🏆</div>
-          <p className="text-sm">No competitive intel yet. Click <span className="text-zinc-300 font-medium">Analyze Competitors</span> to get started.</p>
+          <p className="text-sm">No competitor comparison yet. Click <span className="text-slate-200 font-medium">Analyze</span> to generate one.</p>
         </div>
       )}
 
-      {/* Footer */}
       <div className="mt-10 text-center">
         <div className="inline-flex gap-3">
           <a
             href={`/plan/${id}`}
-            className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm px-5 py-2.5 rounded-lg transition-colors"
+            className="bg-slate-800 hover:bg-slate-700 text-white text-sm px-5 py-2.5 rounded-lg transition-colors"
           >
             ← Back to Plan
           </a>
           <a
-            href={`/plan/${id}/serp`}
+            href={`/plan/${id}/foundation`}
             className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-5 py-2.5 rounded-lg transition-colors"
           >
-            SERP Preview →
+            Foundation →
           </a>
         </div>
       </div>
