@@ -45,9 +45,9 @@ CREATE TABLE IF NOT EXISTS approval_queue (
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
         FOREIGN KEY(plan_id) REFERENCES plans(id) ON DELETE CASCADE
       )
-    \`);
+    `);
 
-    db.exec(\`
+    db.exec(`
       CREATE TABLE IF NOT EXISTS plan_content (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         plan_id TEXT NOT NULL,
