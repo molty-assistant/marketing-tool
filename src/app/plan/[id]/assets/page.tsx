@@ -643,8 +643,9 @@ export default function AssetsPage({
 }) {
   const { id } = use(params);
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
   const [assets, setAssets] = useState<GeneratedAsset[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [downloadingZip, setDownloadingZip] = useState(false);
   const [zipError, setZipError] = useState('');
@@ -688,6 +689,7 @@ export default function AssetsPage({
       try {
         const p = JSON.parse(stored) as MarketingPlan;
         setPlan(p);
+        setPlanLoading(false);
         return;
       } catch {
         /* fall through */
@@ -705,7 +707,10 @@ export default function AssetsPage({
         sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
       })
       .catch(() => {
-        // Plan not found
+        // Plan not found — planLoading will be set to false below
+      })
+      .finally(() => {
+        setPlanLoading(false);
       });
   }, [id]);
 
@@ -851,6 +856,14 @@ export default function AssetsPage({
       setDownloadingSocialZip(false);
     }
   };
+
+  if (planLoading) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-20">
+        <div className="text-slate-400 animate-pulse">Loading plan…</div>
+      </div>
+    );
+  }
 
   if (!plan) {
     return (
