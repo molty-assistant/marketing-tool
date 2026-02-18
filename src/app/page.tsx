@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import GenerationOverlay from '@/components/GenerationOverlay';
 
 function Icon({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +27,8 @@ function Check() {
 export default function LandingPage() {
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generatingUrl, setGeneratingUrl] = useState('');
   const router = useRouter();
 
   const features = useMemo(
@@ -124,7 +127,7 @@ export default function LandingPage() {
   const handleStart = () => {
     setError('');
     if (!url.trim()) {
-      setError('Paste a URL to generate your brief.');
+      setError('Paste a URL to generate your plan.');
       return;
     }
 
@@ -136,7 +139,8 @@ export default function LandingPage() {
       return;
     }
 
-    router.push(`/analyze?url=${encodeURIComponent(normalizedUrl)}`);
+    setGeneratingUrl(normalizedUrl);
+    setGenerating(true);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -145,6 +149,16 @@ export default function LandingPage() {
 
   return (
     <div className="w-full">
+      {generating && (
+        <GenerationOverlay
+          url={generatingUrl}
+          onComplete={(planId) => router.push(`/plan/${planId}`)}
+          onError={(err) => {
+            setGenerating(false);
+            setError(err);
+          }}
+        />
+      )}
       {/* HERO */}
       <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0d1117] p-6 sm:p-10">
         <div className="absolute inset-0 pointer-events-none">
@@ -158,11 +172,10 @@ export default function LandingPage() {
           </div>
 
           <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight text-white">
-            Turn Any URL into a Complete Marketing Brief
+            Turn Any URL Into a Complete Marketing Plan
           </h1>
           <p className="mt-4 text-base sm:text-lg text-slate-300">
-            Paste an App Store, Google Play, or website link. We’ll extract the context, generate positioning and
-            copy angles, and package everything into a shippable brief you can share or export.
+            Paste a link. Get a brief, content strategy, social posts, email sequences, SEO keywords, and distribution plan — in under 60 seconds.
           </p>
 
           {/* CTA */}
@@ -189,16 +202,13 @@ export default function LandingPage() {
             </div>
             {error && <p className="text-red-400 text-sm mt-2 text-left">{error}</p>}
 
+            <p className="text-xs text-slate-500 mt-3 text-left">
+              No signup required · Works with any website, App Store, or Play Store link
+            </p>
+
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400">
-              <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">No signup required</span>
               <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">Export to Markdown/PDF</span>
               <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">Built for founders & marketers</span>
-            </div>
-
-            <div className="mt-4 text-center">
-              <a href="/wizard" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-                Prefer a step-by-step setup? Try the wizard →
-              </a>
             </div>
           </div>
         </div>
@@ -279,9 +289,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">
-            <a href="/wizard" className="text-slate-400 hover:text-white transition-colors">
-              Wizard
-            </a>
             <a href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
               Dashboard
             </a>
