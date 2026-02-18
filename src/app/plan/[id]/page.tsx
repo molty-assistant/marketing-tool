@@ -1,713 +1,369 @@
 'use client';
 
-import {
-  useState,
-  useEffect,
-  use,
-  useCallback,
-  useRef,
-} from 'react';
-import { useRouter } from 'next/navigation';
+import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  ChevronRight,
+  ArrowRight,
   FileText,
   Megaphone,
   Package,
   PenLine,
   Search,
 } from 'lucide-react';
-import { MarketingPlan } from '@/lib/types';
-import ReactMarkdown, { type Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import EnhanceButton from '@/components/EnhanceButton';
-import VariantPicker from '@/components/VariantPicker';
-import { PlanDetailSkeleton } from '@/components/Skeleton';
-import ErrorRetry from '@/components/ErrorRetry';
-import { useToast } from '@/components/Toast';
-import ExportBundleButton from '@/components/ExportBundleButton';
-import GenerateAllButton from '@/components/GenerateAllButton';
 
-const markdownComponents: Components = {
-  a: ({ href, children }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener"
-      className="text-indigo-400 hover:text-indigo-300 underline"
-    >
-      {children}
-    </a>
-  ),
+import type { MarketingPlan } from '@/lib/types';
+import { StatusBadge, type Status } from '@/components/StatusBadge';
+
+type OverviewApi = {
+  sections: Record<string, { hasContent: boolean; preview: string }>;
+  socialPostsCount: number;
+  scheduleCount: number;
+  wordCount: number;
 };
 
-function CopyButton({ text, label }: { text: string; label?: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <button
-      onClick={handleCopy}
-      className="text-sm sm:text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 sm:py-1.5 rounded-lg transition-colors flex items-center gap-1"
-    >
-      {copied ? '✓ Copied' : `📋 ${label || 'Copy'}`}
-    </button>
-  );
+function safeCount(v: unknown): number {
+  if (Array.isArray(v)) return v.length;
+  if (typeof v === 'string') return v.trim() ? 1 : 0;
+  if (v && typeof v === 'object') return Object.keys(v as object).length;
+  return 0;
 }
 
-// Parse Stage 4 content into individual templates for per-template copy
-function parseTemplates(assetsContent: string): { heading: string; content: string }[] {
-  const templates: { heading: string; content: string }[] = [];
-  const lines = assetsContent.split('\n');
-  let currentHeading = '';
-  let currentLines: string[] = [];
-
-  for (const line of lines) {
-    const h3Match = line.match(/^### (.+)$/);
-    if (h3Match) {
-      if (currentHeading && currentLines.length > 0) {
-        templates.push({
-          heading: currentHeading,
-          content: currentLines.join('\n').trim(),
-        });
-      }
-      currentHeading = h3Match[1];
-      currentLines = [];
-    } else if (currentHeading) {
-      currentLines.push(line);
-    }
-  }
-  // Push last template
-  if (currentHeading && currentLines.length > 0) {
-    templates.push({
-      heading: currentHeading,
-      content: currentLines.join('\n').trim(),
-    });
-  }
-
-  return templates;
+function hubStatus({ ready }: { ready: boolean }): Status {
+  return ready ? 'ready' : 'pending';
 }
 
-function TemplateCard({
-  heading,
-  content,
-  appContext,
-}: {
-  heading: string;
-  content: string;
-  appContext: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [displayContent, setDisplayContent] = useState(content);
-  const [isEnhanced, setIsEnhanced] = useState(false);
-
-  const handleTextChange = useCallback(
-    (newText: string) => {
-      setDisplayContent(newText);
-      setIsEnhanced(newText !== content);
-    },
-    [content]
-  );
-
-  // Strip markdown bold/links for plain-text copy
-  const plainText = displayContent
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-
-  return (
-    <div
-      className={`rounded-xl overflow-hidden transition-colors ${
-        isEnhanced
-          ? 'bg-indigo-950/30 border border-indigo-500/30'
-          : 'bg-slate-900/50 border border-slate-700/30'
-      }`}
-    >
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-3 p-4 hover:bg-slate-800/30 transition-colors text-left"
-      >
-        <h4 className="text-sm font-semibold text-indigo-400 flex-1 min-w-0 break-words">
-          {heading}
-          {isEnhanced && (
-            <span className="ml-2 text-xs font-normal text-indigo-300/70">
-              ✨ AI enhanced
-            </span>
-          )}
-        </h4>
-        <div className="flex items-center gap-2">
-          <CopyButton text={plainText} label="Copy" />
-          <span className="text-slate-500 text-sm">{open ? '−' : '+'}</span>
-        </div>
-      </button>
-      {open && (
-        <div className="px-4 pb-4 border-t border-slate-700/30">
-          {/* Enhance controls */}
-          <div className="mt-3 mb-3 space-y-3">
-            <EnhanceButton
-              text={content}
-              appContext={appContext}
-              onTextChange={handleTextChange}
-            />
-
-            <VariantPicker
-              text={displayContent}
-              appContext={appContext}
-              onPick={handleTextChange}
-            />
-          </div>
-          <div className="markdown-content text-sm">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={markdownComponents}
-            >
-              {displayContent}
-            </ReactMarkdown>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StageSection({
+function HubCard({
   title,
-  content,
-  defaultOpen = false,
-  isAssetsStage = false,
-  appContext = '',
+  description,
+  href,
+  icon: Icon,
+  status,
+  cta,
+  highlight,
 }: {
   title: string;
-  content: string;
-  defaultOpen?: boolean;
-  isAssetsStage?: boolean;
-  appContext?: string;
+  description: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  status: Status;
+  cta?: string;
+  highlight?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
-  const templates = isAssetsStage ? parseTemplates(content) : [];
-
   return (
-    <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden mb-4">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-3 p-5 hover:bg-slate-800/50 transition-colors text-left"
-      >
-        <h2 className="text-lg font-semibold text-white">{title}</h2>
-        <div className="flex items-center gap-3">
-          <CopyButton text={content} label="Copy section" />
-          <span className="text-slate-500 text-xl">{open ? '−' : '+'}</span>
+    <Link
+      href={href}
+      className={
+        'group relative flex items-start justify-between gap-4 p-5 rounded-2xl border transition-colors ' +
+        (highlight
+          ? 'bg-indigo-950/25 border-indigo-500/25 hover:border-indigo-400/40'
+          : 'bg-slate-900/40 border-white/[0.06] hover:border-indigo-500/25')
+      }
+    >
+      <div className="flex items-start gap-4 min-w-0">
+        <div
+          className={
+            'w-10 h-10 rounded-xl flex items-center justify-center border ' +
+            (highlight
+              ? 'bg-indigo-500/15 border-indigo-500/25'
+              : 'bg-indigo-500/10 border-white/[0.06]')
+          }
+        >
+          <Icon className="w-5 h-5 text-indigo-300" />
         </div>
-      </button>
-      {open && (
-        <div className="px-5 pb-5 border-t border-slate-700/50">
-          {isAssetsStage && templates.length > 0 ? (
-            <div className="mt-4 space-y-3">
-              {/* Stage 4 header line */}
-              <div className="markdown-content mb-2">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={markdownComponents}
-                >
-                  {content
-                    .split('\n')
-                    .filter(
-                      (l) =>
-                        !l.startsWith('### ') &&
-                        !templates.some((t) => t.content.includes(l.trim()) && l.trim())
-                    )
-                    .slice(0, 2)
-                    .join('\n')}
-                </ReactMarkdown>
-              </div>
-              {templates.map((t, i) => (
-                <TemplateCard
-                  key={i}
-                  heading={t.heading}
-                  content={t.content}
-                  appContext={appContext}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="markdown-content mt-4">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={markdownComponents}
-              >
-                {content}
-              </ReactMarkdown>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white truncate">
+              {title}
+            </h3>
+            <StatusBadge status={status} />
+          </div>
+          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{description}</p>
+          {cta && status !== 'ready' && (
+            <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-300 group-hover:text-indigo-200 transition-colors">
+              {cta} <ArrowRight className="w-3.5 h-3.5" />
             </div>
           )}
         </div>
-      )}
+      </div>
+      <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-300 transition-colors mt-1" />
+    </Link>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-4">
+      <div className="text-xs text-slate-500">{label}</div>
+      <div className="text-lg font-semibold text-white mt-1">{value}</div>
     </div>
   );
 }
 
-export default function PlanPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PlanOverviewPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
-  const router = useRouter();
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [loadingDb, setLoadingDb] = useState(false);
-  const [fetchError, setFetchError] = useState('');
-  const [shareToken, setShareToken] = useState<string | null>(null);
-  const { success: toastSuccess, error: toastError } = useToast();
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [shareCopied, setShareCopied] = useState(false);
-  const [shareLoading, setShareLoading] = useState(false);
-  const [showUnshareConfirm, setShowUnshareConfirm] = useState(false);
-  const [packComplete, setPackComplete] = useState(false);
-
-  const [pdfExporting, setPdfExporting] = useState(false);
-  const pdfRef = useRef<HTMLDivElement | null>(null);
-
-  const getSafeOrigin = () => {
-    try {
-      const u = new URL(window.location.href);
-      // In Basic Auth URLs, credentials may be present in href/origin.
-      u.username = '';
-      u.password = '';
-      return `${u.protocol}//${u.host}`;
-    } catch {
-      return window.location.origin;
-    }
-  };
-
+  const [overview, setOverview] = useState<OverviewApi | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Try sessionStorage first (just generated)
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        return;
-      } catch { /* fall through to DB */ }
-    }
+    let cancelled = false;
+    setLoading(true);
+    setError('');
 
-    // Fall back to DB
-    loadFromDb();
+    Promise.all([
+      fetch(`/api/plans/${id}`).then((r) => {
+        if (!r.ok) throw new Error('Failed to load plan');
+        return r.json() as Promise<MarketingPlan>;
+      }),
+      fetch(`/api/plans/${id}/overview`).then((r) => {
+        if (!r.ok) throw new Error('Failed to load overview');
+        return r.json() as Promise<OverviewApi>;
+      }),
+    ])
+      .then(([p, o]) => {
+        if (cancelled) return;
+        setPlan(p);
+        setOverview(o);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : 'Failed to load plan');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  const loadFromDb = () => {
-    setLoadingDb(true);
-    setFetchError('');
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        if (data.shareToken) {
-          setShareToken(data.shareToken);
-          setShareUrl(`${getSafeOrigin()}/shared/${data.shareToken}`);
-        }
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((err) => {
-        setFetchError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setLoadingDb(false));
-  };
+  const computed = useMemo(() => {
+    if (!plan) return null;
 
-  if (loadingDb) {
-    return <PlanDetailSkeleton />;
-  }
+    const appName = plan.config?.app_name || 'Untitled plan';
+    const oneLiner = plan.config?.one_liner || plan.scraped?.description || '';
+    const icon = plan.scraped?.icon || plan.config?.icon;
 
-  if (fetchError) {
+    const stagesAny = plan.stages as unknown as Record<string, unknown>;
+
+    const keywordsCount =
+      safeCount((stagesAny as any)?.keywords) ||
+      safeCount((stagesAny as any)?.seo?.keywords) ||
+      safeCount(plan.scraped?.keywords);
+
+    const featuresCount = plan.scraped?.features?.length || 0;
+
+    const emailSequences = safeCount((stagesAny as any)?.emails) || (overview?.sections?.emails?.hasContent ? 1 : 0);
+
+    const socialChannels = plan.config?.distribution_channels?.length || 0;
+
+    const strategyReady = !!plan.generated?.trim();
+    const contentReady = !!(plan.stages?.assets?.trim() || overview?.sections?.templates?.hasContent);
+    const distributionReady = !!(plan.stages?.distribution?.trim() || (overview?.socialPostsCount ?? 0) > 0);
+    const seoReady = !!(overview?.sections?.keywords?.hasContent || keywordsCount > 0);
+    const exportReady = strategyReady;
+
+    const hubReadyCount = [strategyReady, contentReady, distributionReady, seoReady, exportReady].filter(Boolean).length;
+
+    return {
+      appName,
+      oneLiner,
+      icon,
+      keywordsCount,
+      featuresCount,
+      emailSequences,
+      socialChannels,
+      hubReadyCount,
+      statuses: {
+        strategy: hubStatus({ ready: strategyReady }),
+        content: hubStatus({ ready: contentReady }),
+        distribution: hubStatus({ ready: distributionReady }),
+        seo: hubStatus({ ready: seoReady }),
+        export: hubStatus({ ready: exportReady }),
+      } as Record<string, Status>,
+    };
+  }, [plan, overview]);
+
+  if (loading) {
     return (
-      <div className="max-w-3xl mx-auto py-20">
-        <ErrorRetry error={fetchError} onRetry={loadFromDb} />
+      <div className="max-w-5xl mx-auto animate-pulse">
+        <div className="h-32 bg-slate-900/50 border border-white/[0.06] rounded-2xl mb-6" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="h-20 bg-slate-900/40 border border-white/[0.06] rounded-2xl"
+            />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="h-28 bg-slate-900/40 border border-white/[0.06] rounded-2xl"
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
-  if (!plan) {
+  if (error || !plan || !computed) {
     return (
-      <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
-        <p className="text-sm text-slate-500 mb-4">This plan may have been deleted or doesn&apos;t exist.</p>
-        <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
-          ← Start a new analysis
+      <div className="max-w-3xl mx-auto py-20 text-center">
+        <div className="text-slate-400 mb-4">{error || 'Plan not found'}</div>
+        <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300 text-sm">
+          ← Back to dashboard
         </Link>
       </div>
     );
   }
 
-  const handleExportMarkdown = () => {
-    const blob = new Blob([plan.generated], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `marketing-brief-${plan.config.app_name.toLowerCase().replace(/\s+/g, '-')}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleExportPdf = async () => {
-    if (pdfExporting) return;
-    const el = pdfRef.current;
-    if (!el) return;
-
-    setPdfExporting(true);
-    try {
-      const mod = await import('html2pdf.js');
-      const html2pdf = (mod as unknown as { default: any }).default || (mod as any);
-
-      const safeName = plan?.config?.app_name
-        ? plan.config.app_name.toLowerCase().replace(/\s+/g, '-')
-        : 'plan';
-
-      await html2pdf()
-        .set({
-          margin: [12, 12, 12, 12],
-          filename: `marketing-brief-${safeName}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        })
-        .from(el)
-        .save();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to export PDF';
-      toastError(msg);
-    } finally {
-      setPdfExporting(false);
-    }
-  };
-
-  const handleShare = async () => {
-    setShareLoading(true);
-    try {
-      const res = await fetch(`/api/plans/${id}/share`, { method: 'POST' });
-      const data = await res.json();
-      const fullUrl = `${getSafeOrigin()}${data.shareUrl}`;
-      setShareToken(data.token);
-      setShareUrl(fullUrl);
-      await navigator.clipboard.writeText(fullUrl);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2000);
-    } finally {
-      setShareLoading(false);
-    }
-  };
-
-  const handleUnshare = async () => {
-    await fetch(`/api/plans/${id}/share`, { method: 'DELETE' });
-    setShareToken(null);
-    setShareUrl(null);
-    setShowUnshareConfirm(false);
-  };
-
-  const handleCopyShareUrl = async () => {
-    if (shareUrl) {
-      await navigator.clipboard.writeText(shareUrl);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2000);
-    }
-  };
-
-  const stageLabels = [
-    { key: 'research' as const, title: '🔍 Stage 1: Research', isAssets: false },
-    { key: 'foundation' as const, title: '🏗️ Stage 2: Foundation', isAssets: false },
-    { key: 'structure' as const, title: '🧱 Stage 3: Structure', isAssets: false },
-    { key: 'assets' as const, title: '✍️ Stage 4: Copy Templates', isAssets: true },
-    { key: 'distribution' as const, title: '📡 Stage 5: Distribution', isAssets: false },
-  ];
-
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Your complete AI-generated marketing brief — explore the tabs above to create ad copy, translate listings, distribute content across platforms, and build your full marketing pack.
-      </div>
-
+    <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 flex-wrap gap-4">
-        <div>
-          <div className="flex items-center gap-4 min-w-0">
-            {plan.config.icon && (
-              <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
+      <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-6 mb-6">
+        <div className="flex items-start gap-4">
+          {computed.icon && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={computed.icon} alt="" className="w-14 h-14 rounded-2xl" />
+          )}
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold text-white break-words">
+              {computed.appName}
+            </h1>
+            {computed.oneLiner && (
+              <p className="text-sm text-slate-400 mt-1 break-words line-clamp-2">
+                {computed.oneLiner}
+              </p>
             )}
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-white break-words">{plan.config.app_name}</h1>
-              <p className="text-slate-400 break-words">{plan.config.one_liner}</p>
+
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <StatusBadge status={computed.statuses.strategy} />
+              <span className="text-xs text-slate-500">Generated</span>
+              <span className="text-slate-700">•</span>
+              <StatusBadge status={computed.statuses.content} />
+              <span className="text-xs text-slate-500">Content</span>
+              <span className="text-slate-700">•</span>
+              <span className="text-xs text-slate-500">
+                {computed.hubReadyCount} hubs ready
+              </span>
             </div>
           </div>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <ExportBundleButton planId={id} appName={plan.config.app_name} />
-          <button
-            onClick={handleExportMarkdown}
-            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
-          >
-            📥 Export .md
-          </button>
-          <button
-            onClick={handleExportPdf}
-            disabled={pdfExporting}
-            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg disabled:opacity-50 transition-colors"
-          >
-            {pdfExporting ? 'Preparing…' : '📄 Export PDF'}
-          </button>
-          {!shareToken ? (
-            <button
-              onClick={handleShare}
-              disabled={shareLoading}
-              className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {shareLoading ? '...' : shareCopied ? '✓ Link copied!' : '🔗 Share'}
-            </button>
-          ) : showUnshareConfirm ? (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto bg-red-950/30 border border-red-700/50 rounded-xl px-4 py-2.5">
-              <span className="text-sm text-red-200">Are you sure? The shared link will stop working.</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleUnshare}
-                  className="bg-red-700 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  Unshare
-                </button>
-                <button
-                  onClick={() => setShowUnshareConfirm(false)}
-                  className="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-1 w-full sm:w-auto">
-              <button
-                onClick={handleCopyShareUrl}
-                className="w-full sm:w-auto bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg sm:rounded-l-lg transition-colors"
-              >
-                {shareCopied ? '✓ Copied!' : '🔗 Copy link'}
-              </button>
-              <button
-                onClick={() => setShowUnshareConfirm(true)}
-                className="w-full sm:w-auto bg-red-800 hover:bg-red-700 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg sm:rounded-r-lg transition-colors"
-                title="Unshare"
-              >
-                ✕
-              </button>
-            </div>
-          )}
-        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        <StatCard label="Keywords found" value={computed.keywordsCount} />
+        <StatCard label="Features" value={computed.featuresCount} />
+        <StatCard label="Email sequences" value={computed.emailSequences} />
+        <StatCard label="Social channels" value={computed.socialChannels} />
       </div>
 
       {/* Hubs */}
-      <div className="mb-8">
-        <div className="text-sm font-semibold text-white mb-3">Explore hubs</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            {
-              title: 'Strategy',
-              description: 'Brief, foundation & competitors',
-              href: `/plan/${id}/strategy`,
-              icon: FileText,
-            },
-            {
-              title: 'Content',
-              description: 'Drafts, emails, templates, translations',
-              href: `/plan/${id}/content`,
-              icon: PenLine,
-            },
-            {
-              title: 'Distribution',
-              description: 'Social posts, scheduling & calendar',
-              href: `/plan/${id}/distribution`,
-              icon: Megaphone,
-              highlight: true,
-            },
-            {
-              title: 'SEO & ASO',
-              description: 'Keywords, SERP preview & variants',
-              href: `/plan/${id}/seo`,
-              icon: Search,
-            },
-            {
-              title: 'Export',
-              description: 'Assets, preview & sharing',
-              href: `/plan/${id}/export`,
-              icon: Package,
-            },
-          ].map((hub) => {
-            const Icon = hub.icon;
-            return (
-              <Link href={hub.href} key={hub.href}>
-                <div
-                  className={
-                    'group flex items-center justify-between p-5 bg-slate-800/50 border border-white/[0.06] rounded-xl hover:border-indigo-500/30 hover:bg-slate-800/80 transition-all cursor-pointer'
-                  }
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={
-                        hub.highlight
-                          ? 'w-10 h-10 rounded-lg bg-indigo-500/15 flex items-center justify-center border border-indigo-500/20'
-                          : 'w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center'
-                      }
-                    >
-                      <Icon className="w-5 h-5 text-indigo-400" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-white flex items-center gap-2">
-                        {hub.title}
-                        {hub.highlight && (
-                          <span className="inline-flex w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                        )}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">
-                        {hub.description}
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-300">
+          Your Marketing Plan
+        </h2>
+        <Link href="/dashboard" className="text-xs text-slate-500 hover:text-slate-300">
+          ← All Plans
+        </Link>
       </div>
-
-      {/* Generate Everything */}
-      <div className="mb-6 flex flex-col sm:flex-row items-start gap-4">
-        <GenerateAllButton
-          planId={id}
-          onComplete={() => setPackComplete(true)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+        <HubCard
+          title="Strategy"
+          description="Your brief, positioning, and foundation"
+          href={`/plan/${id}/strategy/brief`}
+          icon={FileText}
+          status={computed.statuses.strategy}
+          cta="Review brief"
+        />
+        <HubCard
+          title="Content"
+          description="Drafts, templates, emails, and translations"
+          href={`/plan/${id}/content`}
+          icon={PenLine}
+          status={computed.statuses.content}
+          cta="Generate →"
+        />
+        <HubCard
+          title="Distribution"
+          description="Create social posts, images, and video prompts"
+          href={`/plan/${id}/distribution`}
+          icon={Megaphone}
+          status={computed.statuses.distribution}
+          cta="Create Posts & Videos"
+          highlight
+        />
+        <HubCard
+          title="SEO & ASO"
+          description="Keyword research and search visibility"
+          href={`/plan/${id}/seo`}
+          icon={Search}
+          status={computed.statuses.seo}
+          cta="Generate →"
+        />
+        <HubCard
+          title="Export"
+          description="Download, share, and export your full pack"
+          href={`/plan/${id}/export`}
+          icon={Package}
+          status={computed.statuses.export}
+          cta="Open →"
         />
       </div>
 
-      {packComplete && (
-        <div className="mb-6 bg-emerald-950/30 border border-emerald-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <div className="text-emerald-300 font-semibold text-sm">🎉 Marketing pack complete!</div>
-            <div className="text-slate-400 text-xs mt-1">All content has been generated. Download the full pack below.</div>
-          </div>
-          <ExportBundleButton planId={id} appName={plan.config.app_name} />
-        </div>
-      )}
-
-      {/* Config summary */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6">
-        <div className="flex flex-wrap gap-3">
-          <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">
-            {plan.config.app_type}
-          </span>
-          <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">
-            {plan.config.category}
-          </span>
-          <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">
-            {plan.config.pricing}
-          </span>
-          {plan.config.distribution_channels.map((ch) => (
-            <span key={ch} className="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full">
-              {ch}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Copy full plan */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        <CopyButton text={plan.generated} label="Copy full plan" />
-      </div>
-
-      {/* Stages */}
-      {stageLabels.map((stage) => (
-        <StageSection
-          key={stage.key}
-          title={stage.title}
-          content={plan.stages[stage.key]}
-          defaultOpen={true}
-          isAssetsStage={stage.isAssets}
-          appContext={`${plan.config.app_name} — ${plan.config.one_liner}. Category: ${plan.config.category}. Audience: ${plan.config.target_audience}. Pricing: ${plan.config.pricing}.`}
-        />
-      ))}
-
-      {/* What's next — recommended workflow */}
-      <div className="mt-10 mb-4 bg-slate-800/30 border border-slate-700/40 rounded-2xl p-5">
-        <h2 className="text-base font-semibold text-white mb-4">🗺️ What&apos;s next? Recommended workflow</h2>
-        <ol className="space-y-3">
-          {[
-            { step: 1, href: 'foundation', emoji: '🧱', label: 'Foundation', desc: 'Set your brand voice and positioning angles — the strategic base for everything else.' },
-            { step: 2, href: 'variants', emoji: '🏆', label: 'Copy variants', desc: 'Create and score multiple headline angles side-by-side to find your strongest hook.' },
-            { step: 3, href: 'draft', emoji: '📝', label: 'Draft', desc: 'Generate polished listing copy and landing-page hero options in multiple tones.' },
-            { step: 4, href: 'distribute', emoji: '📣', label: 'Distribute', desc: 'Turn one core idea into platform-native posts for every channel at once.' },
-            { step: 5, href: 'emails', emoji: '✉️', label: 'Emails', desc: 'Generate a welcome or launch email sequence for new users.' },
-            { step: 6, href: 'social', emoji: '📱', label: 'Social', desc: 'Generate platform-native captions and queue posts to Buffer.' },
-            { step: 7, href: 'keywords', emoji: '🔑', label: 'Keywords', desc: 'Find high-value ASO keywords to boost your store ranking.' },
-            { step: 8, href: 'schedule', emoji: '⏰', label: 'Schedule', desc: 'Plan and schedule your next month of content.' },
-          ].map(({ step, href, emoji, label, desc }) => (
-            <li key={href}>
-              <a
-                href={`/plan/${id}/${href}`}
-                className="flex items-start gap-3 group hover:bg-slate-700/30 rounded-xl px-3 py-2 -mx-3 transition-colors"
-              >
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center mt-0.5">
-                  {step}
-                </span>
-                <div>
-                  <span className="text-sm font-medium text-white group-hover:text-indigo-300 transition-colors">
-                    {emoji} {label}
-                  </span>
-                  <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
-                </div>
-                <span className="ml-auto text-slate-600 group-hover:text-slate-400 text-sm transition-colors flex-shrink-0 mt-0.5">→</span>
-              </a>
-            </li>
-          ))}
+      {/* Suggested next steps */}
+      <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-6 mb-10">
+        <h2 className="text-sm font-semibold text-white mb-4">💡 Suggested Next Steps</h2>
+        <ol className="space-y-2">
+          <li>
+            <Link
+              href={`/plan/${id}/strategy/brief`}
+              className="flex items-center gap-3 rounded-xl px-3 py-2 -mx-3 hover:bg-white/[0.04] transition-colors"
+            >
+              <span className="text-xs w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-semibold">
+                1
+              </span>
+              <span className="text-sm text-slate-200">Review your brief</span>
+              <span className="ml-auto text-slate-600">→</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href={`/plan/${id}/distribution`}
+              className="flex items-center gap-3 rounded-xl px-3 py-2 -mx-3 hover:bg-indigo-500/10 transition-colors"
+            >
+              <span className="text-xs w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-semibold">
+                2
+              </span>
+              <span className="text-sm text-slate-200">
+                Generate social posts, images, and video prompts
+              </span>
+              <span className="ml-auto text-indigo-300">→</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href={`/plan/${id}/content`}
+              className="flex items-center gap-3 rounded-xl px-3 py-2 -mx-3 hover:bg-white/[0.04] transition-colors"
+            >
+              <span className="text-xs w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-semibold">
+                3
+              </span>
+              <span className="text-sm text-slate-200">Build your content strategy</span>
+              <span className="ml-auto text-slate-600">→</span>
+            </Link>
+          </li>
         </ol>
-      </div>
-
-
-      {/* Hidden PDF export container */}
-      <div
-        ref={pdfRef}
-        className="fixed left-[-9999px] top-0 w-[800px] bg-white text-slate-900 p-10"
-      >
-        <div className="flex items-start justify-between gap-6 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">{plan.config.app_name}</h1>
-            <p className="text-sm text-slate-600 mt-1">{plan.config.one_liner}</p>
-            <p className="text-xs text-slate-500 mt-2">Generated {new Date(plan.createdAt).toLocaleDateString()}</p>
-          </div>
-          {plan.config.icon && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={plan.config.icon} alt="" className="w-12 h-12 rounded-xl" />
-          )}
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Brief</h2>
-          <div className="text-sm">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-              {plan.generated}
-            </ReactMarkdown>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          {stageLabels.map((stage) => (
-            <div key={stage.key}>
-              <h2 className="text-lg font-semibold mb-2">{stage.title.replace(/^.+?:\s*/, '')}</h2>
-              <div className="text-sm">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                  {plan.stages[stage.key]}
-                </ReactMarkdown>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Method credit */}
-      <div className="text-center text-sm text-slate-600 mt-8 mb-4">
-        Generated using the Vibe Marketing Playbook 5-Stage Sequence
       </div>
     </div>
   );
