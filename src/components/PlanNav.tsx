@@ -24,6 +24,7 @@ import {
   Smartphone,
   Star,
   Target,
+  TrendingUp,
   Trophy,
 } from 'lucide-react';
 
@@ -140,6 +141,12 @@ const NAV_DISTRIBUTION: NavItem[] = [
     label: 'Calendar',
     description: 'AI content calendar for all platforms',
     icon: Calendar,
+  },
+  {
+    href: '/performance',
+    label: 'Performance',
+    description: 'Track which posts worked best',
+    icon: TrendingUp,
   },
 ];
 

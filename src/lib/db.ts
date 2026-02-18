@@ -81,6 +81,18 @@ CREATE TABLE IF NOT EXISTS approval_queue (
     if (!cols.some((c) => c.name === 'share_token')) {
       db.exec("ALTER TABLE plans ADD COLUMN share_token TEXT");
     }
+
+    // Migration: add performance tracking columns
+    const schedCols = db.prepare("PRAGMA table_info(content_schedule)").all() as { name: string }[];
+    if (!schedCols.some((c) => c.name === 'performance_rating')) {
+      db.exec("ALTER TABLE content_schedule ADD COLUMN performance_rating TEXT");
+    }
+    if (!schedCols.some((c) => c.name === 'performance_notes')) {
+      db.exec("ALTER TABLE content_schedule ADD COLUMN performance_notes TEXT");
+    }
+    if (!schedCols.some((c) => c.name === 'performance_metrics')) {
+      db.exec("ALTER TABLE content_schedule ADD COLUMN performance_metrics TEXT");
+    }
   }
   return db;
 }
@@ -108,6 +120,42 @@ export interface ApprovalQueueRow {
   edited_content: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ContentScheduleRow {
+  id: string;
+  plan_id: string;
+  platform: string;
+  content_type: string;
+  topic: string | null;
+  scheduled_at: string;
+  status: string;
+  post_id: string | null;
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+  performance_rating: string | null;
+  performance_notes: string | null;
+  performance_metrics: string | null;
+}
+
+export function getScheduleItemsForPlan(planId: string): ContentScheduleRow[] {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM content_schedule WHERE plan_id = ? ORDER BY scheduled_at DESC')
+    .all(planId) as ContentScheduleRow[];
+}
+
+export function updateSchedulePerformance(
+  id: string,
+  rating: string | null,
+  notes: string | null,
+  metrics: string | null
+) {
+  const db = getDb();
+  db.prepare(
+    "UPDATE content_schedule SET performance_rating = ?, performance_notes = ?, performance_metrics = ?, updated_at = datetime('now') WHERE id = ?"
+  ).run(rating, notes, metrics, id);
 }
 
 export function savePlan(plan: {
