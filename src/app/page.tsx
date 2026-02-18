@@ -154,7 +154,6 @@ export default function LandingPage() {
 
         <div className="relative mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-200">
-            <span className="text-indigo-300">New</span>
             <span className="text-slate-300">Generate a brief in minutes, not days</span>
           </div>
 
