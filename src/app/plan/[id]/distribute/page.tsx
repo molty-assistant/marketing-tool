@@ -28,7 +28,7 @@ interface AtomizeResponse {
   metadata?: { model?: string; tokens?: number | null; atomCount?: number };
 }
 
-const DEFAULT_PLATFORMS = ['linkedin', 'twitter', 'instagram', 'reddit', 'email'];
+const DEFAULT_PLATFORMS = ['instagram', 'tiktok', 'linkedin', 'twitter', 'reddit', 'email'];
 
 export default function DistributePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

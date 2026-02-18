@@ -7,7 +7,7 @@ interface AtomizeContentRequest {
   platforms?: string[];
 }
 
-const DEFAULT_PLATFORMS = ['linkedin', 'twitter', 'instagram', 'reddit', 'email'] as const;
+const DEFAULT_PLATFORMS = ['instagram', 'tiktok', 'linkedin', 'twitter', 'reddit', 'email'] as const;
 
 function cleanAndParseJson(text: string): unknown {
   let cleaned = text
@@ -91,6 +91,8 @@ Rules:
 - Each atom must include characterCount (count the characters of the content field) and helpful posting notes.
 - When platform is twitter, include both a thread and at least one single tweet.
 - When platform is reddit, keep it authentic, no marketing speak; include suggested subreddits.
+- When platform is instagram, write a visually-led caption with a strong hook in the first line, emojis, line breaks for readability, and 5-10 relevant hashtags. Format: "hook\n\nbody\n\nCTA\n\n#hashtags". Keep under 2200 chars.
+- When platform is tiktok, write a punchy video script caption (hook + 3 key points + CTA) under 300 chars for the caption, plus a "videoScript" style notes field with talking points for a 30-60s video. Include trending-style hashtags.
 
 Return JSON shape:
 {
