@@ -175,8 +175,22 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
           <h1 className="text-2xl font-bold text-white">📣 Distribute</h1>
           <p className="text-slate-400">{plan.config.app_name} — One core piece, many posts</p>
         </div>
-        <div className="flex items-center gap-3">
-          {data && isCached && (
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-2.5">
+            <div className="text-[11px] uppercase tracking-wide text-slate-500">Preview</div>
+            <div className="text-sm text-slate-200 mt-1">
+              <span className="text-slate-400">Channels:</span> {platforms.length ? platforms.join(', ') : DEFAULT_PLATFORMS.join(', ')}
+            </div>
+            <div className="text-sm text-slate-200">
+              <span className="text-slate-400">Audience:</span> {plan.config.target_audience || '—'}
+            </div>
+            <div className="text-sm text-slate-200">
+              <span className="text-slate-400">Content:</span> {sourceContent.trim() ? 'Platform-native posts (from your source)' : 'Core piece + platform-native posts'}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {data && isCached && (
             <span className="text-xs text-slate-500">Cached · ↻ Regenerate to refresh</span>
           )}
           <button
@@ -186,6 +200,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
           >
             {loading ? 'Generating…' : '✨ Generate'}
           </button>
+          </div>
         </div>
       </div>
 
