@@ -46,8 +46,11 @@ export default function SocialPage() {
   const [generating, setGenerating] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [generated, setGenerated] = useState<GeneratedPost | null>(null);
+  const [isCached, setIsCached] = useState(false);
   const [history, setHistory] = useState<SocialPost[]>([]);
   const [error, setError] = useState('');
+
+  const storageKey = `social-${planId}`;
 
   // --- Veo 2 video generation ---
   const templates = useMemo(() => {
@@ -68,6 +71,24 @@ export default function SocialPage() {
       .then(d => setHistory(d.posts || []))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as {
+        platform?: 'instagram' | 'tiktok';
+        contentType?: string;
+        topic?: string;
+        generated?: GeneratedPost | null;
+      };
+      if (parsed.platform) setPlatform(parsed.platform);
+      if (parsed.contentType) setContentType(parsed.contentType);
+      if (typeof parsed.topic === 'string') setTopic(parsed.topic);
+      if (parsed.generated) setGenerated(parsed.generated);
+      setIsCached(true);
+    } catch {}
+  }, [planId]);
 
   // Poll video status every 10s while we have an operation but no URL yet.
   useEffect(() => {
@@ -115,7 +136,12 @@ export default function SocialPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Generation failed');
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({ platform, contentType, topic, generated: data.post })
+      );
       setGenerated(data.post);
+      setIsCached(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate');
     } finally {
@@ -147,6 +173,9 @@ export default function SocialPage() {
       const histData = await histRes.json();
       setHistory(histData.posts || []);
       setGenerated(null);
+      try {
+        sessionStorage.setItem(storageKey, JSON.stringify({ platform, contentType, topic, generated: null }));
+      } catch {}
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish');
     } finally {
@@ -166,7 +195,12 @@ export default function SocialPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Auto-publish failed');
 
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({ platform, contentType, topic, generated: data.generated })
+      );
       setGenerated(data.generated);
+      setIsCached(false);
       // Refresh history
       const histRes = await fetch('/api/post-to-buffer');
       const histData = await histRes.json();
@@ -212,7 +246,12 @@ export default function SocialPage() {
         Generate platform-native captions and hashtags for Instagram and TikTok, then publish directly via Buffer — or download images for manual posting.
       </div>
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-2">📱 Social Publishing</h1>
+        <div className="flex items-center gap-3 flex-wrap mb-2">
+          <h1 className="text-3xl font-bold">📱 Social Publishing</h1>
+          {generated && isCached && (
+            <span className="text-xs text-gray-500">Cached · Regenerate to refresh</span>
+          )}
+        </div>
         <p className="text-gray-400 mb-8">Generate and publish content to Instagram & TikTok via Buffer</p>
 
         {/* Controls */}

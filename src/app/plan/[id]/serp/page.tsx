@@ -31,6 +31,9 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
   });
   const [url, setUrl] = useState(() => readSessionPlan(id)?.config.app_url || '');
   const [description, setDescription] = useState(() => readSessionPlan(id)?.config.one_liner || '');
+  const [isCached, setIsCached] = useState(false);
+
+  const storageKey = `serp-${id}`;
 
   const initializeFields = useCallback((planData: MarketingPlan) => {
     const appName = planData.config.app_name || '';
@@ -62,11 +65,33 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
   }, [id, initializeFields]);
 
   useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as { title?: string; url?: string; description?: string };
+      if (typeof parsed.title === 'string') setTitle(parsed.title);
+      if (typeof parsed.url === 'string') setUrl(parsed.url);
+      if (typeof parsed.description === 'string') setDescription(parsed.description);
+      setIsCached(true);
+    } catch {
+      /* ignore */
+    }
+  }, [id]);
+
+  useEffect(() => {
     // If we already loaded from sessionStorage, skip
     if (plan) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- setState calls are in async .then() callbacks, not synchronous
     loadFromDb();
   }, [plan, loadFromDb]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify({ title, url, description }));
+    } catch {
+      /* ignore */
+    }
+  }, [id, title, url, description]);
 
   if (loading) {
     return <SerpSkeleton />;
@@ -104,7 +129,12 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
         <div className="flex items-center gap-4 min-w-0 mb-2">
           {plan.config.icon && <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />}
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-white break-words">SERP Preview: {plan.config.app_name}</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-white break-words">SERP Preview: {plan.config.app_name}</h1>
+              {isCached && (
+                <span className="text-xs text-slate-500">Cached</span>
+              )}
+            </div>
             <p className="text-slate-400 break-words">Preview how your site appears in Google search results</p>
           </div>
         </div>
