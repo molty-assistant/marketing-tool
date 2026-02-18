@@ -195,18 +195,9 @@ export default function LandingPage() {
               <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">Built for founders & marketers</span>
             </div>
 
-            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a
-                href="/wizard"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/40 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-slate-900/70 transition-colors"
-              >
-                🧭 Guided wizard
-              </a>
-              <a
-                href="/dashboard"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-5 py-3 text-sm font-medium text-indigo-200 hover:bg-indigo-500/20 transition-colors"
-              >
-                📊 Go to dashboard
+            <div className="mt-4 text-center">
+              <a href="/wizard" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                Prefer a step-by-step setup? Try the wizard →
               </a>
             </div>
           </div>
