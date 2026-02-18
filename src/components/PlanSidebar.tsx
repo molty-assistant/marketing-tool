@@ -49,7 +49,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: FileText,
     href: '/strategy',
     children: [
-      { label: 'Brief', href: '/brief' },
+      { label: 'Brief', href: '/strategy/brief' },
       { label: 'Foundation', href: '/foundation' },
       { label: 'Competitors', href: '/competitors' },
     ],

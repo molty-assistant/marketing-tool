@@ -48,8 +48,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span>Marketing Tool</span>
             </Link>
             <div className="flex items-center gap-4 text-sm">
-              <Link href="/wizard" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                🧭 Wizard
+              <Link href="/" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+                ✨ Start
               </Link>
               <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
                 📊 Dashboard
