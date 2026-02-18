@@ -68,6 +68,39 @@ export async function POST(request: NextRequest) {
       createdAt: row.created_at,
     };
 
+    // Internal base (always localhost for server-to-server calls)
+    const internalBase = `http://localhost:${process.env.PORT || 3000}`;
+    const baseUrl = (body.publicBase as string | undefined) || request.nextUrl.origin;
+
+    // Best-effort AI hero background (used only for hero/hybrid modes)
+    let bgImageUrl: string | undefined;
+    if ((visualMode === 'hero' || visualMode === 'hybrid') && imageBrief) {
+      try {
+        const aspectRatio = platform === 'instagram-story' ? '9:16' : '1:1';
+        const heroRes = await fetch(`${internalBase}/api/generate-hero-bg`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.API_KEY || '',
+          },
+          body: JSON.stringify({
+            imageBrief,
+            aspectRatio,
+            publicBase: baseUrl,
+          }),
+        });
+
+        if (heroRes.ok) {
+          const heroJson = await heroRes.json();
+          if (typeof heroJson?.fullPublicUrl === 'string' && heroJson.fullPublicUrl.startsWith('http')) {
+            bgImageUrl = heroJson.fullPublicUrl;
+          }
+        }
+      } catch (e) {
+        console.warn('hero bg generation failed (fallback to gradient):', e);
+      }
+    }
+
     // Generate HTML template
     const templates = generateSocialTemplates({
       plan,
@@ -75,6 +108,7 @@ export async function POST(request: NextRequest) {
       style,
       visualMode,
       accentColor: config.accent_color || '#667eea',
+      bgImageUrl,
       // Pass through any hook-based image brief (best-effort). Templates may ignore.
       imageBrief,
     } as any);
@@ -86,8 +120,6 @@ export async function POST(request: NextRequest) {
     const template = templates[0];
 
     // Render to PNG via our render-png API — use localhost to avoid HTTPS SSL errors on Railway
-    const internalBase = `http://localhost:${process.env.PORT || 3000}`;
-    const baseUrl = (body.publicBase as string | undefined) || request.nextUrl.origin;
     const renderRes = await fetch(`${internalBase}/api/render-png`, {
       method: 'POST',
       headers: {
