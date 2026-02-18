@@ -5,6 +5,7 @@ import {
   useEffect,
   use,
   useCallback,
+  useRef,
 } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -254,6 +255,9 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   const [showUnshareConfirm, setShowUnshareConfirm] = useState(false);
   const [packComplete, setPackComplete] = useState(false);
 
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const pdfRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     // Try sessionStorage first (just generated)
     const stored = sessionStorage.getItem(`plan-${id}`);
@@ -324,15 +328,36 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
     URL.revokeObjectURL(url);
   };
 
-  const handleExportPdf = () => {
-    // Open all collapsed sections before printing
-    const details = document.querySelectorAll('[data-print-expand]');
-    details.forEach((el) => el.setAttribute('data-print-open', 'true'));
-    window.print();
-    // Clean up after print dialog closes
-    setTimeout(() => {
-      details.forEach((el) => el.removeAttribute('data-print-open'));
-    }, 500);
+  const handleExportPdf = async () => {
+    if (pdfExporting) return;
+    const el = pdfRef.current;
+    if (!el) return;
+
+    setPdfExporting(true);
+    try {
+      const mod = await import('html2pdf.js');
+      const html2pdf = (mod as unknown as { default: any }).default || (mod as any);
+
+      const safeName = plan?.config?.app_name
+        ? plan.config.app_name.toLowerCase().replace(/\s+/g, '-')
+        : 'plan';
+
+      await html2pdf()
+        .set({
+          margin: [12, 12, 12, 12],
+          filename: `marketing-brief-${safeName}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        })
+        .from(el)
+        .save();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to export PDF';
+      toastError(msg);
+    } finally {
+      setPdfExporting(false);
+    }
   };
 
   const handleShare = async () => {
@@ -405,9 +430,10 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           </button>
           <button
             onClick={handleExportPdf}
-            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
+            disabled={pdfExporting}
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg disabled:opacity-50 transition-colors"
           >
-            📄 Export PDF
+            {pdfExporting ? 'Preparing…' : '📄 Export PDF'}
           </button>
           {!shareToken ? (
             <button
@@ -543,6 +569,47 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
             </li>
           ))}
         </ol>
+      </div>
+
+
+      {/* Hidden PDF export container */}
+      <div
+        ref={pdfRef}
+        className="fixed left-[-9999px] top-0 w-[800px] bg-white text-slate-900 p-10"
+      >
+        <div className="flex items-start justify-between gap-6 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">{plan.config.app_name}</h1>
+            <p className="text-sm text-slate-600 mt-1">{plan.config.one_liner}</p>
+            <p className="text-xs text-slate-500 mt-2">Generated {new Date(plan.createdAt).toLocaleDateString()}</p>
+          </div>
+          {plan.config.icon && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={plan.config.icon} alt="" className="w-12 h-12 rounded-xl" />
+          )}
+        </div>
+
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">Brief</h2>
+          <div className="text-sm">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {plan.generated}
+            </ReactMarkdown>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {stageLabels.map((stage) => (
+            <div key={stage.key}>
+              <h2 className="text-lg font-semibold mb-2">{stage.title.replace(/^.+?:\s*/, '')}</h2>
+              <div className="text-sm">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {plan.stages[stage.key]}
+                </ReactMarkdown>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Method credit */}
