@@ -4,16 +4,28 @@ import { generateSocialTemplates } from '@/lib/socialTemplates';
 import type { MarketingPlan } from '@/lib/types';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 /**
- * Generate a single social post image and save it to public/generated/
- * Returns the public URL of the image.
- * 
+ * Generate a single social post image and save it to /app/data/images/
+ * (Railway persistent volume), then return a public URL that Buffer can fetch.
+ *
  * POST /api/generate-post-image
  * { planId, platform: "instagram-post" | "instagram-story", caption?, style? }
- * 
- * Returns: { imageUrl: "/generated/abc123.png", width, height }
+ *
+ * Returns:
+ * {
+ *   filename: "abc123.png",
+ *   publicUrl: "/api/images/abc123.png",
+ *   fullPublicUrl: "https://.../api/images/abc123.png",
+ *   width,
+ *   height,
+ *   platform,
+ *   style
+ * }
  */
+
+const IMAGES_DIR = '/app/data/images';
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,8 +65,13 @@ export async function POST(request: NextRequest) {
     };
 
     // Generate HTML template
-    const templates = generateSocialTemplates({ plan, platforms: [platform], style, accentColor: config.accent_color || '#667eea' });
-    
+    const templates = generateSocialTemplates({
+      plan,
+      platforms: [platform],
+      style,
+      accentColor: config.accent_color || '#667eea',
+    });
+
     if (templates.length === 0) {
       return NextResponse.json({ error: 'No template generated' }, { status: 500 });
     }
@@ -77,22 +94,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to render image' }, { status: 502 });
     }
 
-    // Save to public/generated/
     const buffer = Buffer.from(await renderRes.arrayBuffer());
-    const generatedDir = path.join(process.cwd(), 'public', 'generated');
-    if (!fs.existsSync(generatedDir)) {
-      fs.mkdirSync(generatedDir, { recursive: true });
+
+    // Ensure images dir exists on Railway persistent volume
+    if (!fs.existsSync(IMAGES_DIR)) {
+      fs.mkdirSync(IMAGES_DIR, { recursive: true });
     }
 
-    const filename = `${planId}-${platform}-${Date.now()}.png`;
-    const filePath = path.join(generatedDir, filename);
+    const filename = `${crypto.randomUUID()}.png`;
+    const filePath = path.join(IMAGES_DIR, filename);
     fs.writeFileSync(filePath, buffer);
 
-    const imageUrl = `/generated/${filename}`;
+    const publicUrl = `/api/images/${filename}`;
 
     return NextResponse.json({
-      imageUrl,
-      fullUrl: `${baseUrl}${imageUrl}`,
+      filename,
+      publicUrl,
+      fullPublicUrl: `${baseUrl}${publicUrl}`,
       width: template.width,
       height: template.height,
       platform,

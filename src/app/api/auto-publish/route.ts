@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, getDb } from '@/lib/db';
+import { getPlan } from '@/lib/db';
 
 /**
- * Auto-publish: Generate a social post and queue it to Buffer in one step.
+ * Auto-publish: Generate a social post + image and queue it to Buffer in one step.
  * This is the endpoint that cron jobs / scheduled tasks call.
  *
  * POST /api/auto-publish
@@ -14,9 +14,6 @@ import { getPlan, getDb } from '@/lib/db';
  *   publishNow?: boolean  // default false (queue)
  * }
  */
-
-const ZAPIER_MCP_URL = 'https://mcp.zapier.com/api/v1/connect';
-const ZAPIER_TOKEN = 'ZDY4MjBhNDktZWU0NC00ZDIwLThhNTctNjAyYWVjMzFhMmUzOmRNdDJqaFBKOFl4dERuVis0OVJZdEI2bGo1SVNla2dGUVptY2lxUEc0aGs9';
 
 interface AutoPublishRequest {
   planId: string;
@@ -48,7 +45,7 @@ export async function POST(request: NextRequest) {
     const config = JSON.parse(row.config || '{}');
     const scraped = JSON.parse(row.scraped || '{}');
 
-    // Step 1: Generate post via Gemini
+    // Step 1: Generate post text via Gemini
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'GEMINI_API_KEY not set' }, { status: 500 });
@@ -112,8 +109,8 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
       generated = JSON.parse(match[0]);
     }
 
-    // Step 1.5: Generate a social image
-    let imageUrl: string | null = null;
+    // Step 2: Generate a social image (stored on persistent volume)
+    let image: { filename?: string; publicUrl?: string; fullPublicUrl?: string } | null = null;
     try {
       const imgPlatform = platform === 'tiktok' ? 'instagram-story' : 'instagram-post';
       const imgRes = await fetch(`${request.nextUrl.origin}/api/generate-post-image`, {
@@ -126,105 +123,39 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
         }),
       });
       if (imgRes.ok) {
-        const imgData = await imgRes.json();
-        imageUrl = imgData.fullUrl || null;
+        image = await imgRes.json();
       }
-    } catch { /* continue without image */ }
+    } catch {
+      image = null;
+    }
 
-    // Step 2: Post to Buffer via Zapier MCP
-    const fullCaption = generated.hashtags?.length > 0
-      ? `${generated.caption}\n\n${generated.hashtags.map((h: string) => h.startsWith('#') ? h : `#${h}`).join(' ')}`
-      : generated.caption;
-
-    const channelInstruction = platform === 'instagram'
-      ? 'Post to the Instagram channel'
-      : 'Post to the TikTok channel';
-
-    const method = publishNow ? 'now' : 'queue';
-
-    const zapierPayload = {
-      jsonrpc: '2.0',
-      id: Date.now(),
-      method: 'tools/call',
-      params: {
-        name: 'buffer_add_to_queue',
-        arguments: {
-          instructions: `${channelInstruction}. Method: ${method}.`,
-          output_hint: 'confirmation that the post was queued or sent, including any post ID or URL',
-          text: fullCaption,
-          method: method === 'now' ? 'Share Now' : 'Add to Queue',
-          ...(imageUrl ? { attachment: imageUrl } : {}),
-        },
-      },
-    };
-
-    const zapierResp = await fetch(`${ZAPIER_MCP_URL}?token=${ZAPIER_TOKEN}`, {
+    // Step 3: Post to Buffer via our dedicated endpoint (which calls Zapier MCP)
+    const bufferRes = await fetch(`${request.nextUrl.origin}/api/post-to-buffer`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json, text/event-stream',
-      },
-      body: JSON.stringify(zapierPayload),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        planId,
+        platform,
+        caption: generated.caption,
+        hashtags: generated.hashtags || [],
+        publishNow,
+        imageFilename: image?.filename,
+      }),
     });
 
-    const zapierText = await zapierResp.text();
-    let bufferResult: unknown = null;
-    const lines = zapierText.split('\n');
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const parsed = JSON.parse(line.slice(6));
-          if (parsed.result) bufferResult = parsed.result;
-        } catch { /* skip */ }
-      }
-    }
-    if (!bufferResult) {
-      try { bufferResult = JSON.parse(zapierText); } catch { bufferResult = { raw: zapierText.slice(0, 300) }; }
-    }
-
-    // Step 3: Log to DB
-    const db = getDb();
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS social_posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        plan_id TEXT,
-        platform TEXT NOT NULL,
-        caption TEXT NOT NULL,
-        hashtags TEXT,
-        media_url TEXT,
-        method TEXT NOT NULL DEFAULT 'queue',
-        buffer_response TEXT,
-        status TEXT NOT NULL DEFAULT 'queued',
-        created_at TEXT DEFAULT (datetime('now'))
-      )
-    `);
-
-    db.prepare(`
-      INSERT INTO social_posts (plan_id, platform, caption, hashtags, method, buffer_response, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      planId,
-      platform,
-      generated.caption,
-      JSON.stringify(generated.hashtags || []),
-      method,
-      JSON.stringify(bufferResult),
-      zapierResp.ok ? 'queued' : 'failed'
-    );
+    const bufferJson = await bufferRes.json();
 
     return NextResponse.json({
-      success: zapierResp.ok,
+      success: bufferRes.ok && bufferJson?.success,
       platform,
-      method,
+      publishNow,
       generated: {
         caption: generated.caption,
         hashtags: generated.hashtags,
         media_concept: generated.media_concept,
       },
-      buffer: {
-        status: zapierResp.status,
-        result: bufferResult,
-      },
+      image,
+      buffer: bufferJson,
     });
   } catch (err) {
     console.error('auto-publish error:', err);

@@ -7,12 +7,16 @@ interface PostToBufferRequest {
   caption: string;
   hashtags?: string[];
   mediaUrl?: string; // optional image/video URL
+  imageFilename?: string; // optional filename returned by /api/generate-post-image
   publishNow?: boolean; // true = post immediately, false = add to queue
 }
 
 // Zapier MCP endpoint for Buffer
 const ZAPIER_MCP_URL = 'https://mcp.zapier.com/api/v1/connect';
 const ZAPIER_TOKEN = 'ZDY4MjBhNDktZWU0NC00ZDIwLThhNTctNjAyYWVjMzFhMmUzOmRNdDJqaFBKOFl4dERuVis0OVJZdEI2bGo1SVNla2dGUVptY2lxUEc0aGs9';
+
+// Public base URL for Buffer to fetch attachments from (Railway production)
+const PUBLIC_BASE_URL = 'https://marketing-tool-production.up.railway.app';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +34,11 @@ export async function POST(request: NextRequest) {
 
     const method = body.publishNow ? 'now' : 'queue';
 
+    // Prefer imageFilename (served via our /api/images route) over raw mediaUrl
+    const attachmentUrl = body.imageFilename
+      ? `${PUBLIC_BASE_URL}/api/images/${encodeURIComponent(body.imageFilename)}`
+      : (body.mediaUrl || null);
+
     // Build instructions for Buffer via Zapier
     const channelInstruction = platform === 'instagram'
       ? 'Post to the Instagram channel'
@@ -46,7 +55,7 @@ export async function POST(request: NextRequest) {
           output_hint: 'confirmation that the post was queued or sent, including any post ID or URL',
           text: fullText,
           method: method === 'now' ? 'Share Now' : 'Add to Queue',
-          ...(body.mediaUrl ? { attachment: body.mediaUrl } : {}),
+          ...(attachmentUrl ? { attachment: attachmentUrl } : {}),
         },
       },
     };
@@ -114,7 +123,7 @@ export async function POST(request: NextRequest) {
       platform,
       body.caption,
       JSON.stringify(hashtags),
-      body.mediaUrl || null,
+      attachmentUrl,
       method,
       JSON.stringify(result),
       zapierResponse.ok ? 'queued' : 'failed'
@@ -124,6 +133,7 @@ export async function POST(request: NextRequest) {
       success: zapierResponse.ok,
       platform,
       method,
+      attachmentUrl,
       bufferStatus: zapierResponse.status,
       result,
     });
