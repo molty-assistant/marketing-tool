@@ -12,7 +12,7 @@ export default async function StrategyHubPage({
     {
       title: 'Brief',
       description: 'Your core positioning, audience and messaging summary',
-      href: `/plan/${id}/brief`,
+      href: `/plan/${id}/strategy/brief`,
       icon: FileText,
     },
     {
