@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'Marketing Tool — Vibe Marketing Brief Generator',
   description:
     'Paste any App Store, Google Play, or website URL and get a complete 5-stage marketing brief powered by the Vibe Marketing methodology. AI-enhanced copy, competitive analysis, and social media assets included.',
-  metadataBase: new URL('https://mission-control-production-2304.up.railway.app'),
+  metadataBase: new URL('https://marketing-tool-production.up.railway.app'),
   openGraph: {
     title: 'Marketing Tool — Vibe Marketing Brief Generator',
     description:
