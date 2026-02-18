@@ -5,12 +5,11 @@ import {
   useEffect,
   use,
   useCallback,
-  type ComponentPropsWithoutRef,
 } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MarketingPlan } from '@/lib/types';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import EnhanceButton from '@/components/EnhanceButton';
 import VariantPicker from '@/components/VariantPicker';
@@ -21,10 +20,9 @@ import { useToast } from '@/components/Toast';
 import ExportBundleButton from '@/components/ExportBundleButton';
 import GenerateAllButton from '@/components/GenerateAllButton';
 
-const markdownComponents = {
-  a: ({ href, children, ...props }: ComponentPropsWithoutRef<'a'>) => (
+const markdownComponents: Components = {
+  a: ({ href, children }) => (
     <a
-      {...props}
       href={href}
       target="_blank"
       rel="noopener"
@@ -253,6 +251,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
+  const [showUnshareConfirm, setShowUnshareConfirm] = useState(false);
   const [packComplete, setPackComplete] = useState(false);
 
   useEffect(() => {
@@ -356,6 +355,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
     await fetch(`/api/plans/${id}/share`, { method: 'DELETE' });
     setShareToken(null);
     setShareUrl(null);
+    setShowUnshareConfirm(false);
   };
 
   const handleCopyShareUrl = async () => {
@@ -417,6 +417,24 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
             >
               {shareLoading ? '...' : shareCopied ? '✓ Link copied!' : '🔗 Share'}
             </button>
+          ) : showUnshareConfirm ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto bg-red-950/30 border border-red-700/50 rounded-xl px-4 py-2.5">
+              <span className="text-sm text-red-200">Are you sure? The shared link will stop working.</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleUnshare}
+                  className="bg-red-700 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Unshare
+                </button>
+                <button
+                  onClick={() => setShowUnshareConfirm(false)}
+                  className="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col sm:flex-row gap-1 w-full sm:w-auto">
               <button
@@ -426,7 +444,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
                 {shareCopied ? '✓ Copied!' : '🔗 Copy link'}
               </button>
               <button
-                onClick={handleUnshare}
+                onClick={() => setShowUnshareConfirm(true)}
                 className="w-full sm:w-auto bg-red-800 hover:bg-red-700 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg sm:rounded-r-lg transition-colors"
                 title="Unshare"
               >
