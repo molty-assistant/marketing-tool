@@ -9,14 +9,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
-    // Basic URL validation
+    // Normalise URL — prepend https:// if no protocol given (e.g. www.lightscout.ai)
+    const normalizedUrl = url.match(/^https?:\/\//i) ? url : `https://${url}`;
     try {
-      new URL(url);
+      new URL(normalizedUrl);
     } catch {
       return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
 
-    const result = await scrapeUrl(url);
+    const result = await scrapeUrl(normalizedUrl);
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to scrape URL';

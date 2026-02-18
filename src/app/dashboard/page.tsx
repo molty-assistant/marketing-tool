@@ -26,15 +26,16 @@ export default function DashboardPage() {
     setLoading(true);
     setError('');
 
+    const normalizedUrl = url.trim().match(/^https?:\/\//i) ? url.trim() : `https://${url.trim()}`;
     try {
-      new URL(url);
+      new URL(normalizedUrl);
     } catch {
       setError('Please enter a valid URL');
       setLoading(false);
       return;
     }
 
-    router.push(`/analyze?url=${encodeURIComponent(url.trim())}`);
+    router.push(`/analyze?url=${encodeURIComponent(normalizedUrl)}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

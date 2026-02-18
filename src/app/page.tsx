@@ -128,14 +128,15 @@ export default function LandingPage() {
       return;
     }
 
+    const normalizedUrl = url.trim().match(/^https?:\/\//i) ? url.trim() : `https://${url.trim()}`;
     try {
-      new URL(url);
+      new URL(normalizedUrl);
     } catch {
       setError('Please enter a valid URL');
       return;
     }
 
-    router.push(`/analyze?url=${encodeURIComponent(url.trim())}`);
+    router.push(`/analyze?url=${encodeURIComponent(normalizedUrl)}`);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {

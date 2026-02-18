@@ -56,10 +56,14 @@ function safeParse<T>(value: string | null): T | null {
   }
 }
 
+function normalizeUrl(input: string): string {
+  return input.trim().match(/^https?:\/\//i) ? input.trim() : `https://${input.trim()}`;
+}
+
 function isValidUrl(input: string) {
   try {
     // eslint-disable-next-line no-new
-    new URL(input);
+    new URL(normalizeUrl(input));
     return true;
   } catch {
     return false;
@@ -116,7 +120,7 @@ export default function WizardPage() {
     setError('');
 
     if (step === 0) {
-      const url = state.url.trim();
+      const url = normalizeUrl(state.url.trim());
       if (!url) return setError('Please enter a URL.');
       if (!isValidUrl(url)) return setError("That doesn't look like a valid URL.");
       setState((s) => ({ ...s, url }));
