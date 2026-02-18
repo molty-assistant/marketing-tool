@@ -51,6 +51,8 @@ export default function SocialPage() {
   const [videoError, setVideoError] = useState('');
   const [videoOperation, setVideoOperation] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [videoStartTime, setVideoStartTime] = useState<number | null>(null);
+  const [videoElapsed, setVideoElapsed] = useState(0);
 
   // Step 4
   const [queueing, setQueueing] = useState(false);
@@ -78,6 +80,17 @@ export default function SocialPage() {
       .then((d) => setHistory(d.posts || []))
       .catch(() => {});
   }, []);
+
+  // Elapsed timer for video progress bar
+  useEffect(() => {
+    if (!videoOperation || videoUrl || !videoStartTime) return;
+
+    const timer = setInterval(() => {
+      setVideoElapsed(Math.floor((Date.now() - videoStartTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [videoOperation, videoUrl, videoStartTime]);
 
   // Poll video status every 10s while operation exists and URL not ready
   useEffect(() => {
@@ -197,6 +210,8 @@ export default function SocialPage() {
     setVideoError('');
     setVideoOperation('');
     setVideoUrl('');
+    setVideoStartTime(null);
+    setVideoElapsed(0);
     setQueueResult(null);
 
     try {
@@ -225,6 +240,7 @@ export default function SocialPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to start video generation');
 
       setVideoOperation(String(data.operationName || ''));
+      setVideoStartTime(Date.now());
     } catch (err) {
       setVideoError(err instanceof Error ? err.message : 'Failed to generate video');
       setVideoGenerating(false);
@@ -480,18 +496,39 @@ export default function SocialPage() {
                 </div>
               )}
 
-              {/* Video polling state */}
-              {videoOperation && !videoUrl && (
-                <div className="mt-6 flex items-start gap-3 text-sm bg-slate-900/40 border border-slate-700 rounded-xl p-4">
-                  <span className="text-xl mt-0.5 animate-pulse">🎬</span>
-                  <div>
-                    <div className="font-medium text-slate-200">Generating video…</div>
-                    <div className="text-xs text-slate-500 mt-1">
-                      Polling every 10s — Veo 2 can take a few minutes
+              {/* Video polling state — progress bar */}
+              {videoOperation && !videoUrl && (() => {
+                const TOTAL_SECONDS = 90;
+                const progress = Math.min(videoElapsed / TOTAL_SECONDS, 0.95);
+                const remaining = Math.max(TOTAL_SECONDS - videoElapsed, 0);
+                const remainingLabel = remaining > 0 ? `~${remaining}s remaining` : 'Almost done…';
+
+                return (
+                  <div className="mt-6 bg-slate-900/40 border border-slate-700 rounded-xl p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-xl animate-pulse">🎬</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-slate-200">Generating video…</div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          Veo 2 typically takes ~90 seconds
+                        </div>
+                      </div>
+                      <div className="text-xs text-slate-400 whitespace-nowrap">
+                        {remainingLabel}
+                      </div>
+                    </div>
+                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
+                        style={{ width: `${progress * 100}%` }}
+                      />
+                    </div>
+                    <div className="mt-1.5 text-xs text-slate-600 text-right">
+                      {videoElapsed}s elapsed
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Video download */}
               {videoUrl && (
