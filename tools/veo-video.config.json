@@ -1,18 +1,51 @@
 {
+  "_prompting_notes": [
+    "Veo 2 best practices (Google official guide):",
+    "1. One focused scene per clip — never chain A then B then C in one prompt",
+    "2. Start with shot type: close-up / medium shot / wide shot / aerial",
+    "3. Then camera movement: slow dolly in / pan left / crane up / handheld",
+    "4. Then subject + action: what moves and how",
+    "5. Then atmosphere: lighting, mood, style, colour grade",
+    "6. For image-to-video: prompt for MOTION ONLY — don't re-describe the image",
+    "7. Avoid vague words like 'beautiful', 'amazing', 'great' — be specific",
+    "8. No quotation marks for speech — use a colon instead",
+    "9. Use same seed across clips for consistent style",
+    "Generate separate clips for each moment, then stitch if needed"
+  ],
   "templates": {
-    "app-promo-vertical": {
-      "prompt": "A sleek mobile app UI sliding onto screen, modern dark design, smooth animation, 5 seconds",
+    "app-reveal-vertical": {
+      "prompt": "A slow push-in on a smartphone held in a hand, screen facing camera, displaying a clean modern app interface. The UI panels slide smoothly into place. Shallow depth of field with soft bokeh background. Studio lighting with a subtle warm glow on the screen. Dark premium aesthetic. Vertical format.",
       "aspectRatio": "9:16",
       "durationSeconds": 5
     },
-    "app-promo-landscape": {
-      "prompt": "A mobile app dashboard animating in, clean interface, professional presentation, cinematic",
+    "app-reveal-landscape": {
+      "prompt": "A cinematic slow dolly-in shot toward a smartphone resting on a minimal matte black surface. The screen illuminates to reveal a clean app dashboard with animated data cards. Soft key lighting from the left. Shallow focus pulls to the screen. Premium Apple-style product reveal aesthetic.",
       "aspectRatio": "16:9",
       "durationSeconds": 5
     },
-    "app-promo-square": {
-      "prompt": "Close-up of a mobile app screen with smooth micro-animations, minimal design",
+    "app-reveal-square": {
+      "prompt": "A top-down macro shot looking directly down at a smartphone on a white marble surface. The screen glows to life showing a polished app interface. Camera slowly rises, revealing the full phone. Clean, minimal. Bright studio lighting with soft shadows.",
       "aspectRatio": "1:1",
+      "durationSeconds": 5
+    },
+    "lightscout-golden-hour-vertical": {
+      "prompt": "A medium close-up shot of a photographer holding a smartphone outdoors at golden hour. The screen shows a landscape photography planning app with location pins and light forecast data. The background blurs into warm amber bokeh. Camera gently pushes in toward the screen. Cinematic warm colour grade.",
+      "aspectRatio": "9:16",
+      "durationSeconds": 8
+    },
+    "lightscout-golden-hour-landscape": {
+      "prompt": "A wide establishing shot that slowly cranes down from a dramatic sunset sky to a photographer standing on a rocky hillside, holding a smartphone up to frame the scene. The phone screen reflects the golden light. Camera descends and dollies in toward the photographer. Epic landscape cinematography aesthetic.",
+      "aspectRatio": "16:9",
+      "durationSeconds": 8
+    },
+    "lightscout-interface-reveal": {
+      "prompt": "A slow dolly-in on a smartphone screen showing a photography planning app. Map pins, sun position arcs, and golden hour countdown timers animate smoothly into view. Dark UI with amber accent colours. Soft backlight glow. Camera stops in tight on the screen as the data populates.",
+      "aspectRatio": "9:16",
+      "durationSeconds": 6
+    },
+    "social-story-hook": {
+      "prompt": "A fast push-in toward a smartphone screen that flashes to life, revealing bold app UI. Quick subtle camera shake on impact, then the camera steadies into a slow dolly-in. High contrast lighting, dark background, single accent colour on screen. Attention-grabbing opener style.",
+      "aspectRatio": "9:16",
       "durationSeconds": 5
     }
   }
