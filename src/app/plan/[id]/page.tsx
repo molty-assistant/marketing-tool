@@ -499,12 +499,12 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Stages */}
-      {stageLabels.map((stage, i) => (
+      {stageLabels.map((stage) => (
         <StageSection
           key={stage.key}
           title={stage.title}
           content={plan.stages[stage.key]}
-          defaultOpen={i === 0}
+          defaultOpen={true}
           isAssetsStage={stage.isAssets}
           appContext={`${plan.config.app_name} — ${plan.config.one_liner}. Category: ${plan.config.category}. Audience: ${plan.config.target_audience}. Pricing: ${plan.config.pricing}.`}
         />
