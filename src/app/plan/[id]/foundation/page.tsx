@@ -88,6 +88,7 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
   const [brandVoice, setBrandVoice] = useState<BrandVoice | null>(null);
   const [positioning, setPositioning] = useState<Positioning | null>(null);
   const [competitive, setCompetitive] = useState<Competitive | null>(null);
+  const [isCached, setIsCached] = useState(false);
 
   const [loadingBV, setLoadingBV] = useState(false);
   const [loadingPos, setLoadingPos] = useState(false);
@@ -122,6 +123,7 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
         if (o.brandVoice) setBrandVoice(o.brandVoice);
         if (o.positioning) setPositioning(o.positioning);
         if (o.competitive) setCompetitive(o.competitive);
+        setIsCached(true);
       }
     } catch { /* ignore */ }
   }, [id]);
@@ -137,8 +139,9 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
       const r = await fetch('/api/brand-voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: id }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed');
-      setBrandVoice(d.brandVoice);
       persist({ brandVoice: d.brandVoice });
+      setBrandVoice(d.brandVoice);
+      setIsCached(false);
       toastOk('Brand voice generated');
     } catch (e) { toastErr(e instanceof Error ? e.message : 'Failed'); }
     finally { setLoadingBV(false); }
@@ -150,8 +153,9 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
       const r = await fetch('/api/positioning-angles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: id }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed');
-      setPositioning(d.positioning);
       persist({ positioning: d.positioning });
+      setPositioning(d.positioning);
+      setIsCached(false);
       toastOk('Positioning angles generated');
     } catch (e) { toastErr(e instanceof Error ? e.message : 'Failed'); }
     finally { setLoadingPos(false); }
@@ -163,8 +167,9 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
       const r = await fetch('/api/competitive-analysis', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: id }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed');
-      setCompetitive(d.competitive);
       persist({ competitive: d.competitive });
+      setCompetitive(d.competitive);
+      setIsCached(false);
       toastOk('Competitive analysis generated');
     } catch (e) { toastErr(e instanceof Error ? e.message : 'Failed'); }
     finally { setLoadingComp(false); }
@@ -189,7 +194,12 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">🧱 Foundation Layer</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold text-white">🧱 Foundation Layer</h1>
+            {(brandVoice || positioning || competitive) && isCached && (
+              <span className="text-xs text-slate-500">Cached · Regenerate to refresh</span>
+            )}
+          </div>
           <p className="text-slate-400">Brand voice, positioning angles &amp; competitive intel for {plan.config.app_name}</p>
         </div>
       </div>

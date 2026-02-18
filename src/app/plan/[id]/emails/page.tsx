@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, use } from 'react';
+import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import PlanNav from '@/components/PlanNav';
@@ -52,9 +52,10 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState<GenerateEmailsResponse | null>(null);
+  const [isCached, setIsCached] = useState(false);
   const [open, setOpen] = useState<Record<number, boolean>>({ 1: true });
 
-  const storageKey = useMemo(() => `emails-${id}-${sequenceType}-${emailCount}`, [id, sequenceType, emailCount]);
+  const storageKey = `emails-${id}`;
 
   const loadPlan = () => {
     setPlanLoading(true);
@@ -89,16 +90,24 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
     loadPlan();
   }, [id]);
 
-  // Load last generated for this configuration
+  // Restore last generated
   useEffect(() => {
     const stored = sessionStorage.getItem(storageKey);
     if (!stored) return;
     try {
-      setData(JSON.parse(stored));
+      const parsed = JSON.parse(stored) as {
+        sequenceType?: SequenceType;
+        emailCount?: number;
+        data?: GenerateEmailsResponse;
+      };
+      if (parsed.sequenceType) setSequenceType(parsed.sequenceType);
+      if (typeof parsed.emailCount === 'number') setEmailCount(parsed.emailCount);
+      if (parsed.data) setData(parsed.data);
+      setIsCached(true);
     } catch {
       /* ignore */
     }
-  }, [storageKey]);
+  }, [id]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -117,8 +126,12 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to generate emails');
 
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({ sequenceType, emailCount, data: json })
+      );
       setData(json);
-      sessionStorage.setItem(storageKey, JSON.stringify(json));
+      setIsCached(false);
 
       const firstNum = (json?.sequence?.emails?.[0]?.number as number) || 1;
       setOpen({ [firstNum]: true });
@@ -174,13 +187,18 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
           <h1 className="text-2xl font-bold text-white">✉️ Email Sequence</h1>
           <p className="text-slate-400">{plan.config.app_name} — Generate a direct-response sequence</p>
         </div>
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
-        >
-          {loading ? 'Generating…' : '✨ Generate'}
-        </button>
+        <div className="flex items-center gap-3">
+          {data && isCached && (
+            <span className="text-xs text-slate-500">Cached · ↻ Generate to refresh</span>
+          )}
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+          >
+            {loading ? 'Generating…' : '✨ Generate'}
+          </button>
+        </div>
       </div>
 
       <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6">

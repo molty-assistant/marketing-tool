@@ -213,6 +213,17 @@ export default function TemplatesPage({
     }));
   }, [plan]);
 
+  useEffect(() => {
+    if (!plan) return;
+    try {
+      const payload: Record<string, string> = {};
+      for (const t of populatedTemplates) payload[t.id] = t.populated;
+      sessionStorage.setItem(storageKey, JSON.stringify(payload));
+    } catch {
+      /* ignore */
+    }
+  }, [id, plan, populatedTemplates]);
+
   const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -250,7 +261,12 @@ export default function TemplatesPage({
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Templates</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-3xl font-bold text-white mb-2">Templates</h1>
+            {cachedPopulated && isCached && (
+              <span className="text-xs text-slate-500">Cached</span>
+            )}
+          </div>
           <p className="text-slate-400">
             Browse ready-to-use marketing copy templates. We\'ll auto-fill placeholders
             from your plan.
