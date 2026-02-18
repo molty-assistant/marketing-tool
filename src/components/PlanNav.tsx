@@ -9,6 +9,7 @@ interface PlanNavProps {
 }
 
 const NAV_ITEMS = [
+  { href: '/overview', label: '📊 Overview', description: 'Plan health & readiness dashboard' },
   { href: '', label: '📋 Brief', description: 'Your app\'s core marketing brief', exact: true },
   { href: '/foundation', label: '🧱 Foundation', description: 'Brand voice & competitive positioning' },
   { href: '/draft', label: '📝 Draft', description: 'App Store copy in multiple tones' },
