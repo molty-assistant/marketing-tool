@@ -177,6 +177,7 @@ export function generateSocialTemplates(opts: {
   style: SocialStyle;
   accentColor: string;
   visualMode?: SocialVisualMode;
+  bgImageUrl?: string;
   imageBrief?: {
     hook?: string;
     scene?: string;
@@ -190,6 +191,7 @@ export function generateSocialTemplates(opts: {
   const { plan, platforms, style } = opts;
   const visualMode: SocialVisualMode = opts.visualMode || 'screenshot';
   const imageBrief = opts.imageBrief || null;
+  const bgImageUrl = typeof opts.bgImageUrl === 'string' && opts.bgImageUrl.startsWith('http') ? opts.bgImageUrl : undefined;
   const accent = typeof opts.accentColor === 'string' && opts.accentColor.startsWith('#') ? opts.accentColor : '#667eea';
   const accent2 = mix(accent, '#ffffff', 0.22);
 
@@ -447,8 +449,9 @@ export function generateSocialTemplates(opts: {
 
       const heroVisual = `
 <div style="width:100%;height:100%;border-radius:28px;position:relative;overflow:hidden;border:1px solid var(--border);background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, #000 30%, transparent));">
-  <div style="position:absolute;inset:-30%;background:radial-gradient(520px 420px at 30% 30%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%), radial-gradient(520px 420px at 70% 70%, color-mix(in srgb, var(--accent2) 45%, transparent), transparent 72%);filter: blur(0px);opacity:0.95;"></div>
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.55));"></div>
+  ${bgImageUrl ? `<img src="${bgImageUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />` : ''}
+  ${bgImageUrl ? '' : `<div style="position:absolute;inset:-30%;background:radial-gradient(520px 420px at 30% 30%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%), radial-gradient(520px 420px at 70% 70%, color-mix(in srgb, var(--accent2) 45%, transparent), transparent 72%);filter: blur(0px);opacity:0.95;"></div>`}
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.62));"></div>
 
   <div style="position:absolute;left:26px;top:26px;display:flex;flex-direction:column;gap:10px;max-width:680px;">
     <div class="chip" style="padding:10px 14px;gap:10px;">
@@ -459,14 +462,14 @@ export function generateSocialTemplates(opts: {
     <div class="small muted" style="max-width:560px;">${safeText(imageBrief?.mood, oneLiner)}</div>
   </div>
 
-  <div style="position:absolute;right:24px;bottom:22px;display:flex;gap:12px;align-items:flex-end;">
+  ${bgImageUrl ? '' : `<div style="position:absolute;right:24px;bottom:22px;display:flex;gap:12px;align-items:flex-end;">
     <div style="width:220px;height:220px;border-radius:26px;background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.10);backdrop-filter: blur(10px);display:flex;align-items:center;justify-content:center;overflow:hidden;">
       <div style="font-size:90px;opacity:0.95;">🌅</div>
     </div>
     <div style="width:160px;height:160px;border-radius:26px;background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.10);backdrop-filter: blur(10px);display:flex;align-items:center;justify-content:center;overflow:hidden;">
       <div style="font-size:74px;opacity:0.95;">📷</div>
     </div>
-  </div>
+  </div>`}
 </div>`;
 
       const screenshotVisual = screenshot
