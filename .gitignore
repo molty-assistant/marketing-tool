@@ -44,3 +44,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local-only docs / scratch
+AUTH-ARCHITECTURE.md
+FRIDAY-CHECKLIST.md
+cron-definitions.md
+/output-test/
+/tools/
