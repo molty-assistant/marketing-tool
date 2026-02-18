@@ -1,0 +1,19 @@
+{
+  "templates": {
+    "app-promo-vertical": {
+      "prompt": "A sleek mobile app UI sliding onto screen, modern dark design, smooth animation, 5 seconds",
+      "aspectRatio": "9:16",
+      "durationSeconds": 5
+    },
+    "app-promo-landscape": {
+      "prompt": "A mobile app dashboard animating in, clean interface, professional presentation, cinematic",
+      "aspectRatio": "16:9",
+      "durationSeconds": 5
+    },
+    "app-promo-square": {
+      "prompt": "Close-up of a mobile app screen with smooth micro-animations, minimal design",
+      "aspectRatio": "1:1",
+      "durationSeconds": 5
+    }
+  }
+}

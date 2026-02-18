@@ -50,4 +50,7 @@ AUTH-ARCHITECTURE.md
 FRIDAY-CHECKLIST.md
 cron-definitions.md
 /output-test/
-/tools/
+
+# tooling scripts are committed; ignore only any tool outputs/caches
+/tools/.cache/
+/tools/output/
