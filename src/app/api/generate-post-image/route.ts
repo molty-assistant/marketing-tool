@@ -83,7 +83,10 @@ export async function POST(request: NextRequest) {
     const baseUrl = (body.publicBase as string | undefined) || request.nextUrl.origin;
     const renderRes = await fetch(`${internalBase}/api/render-png`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.API_KEY || '',
+      },
       body: JSON.stringify({
         html: template.html,
         width: template.width,

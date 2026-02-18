@@ -119,7 +119,10 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
       const imgPlatform = platform === 'tiktok' ? 'instagram-story' : 'instagram-post';
       const imgRes = await fetch(`${internalBase}/api/generate-post-image`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.API_KEY || '',
+        },
         body: JSON.stringify({
           planId,
           platform: imgPlatform,
@@ -137,7 +140,10 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
     // Step 3: Post to Buffer via our dedicated endpoint (which calls Zapier MCP)
     const bufferRes = await fetch(`${internalBase}/api/post-to-buffer`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.API_KEY || '',
+      },
       body: JSON.stringify({
         planId,
         platform,
