@@ -280,91 +280,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PRICING */}
-      <section id="pricing" className="mt-12 scroll-mt-24">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">Pricing</h2>
-          <p className="mt-2 text-sm sm:text-base text-slate-400">
-            Start free, then scale when you’re ready.
-          </p>
-        </div>
-
-        <div className="mt-7 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {[
-            {
-              name: 'Free',
-              price: '$0',
-              badge: 'Get started',
-              highlight: false,
-              items: ['1 brief / day', 'Core brief template', 'Markdown export'],
-            },
-            {
-              name: 'Launch',
-              price: '$29',
-              badge: 'Most popular',
-              highlight: true,
-              items: ['Unlimited briefs', 'Competitor scan', 'A/B copy variants', 'Shareable links'],
-            },
-            {
-              name: 'Growth',
-              price: '$99',
-              badge: 'For teams',
-              highlight: false,
-              items: ['Everything in Launch', 'Brand assets & visual direction', 'Priority generation', 'Advanced exports'],
-            },
-          ].map((tier) => (
-            <div
-              key={tier.name}
-              className={
-                tier.highlight
-                  ? 'rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-6'
-                  : 'rounded-2xl border border-slate-800 bg-slate-900/30 p-6'
-              }
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-lg font-semibold text-white">{tier.name}</div>
-                  <div className="mt-1 text-sm text-slate-400">{tier.badge}</div>
-                </div>
-                {tier.highlight && (
-                  <div className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">Best value</div>
-                )}
-              </div>
-
-              <div className="mt-5 flex items-end gap-2">
-                <div className="text-4xl font-bold text-white">{tier.price}</div>
-                <div className="pb-1 text-sm text-slate-400">/ month</div>
-              </div>
-
-              <ul className="mt-5 space-y-2 text-sm">
-                {tier.items.map((it) => (
-                  <li key={it} className="flex items-center gap-2 text-slate-300">
-                    <Check />
-                    <span>{it}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-6">
-                <a
-                  href="#"
-                  className={
-                    tier.highlight
-                      ? 'inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors'
-                      : 'inline-flex w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-900/40 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900/70 transition-colors'
-                  }
-                >
-                  Choose {tier.name}
-                </a>
-                <p className="mt-2 text-center text-xs text-slate-500">
-                  Pricing UI only — wire up billing when ready.
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* FOOTER */}
       <footer className="mt-14 border-t border-slate-800 pt-8 pb-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -383,9 +298,7 @@ export default function LandingPage() {
             <a href="#features" className="text-slate-400 hover:text-white transition-colors">
               Features
             </a>
-            <a href="#pricing" className="text-slate-400 hover:text-white transition-colors">
-              Pricing
-            </a>
+            {/* Pricing removed */}
           </div>
         </div>
 
