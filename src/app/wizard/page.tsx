@@ -22,7 +22,15 @@ const GOALS: Goal[] = [
   'Full marketing pack',
 ];
 
+
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
+
+const TONE_SAMPLES: Record<Tone, string> = {
+  professional: 'Elevate your workflow with precision-engineered solutions.',
+  casual: "Hey there! We made something you're going to love.",
+  bold: 'Stop settling. Start dominating.',
+  minimal: 'Clean. Fast. Built for focus.',
+};
 const TONES: { id: Tone; label: string; desc: string }[] = [
   { id: 'professional', label: 'Professional', desc: 'Clear, credible, confident.' },
   { id: 'casual', label: 'Casual', desc: 'Friendly, conversational, approachable.' },
@@ -75,6 +83,8 @@ export default function WizardPage() {
 
   const [step, setStep] = useState<WizardStep>(0);
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
+
+  const [hoveredTone, setHoveredTone] = useState<Tone | null>(null);
 
   const [error, setError] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -296,8 +306,10 @@ export default function WizardPage() {
             <div className="text-xs text-slate-500">
               We&apos;ll scrape metadata + features from this URL, then generate the full plan.
             </div>
+
+
           </div>
-        )}
+        )
 
         {/* STEP 2 — Platforms */}
         {step === 1 && (
@@ -408,6 +420,8 @@ export default function WizardPage() {
                 return (
                   <button
                     key={t.id}
+                    onMouseEnter={() => setHoveredTone(t.id)}
+                    onMouseLeave={() => setHoveredTone(null)}
                     onClick={() => {
                       setState((s) => ({ ...s, tone: t.id }));
                       setError('');
@@ -425,6 +439,13 @@ export default function WizardPage() {
                 );
               })}
             </div>
+            <div className="mt-4 rounded-xl border border-slate-700/60 bg-slate-900/40 p-4">
+              <div className="text-xs text-slate-500 uppercase tracking-wide">Tone preview</div>
+              <div className="text-sm text-slate-200 mt-2 italic">
+                "{TONE_SAMPLES[(hoveredTone ?? state.tone) as Tone]}"
+              </div>
+            </div>
+
           </div>
         )}
 
