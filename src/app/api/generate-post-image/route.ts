@@ -49,11 +49,11 @@ export async function POST(request: NextRequest) {
       scraped: JSON.parse(row.scraped || '{}'),
       stages,
       generated: row.generated || '',
-      created_at: row.created_at,
+      createdAt: row.created_at,
     };
 
     // Generate HTML template
-    const templates = generateSocialTemplates(plan, [platform], style, config.accent_color || '#667eea');
+    const templates = generateSocialTemplates({ plan, platforms: [platform], style, accentColor: config.accent_color || '#667eea' });
     
     if (templates.length === 0) {
       return NextResponse.json({ error: 'No template generated' }, { status: 500 });
