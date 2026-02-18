@@ -38,6 +38,9 @@ function truncateMiddle(input: string, max = 56) {
 }
 
 export default function GenerationOverlay({ url, onComplete, onError }: GenerationOverlayProps) {
+  const abortRef = useRef<AbortController | null>(null)
+  const [cancelled, setCancelled] = useState(false)
+
   const [steps, setSteps] = useState<Step[]>([
     { id: 'scrape', label: 'Scraping website', status: 'active' },
     { id: 'analyze', label: 'Analysing product', status: 'pending' },
@@ -54,6 +57,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
   useEffect(() => {
     return () => {
       isMounted.current = false
+      abortRef.current?.abort()
     }
   }, [])
 
@@ -81,6 +85,10 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
     const normalizedUrl = url.trim().match(/^https?:\/\//i) ? url.trim() : `https://${url.trim()}`
 
     const run = async () => {
+      abortRef.current?.abort()
+      abortRef.current = new AbortController()
+      setCancelled(false)
+
       try {
         // 1) Scrape
         setStepStatus('scrape', 'active')
@@ -88,6 +96,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: normalizedUrl }),
+          signal: abortRef.current.signal,
         })
 
         const scraped = (await scrapeRes.json()) as ScrapeResult
@@ -143,6 +152,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ scraped }),
+            signal: abortRef.current?.signal,
           })
           const plan = (await planRes.json()) as PlanResult
           if (!planRes.ok) throw new Error((plan as any)?.error || 'Generation failed')
@@ -166,6 +176,13 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
           window.clearInterval(stepAdvance)
         }
       } catch (err) {
+        // AbortController throws a DOMException named AbortError
+        if ((err as any)?.name === 'AbortError') {
+          setCancelled(true)
+          onError('Cancelled')
+          return
+        }
+
         const msg = err instanceof Error ? err.message : 'Failed to generate plan'
 
         // Mark whatever step is currently active as error
@@ -182,7 +199,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
   }, [url])
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0a0a0f]">
+    <div className="fixed inset-0 z-50 bg-[#0a0a0f]" role="dialog" aria-modal="true" aria-label="Generating plan">
       <div className="h-full w-full flex items-center justify-center px-6">
         <div className="w-full max-w-xl">
           <div className="text-center">
@@ -211,6 +228,18 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
           </div>
 
           <div className="mt-10 bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-xs text-slate-500">Progress</div>
+              <button
+                type="button"
+                onClick={() => {
+                  abortRef.current?.abort()
+                }}
+                className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
             <div className="space-y-4">
               {steps.map((s) => (
                 <div key={s.id} className="flex items-center gap-3">

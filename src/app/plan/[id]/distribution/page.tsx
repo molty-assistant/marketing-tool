@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import type { MarketingPlan } from '@/lib/types';
+
 import {
+
   Calendar,
   ChevronRight,
   Clock,
@@ -10,18 +13,24 @@ import {
   Youtube,
 } from 'lucide-react';
 
-function StatusPill({ label, status }: { label: string; status: 'ready' | 'empty' }) {
+function StatusPill({
+  label,
+  status,
+}: {
+  label: string;
+  status: 'selected' | 'not_selected';
+}) {
   return (
     <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-900/50 border border-white/[0.06]">
       <div className="text-xs text-slate-300">{label}</div>
       <div
         className={
-          status === 'ready'
-            ? 'text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+          status === 'selected'
+            ? 'text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-200 border border-indigo-500/20'
             : 'text-[11px] px-2 py-0.5 rounded-full bg-white/[0.04] text-slate-400 border border-white/[0.06]'
         }
       >
-        {status === 'ready' ? 'Ready' : 'Empty'}
+        {status === 'selected' ? 'Selected' : 'Not selected'}
       </div>
     </div>
   );
@@ -33,6 +42,20 @@ export default async function DistributionHubPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
+  const planRes = await fetch(`${baseUrl}/api/plans/${id}`, {
+    headers: {
+      // Needed to bypass Basic Auth middleware for internal server-to-server fetches.
+      'x-api-key': process.env.API_KEY || '',
+    },
+    cache: 'no-store',
+  });
+
+  const plan = (await planRes.json()) as MarketingPlan;
+  const selected = new Set(
+    (plan?.config?.distribution_channels || []).map((c) => String(c).toLowerCase())
+  );
 
   const sections = [
     {
@@ -86,9 +109,18 @@ export default async function DistributionHubPage({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-5">
-            <StatusPill label="Instagram" status="ready" />
-            <StatusPill label="LinkedIn" status="empty" />
-            <StatusPill label="TikTok / Shorts" status="empty" />
+            <StatusPill
+              label="Instagram"
+              status={selected.has('instagram') ? 'selected' : 'not_selected'}
+            />
+            <StatusPill
+              label="LinkedIn"
+              status={selected.has('linkedin') ? 'selected' : 'not_selected'}
+            />
+            <StatusPill
+              label="TikTok / Shorts"
+              status={selected.has('tiktok') ? 'selected' : 'not_selected'}
+            />
           </div>
 
           <div className="flex items-center gap-3 mt-4 text-xs text-slate-500">
