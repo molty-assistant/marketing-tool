@@ -93,7 +93,7 @@ function defaultHeadline(plan: MarketingPlan): string {
   if (oneLiner) {
     const trimmed = oneLiner.replace(/\s+/g, ' ').trim();
     // If it's long, take first sentence/phrase.
-    const cut = trimmed.split(/\.|\n|\r|\!/)[0]?.trim();
+    const cut = trimmed.split(/\.|\n|\r|\!|\?|—|–|:|\|/)[0]?.trim();
     return cut.length <= 64 ? cut : `${cut.slice(0, 61)}…`;
   }
   return `Meet ${safeText(plan?.config?.app_name, safeText(plan?.scraped?.name, 'Your App'))}`;
@@ -190,7 +190,12 @@ export function generateSocialTemplates(opts: {
   const text = style === 'light' ? '#0b1220' : '#e6eaf2';
 
   const name = safeText(plan?.config?.app_name, safeText(plan?.scraped?.name, 'Your App'));
-  const oneLiner = safeText(plan?.config?.one_liner, safeText(plan?.scraped?.shortDescription, safeText(plan?.scraped?.description, '')));
+  const oneLinerRaw = safeText(
+    plan?.config?.one_liner,
+    safeText(plan?.scraped?.shortDescription, safeText(plan?.scraped?.description, ''))
+  );
+  // Keep the supporting line punchy; long scraped descriptions make the template feel broken.
+  const oneLiner = oneLinerRaw.length > 140 ? `${oneLinerRaw.slice(0, 137).trim()}…` : oneLinerRaw;
   const bullets = pickTop(plan?.config?.differentiators, 3);
   const fallbackBullets = pickTop(plan?.scraped?.features, 3);
   const features = bullets.length ? bullets : fallbackBullets;
@@ -421,7 +426,7 @@ export function generateSocialTemplates(opts: {
       const height = 1080;
 
       const mainVisual = screenshot
-        ? `<img src="${screenshot}" style="width:100%;height:100%;object-fit:cover;border-radius:28px;" />`
+        ? `<img src="${screenshot}" style="width:100%;height:100%;object-fit:cover;transform:scale(1.12);border-radius:28px;" />`
         : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${iconImg(
             iconUrl,
             220
@@ -442,7 +447,7 @@ export function generateSocialTemplates(opts: {
     <div style="position:relative;height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:14px;">
       <div>
         <div class="h2" style="font-size:52px;">${headline}</div>
-        <div class="p muted" style="margin-top:10px;">${oneLiner}</div>
+        <div class="p muted" style="margin-top:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:60px;">${oneLiner}</div>
       </div>
 
       <div style="border-radius:28px;overflow:hidden;border:1px solid var(--border);box-shadow:0 18px 40px rgba(0,0,0,0.28);background:rgba(0,0,0,0.18);">${mainVisual}</div>
