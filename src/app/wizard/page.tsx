@@ -470,6 +470,15 @@ export default function WizardPage() {
             >
               {generating ? 'Generating…' : 'Generate Everything'}
             </button>
+
+            {error && step === 4 && !generating && (
+              <button
+                onClick={handleGenerateEverything}
+                className="w-full mt-3 bg-slate-900/40 hover:bg-slate-900/70 border border-slate-700/60 text-slate-200 font-semibold px-6 py-3 rounded-xl transition-all"
+              >
+                Try again
+              </button>
+            )}
           </div>
         )}
 
