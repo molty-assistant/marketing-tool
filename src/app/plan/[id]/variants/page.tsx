@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState, use } from 'react';
-import PlanNav from '@/components/PlanNav';
 import { PageSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import Link from 'next/link';
@@ -218,8 +217,6 @@ export default function VariantsPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="max-w-5xl mx-auto">
-      <PlanNav planId={id} appName={plan.config.app_name} />
-
       <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Generate multiple headline and hook variants, then score them side-by-side for clarity, emotion, urgency, and uniqueness — find your strongest angle before you go live.
       </div>

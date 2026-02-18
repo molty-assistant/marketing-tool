@@ -3,7 +3,6 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
-import PlanNav from '@/components/PlanNav';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
 
@@ -164,8 +163,6 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-5xl mx-auto">
-      <PlanNav planId={id} appName={plan.config.app_name} />
-
       <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Turn one core piece of content into platform-native posts for Instagram, TikTok, LinkedIn, Twitter, Reddit, and email — generated in seconds from your marketing brief.
       </div>

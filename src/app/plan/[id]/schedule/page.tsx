@@ -2,7 +2,6 @@
 
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
-import PlanNav from '@/components/PlanNav';
 
 interface ScheduleItem {
   id: string;
@@ -138,8 +137,6 @@ export default function SchedulePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <PlanNav planId={planId} />
-
         <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
           Schedule posts for auto-publishing across your connected platforms — set a date and time, then let the system handle generation and posting.
         </div>

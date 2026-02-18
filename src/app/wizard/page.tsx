@@ -309,7 +309,7 @@ export default function WizardPage() {
 
 
           </div>
-        )
+        )}
 
         {/* STEP 2 — Platforms */}
         {step === 1 && (
