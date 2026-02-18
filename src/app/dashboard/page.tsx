@@ -1,156 +1,134 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { RecentAnalysis } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
-export default function DashboardPage() {
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [recent, setRecent] = useState<RecentAnalysis[]>(() => {
-    // Initialize from localStorage (client-only)
-    try {
-      const stored = localStorage.getItem('recent-analyses');
-      if (!stored) return [];
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? (parsed as RecentAnalysis[]) : [];
-    } catch {
-      return [];
-    }
-  });
-  const router = useRouter();
+import type { MarketingPlan } from '@/lib/types';
 
-  const handleAnalyze = async () => {
-    if (!url.trim()) return;
-    setLoading(true);
-    setError('');
-
-    const normalizedUrl = url.trim().match(/^https?:\/\//i) ? url.trim() : `https://${url.trim()}`;
-    try {
-      new URL(normalizedUrl);
-    } catch {
-      setError('Please enter a valid URL');
-      setLoading(false);
-      return;
-    }
-
-    router.push(`/analyze?url=${encodeURIComponent(normalizedUrl)}`);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAnalyze();
-  };
-
-  const clearRecent = () => {
-    localStorage.removeItem('recent-analyses');
-    setRecent([]);
-  };
+function PlanCard({ plan }: { plan: MarketingPlan }) {
+  const appName = plan.config?.app_name || plan.scraped?.name || 'Untitled';
+  const url = plan.config?.app_url || plan.scraped?.url;
+  const created = plan.createdAt ? new Date(plan.createdAt) : null;
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="text-center mb-10 mt-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">Dashboard</h1>
-        <p className="text-base text-slate-400 max-w-xl mx-auto">
-          Start a new analysis or jump back into a recent marketing brief.
-        </p>
+    <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-5 flex flex-col gap-3">
+      <div className="flex items-start gap-4">
+        {(plan.scraped?.icon || plan.config?.icon) && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={plan.scraped?.icon || plan.config?.icon}
+            alt=""
+            className="w-12 h-12 rounded-2xl"
+          />
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold text-white truncate">{appName}</div>
+          {url && (
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-indigo-400 hover:text-indigo-300 truncate block mt-0.5"
+            >
+              {url}
+            </a>
+          )}
+          {created && (
+            <div className="text-xs text-slate-500 mt-1">
+              Created {created.toLocaleDateString()}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* URL Input */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8 mb-8">
-        <label htmlFor="url-input" className="block text-sm font-medium text-slate-300 mb-3">
-          Enter URL to analyze
-        </label>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            id="url-input"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="https://apps.apple.com/app/... or any URL"
-            className="w-full sm:flex-1 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-            disabled={loading}
-          />
-          <button
-            onClick={handleAnalyze}
-            disabled={loading || !url.trim()}
-            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold px-6 py-3 rounded-xl transition-all whitespace-nowrap"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Analyzing...
-              </span>
-            ) : (
-              'Analyze →'
-            )}
-          </button>
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs text-slate-500 line-clamp-1">
+          {plan.config?.one_liner || plan.scraped?.shortDescription || plan.scraped?.description}
         </div>
-        {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
+        <Link
+          href={`/plan/${plan.id}`}
+          className="shrink-0 text-xs font-medium bg-indigo-500/15 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 hover:border-indigo-400/30 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          Open →
+        </Link>
+      </div>
+    </div>
+  );
+}
 
-        {/* Quick examples */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="text-xs text-slate-500">Try:</span>
-          {[
-            { label: 'LightScout AI', url: 'https://apps.apple.com/gb/app/lightscout-ai/id6748341779' },
-            { label: 'Spotify', url: 'https://play.google.com/store/apps/details?id=com.spotify.music' },
-            { label: 'Linear', url: 'https://linear.app' },
-            { label: 'Notion', url: 'https://www.notion.so' },
-          ].map((example) => (
-            <button
-              key={example.label}
-              onClick={() => setUrl(example.url)}
-              className="text-xs text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1 rounded-full transition-colors"
-            >
-              {example.label}
-            </button>
+export default function DashboardPage() {
+  const [plans, setPlans] = useState<MarketingPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    setError('');
+    fetch('/api/plans')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load plans');
+        return res.json() as Promise<MarketingPlan[]>;
+      })
+      .then((data) => setPlans(data || []))
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : 'Failed to load plans')
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-sm text-slate-400 mt-1">
+            All your generated marketing plans in one place.
+          </p>
+        </div>
+        <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
+          ← Home
+        </Link>
+      </div>
+
+      {loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-pulse">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="h-32 bg-slate-900/40 border border-white/[0.06] rounded-2xl"
+            />
           ))}
         </div>
-      </div>
+      )}
 
-      {/* Recent Analyses */}
-      {recent.length > 0 ? (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Recent Analyses</h2>
-            <button onClick={clearRecent} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-              Clear all
-            </button>
-          </div>
-          <div className="space-y-2">
-            {recent.map((item) => (
-              <a
-                key={item.id}
-                href={`/analyze?url=${encodeURIComponent(item.url)}`}
-                className="flex items-center gap-4 bg-slate-800/30 border border-slate-700/50 rounded-xl p-4 hover:bg-slate-800/60 transition-colors"
-              >
-                {item.icon ? (
-                  <img src={item.icon} alt="" className="w-10 h-10 rounded-lg" />
-                ) : (
-                  <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center text-lg">🔗</div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white truncate">{item.name}</div>
-                  <div className="text-sm text-slate-500 truncate">{item.url}</div>
-                </div>
-                <div className="text-xs text-slate-500 flex-shrink-0">
-                  {new Date(item.createdAt).toLocaleDateString()}
-                </div>
-              </a>
-            ))}
+      {!loading && error && (
+        <div className="bg-red-950/30 border border-red-700/40 rounded-2xl p-5 text-red-200 text-sm">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && plans.length === 0 && (
+        <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-8 text-center">
+          <div className="text-slate-200 font-semibold">No plans yet</div>
+          <p className="text-sm text-slate-400 mt-2">
+            Generate your first marketing plan to see it here.
+          </p>
+          <div className="mt-5">
+            <Link
+              href="/"
+              className="inline-flex items-center bg-indigo-500/15 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 hover:border-indigo-400/30 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+            >
+              Generate a plan →
+            </Link>
           </div>
         </div>
-      ) : (
-        <div className="text-center text-sm text-slate-500">
-          No recent analyses yet. Paste a URL above to generate your first brief.
+      )}
+
+      {!loading && !error && plans.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {plans.map((p) => (
+            <PlanCard key={p.id} plan={p} />
+          ))}
         </div>
       )}
     </div>
