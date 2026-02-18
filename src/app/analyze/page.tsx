@@ -254,6 +254,7 @@ function AnalyzeContent() {
   if (!data) return null;
 
   const sourceLabel = { appstore: 'Apple App Store', googleplay: 'Google Play', website: 'Website' }[data.source];
+  const screenshots = Array.isArray(data.screenshots) ? data.screenshots : [];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -308,11 +309,11 @@ function AnalyzeContent() {
       </div>
 
       {/* Screenshots */}
-      {data.screenshots && data.screenshots.length > 0 && (
+      {screenshots.length > 0 && (
         <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-6">
           <h2 className="text-lg font-semibold text-white mb-4">Screenshots</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
-            {data.screenshots.slice(0, 6).map((ss, i) => (
+            {screenshots.slice(0, 6).map((ss, i) => (
               <img key={i} src={ss} alt={`Screenshot ${i + 1}`} className="h-40 sm:h-48 rounded-lg flex-shrink-0" />
             ))}
           </div>
