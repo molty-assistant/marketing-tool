@@ -177,9 +177,19 @@ export function generateSocialTemplates(opts: {
   style: SocialStyle;
   accentColor: string;
   visualMode?: SocialVisualMode;
+  imageBrief?: {
+    hook?: string;
+    scene?: string;
+    subject?: string;
+    mood?: string;
+    palette?: string;
+    composition?: string;
+    avoid?: string[];
+  } | null;
 }): SocialTemplate[] {
   const { plan, platforms, style } = opts;
   const visualMode: SocialVisualMode = opts.visualMode || 'screenshot';
+  const imageBrief = opts.imageBrief || null;
   const accent = typeof opts.accentColor === 'string' && opts.accentColor.startsWith('#') ? opts.accentColor : '#667eea';
   const accent2 = mix(accent, '#ffffff', 0.22);
 
@@ -432,18 +442,21 @@ export function generateSocialTemplates(opts: {
             ? '⚡'
             : '✨';
 
+      const hook = safeText(imageBrief?.hook, headline);
+      const scene = safeText(imageBrief?.scene, safeText(plan?.config?.category, '')); 
+
       const heroVisual = `
 <div style="width:100%;height:100%;border-radius:28px;position:relative;overflow:hidden;border:1px solid var(--border);background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, #000 30%, transparent));">
   <div style="position:absolute;inset:-30%;background:radial-gradient(520px 420px at 30% 30%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%), radial-gradient(520px 420px at 70% 70%, color-mix(in srgb, var(--accent2) 45%, transparent), transparent 72%);filter: blur(0px);opacity:0.95;"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.55));"></div>
 
-  <div style="position:absolute;left:26px;top:26px;display:flex;flex-direction:column;gap:10px;">
+  <div style="position:absolute;left:26px;top:26px;display:flex;flex-direction:column;gap:10px;max-width:680px;">
     <div class="chip" style="padding:10px 14px;gap:10px;">
       <div style="font-size:18px;">${vibeIcon}</div>
-      <div class="small" style="font-weight:800;">${safeText(plan?.config?.category, safeText(plan?.scraped?.category, 'In the wild')) || 'In the wild'}</div>
+      <div class="small" style="font-weight:800;">${scene || 'In the wild'}</div>
     </div>
-    <div style="font-size:44px;line-height:1;font-weight:950;letter-spacing:-0.04em;">${safeText(plan?.config?.app_name, 'Your App')}</div>
-    <div class="small muted" style="max-width:560px;">${oneLiner}</div>
+    <div style="font-size:48px;line-height:1.02;font-weight:950;letter-spacing:-0.04em;">${hook}</div>
+    <div class="small muted" style="max-width:560px;">${safeText(imageBrief?.mood, oneLiner)}</div>
   </div>
 
   <div style="position:absolute;right:24px;bottom:22px;display:flex;gap:12px;align-items:flex-end;">
