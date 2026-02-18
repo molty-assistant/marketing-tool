@@ -241,7 +241,75 @@ const CHANNEL_GUIDES: Record<string, { name: string; bestTime: string; tone: str
 
 // ─── Brief Generation ───
 
-export function generateMarketingPlan(config: AppConfig, scraped: ScrapedApp): MarketingPlan {
+// ─── Goal & Tone Guides ───
+
+const GOAL_GUIDES: Record<string, { label: string; emphasis: string[] }> = {
+  'ASO optimization': {
+    label: '📱 ASO Optimization',
+    emphasis: [
+      'Optimise app title: primary keyword in first 30 characters',
+      'Use the keyword field (iOS) for terms NOT already in title/subtitle',
+      'Subtitle (30 chars): secondary keyword + benefit, e.g. "Habit tracker & planner"',
+      'First 3 screenshots must convert — show the core experience, not the settings',
+      'A/B test icon & screenshots with App Store Product Page Optimisation (iOS 15+)',
+      'Localise metadata for US → UK → AU → CA as first wave',
+      'Monitor keyword ranking weekly with AppFollow, Sensor Tower, or AppFigures',
+      'Respond to all reviews within 24h — it lifts conversion rate',
+    ],
+  },
+  'Launch campaign': {
+    label: '🚀 Launch Campaign',
+    emphasis: [
+      'Pre-launch: build a waitlist (even 50 people creates day-one momentum)',
+      'Coordinate posts across all channels within a 48-hour launch window',
+      'Submit to Product Hunt on Tuesday or Wednesday for peak visibility',
+      'Line up Show HN post with a technical write-up the same week',
+      'Identify 3-5 power users who will post day-one social proof',
+      'Prepare a launch thread for Twitter/X with screenshots + GIFs ready',
+      'Have a "Day 2 follow-up" post ready — "Launched yesterday, here\'s what we learned"',
+    ],
+  },
+  'Ongoing content': {
+    label: '📅 Ongoing Content',
+    emphasis: [
+      'Post cadence: 2-3× per week minimum — consistency beats volume',
+      'Batch-create content in 2-hour weekly sessions to avoid daily friction',
+      'Content mix: 40% educational, 30% behind-the-scenes, 30% promotional',
+      'Repurpose: one Reddit post → LinkedIn → Twitter thread → newsletter section',
+      'Monthly retro: what got the most engagement? Double down on that format',
+      'Build a swipe file of every comment/question from users — that\'s your content calendar',
+    ],
+  },
+  'Competitive analysis': {
+    label: '🔍 Competitive Analysis',
+    emphasis: [
+      'Track competitor App Store rankings weekly with a free tool (AppFollow, Sensor Tower)',
+      'Monitor their reviews — negative reviews are your feature roadmap',
+      'Subscribe to their newsletter and follow their changelog',
+      'Check their keyword rankings: what are they ranking for that you\'re not?',
+      'Use their negative reviews as your positioning ammunition ("Unlike X, we never…")',
+      'Watch their Product Hunt/Show HN posts for community feedback signals',
+    ],
+  },
+  'Full marketing pack': {
+    label: '📦 Full Marketing Pack',
+    emphasis: [
+      'Generate all 5 stages in full — research through distribution',
+      'Use the Copy Templates stage for ready-to-post content',
+      'Export the full brief as Markdown for team sharing',
+      'Use the Distribution Plan as your execution checklist',
+    ],
+  },
+};
+
+const TONE_GUIDES: Record<string, string> = {
+  professional: 'Write with authority. Clear, credible, confident. Avoid jargon but project expertise. Favour active voice and specific claims over vague assertions.',
+  casual: 'Write like a human talking to another human. Friendly, warm, a little informal. Contractions are fine. Avoid corporate-speak entirely.',
+  bold: 'Be direct. Short sentences. High-energy. Make every word earn its place. Lead with the strongest claim. Cut anything that softens the message.',
+  minimal: 'Say more with less. Remove every word that doesn\'t earn its place. If something can be cut, cut it. One idea per sentence.',
+};
+
+export function generateMarketingPlan(config: AppConfig, scraped: ScrapedApp, goals?: string[], tone?: string): MarketingPlan {
   const profile = getProfile(config.app_type);
   const keywords = generateKeywords(config);
   const subreddits = findSubreddits(config.category, config.app_name);
@@ -254,6 +322,21 @@ export function generateMarketingPlan(config: AppConfig, scraped: ScrapedApp): M
   const researchLines: string[] = [];
   researchLines.push('## Stage 1: Research');
   researchLines.push('');
+
+  // Goals summary in research stage
+  if (goals && goals.length > 0) {
+    researchLines.push('### Selected Goals');
+    researchLines.push('');
+    for (const goal of goals) {
+      researchLines.push(`- **${goal}**`);
+    }
+    researchLines.push('');
+    if (tone) {
+      researchLines.push(`**Tone:** ${tone.charAt(0).toUpperCase() + tone.slice(1)}`);
+      researchLines.push('');
+    }
+  }
+
   researchLines.push('### Market Landscape');
   researchLines.push('');
   researchLines.push(`**App:** ${config.app_name}`);
@@ -289,6 +372,35 @@ export function generateMarketingPlan(config: AppConfig, scraped: ScrapedApp): M
   const foundationLines: string[] = [];
   foundationLines.push('## Stage 2: Foundation');
   foundationLines.push('');
+
+  // ─── Tone of Voice (wizard selection) ───
+  if (tone && TONE_GUIDES[tone]) {
+    foundationLines.push('### Tone of Voice');
+    foundationLines.push('');
+    foundationLines.push(`**Selected:** ${tone.charAt(0).toUpperCase() + tone.slice(1)}`);
+    foundationLines.push('');
+    foundationLines.push(TONE_GUIDES[tone]);
+    foundationLines.push('');
+  }
+
+  // ─── Goal-specific guidance ───
+  const activeGoals = (goals || []).filter((g) => GOAL_GUIDES[g]);
+  if (activeGoals.length > 0) {
+    foundationLines.push('### Priority Focus Areas');
+    foundationLines.push('');
+    foundationLines.push('Based on your selected goals, these areas should be prioritised in execution:');
+    foundationLines.push('');
+    for (const goal of activeGoals) {
+      const guide = GOAL_GUIDES[goal];
+      foundationLines.push(`#### ${guide.label}`);
+      foundationLines.push('');
+      for (const point of guide.emphasis) {
+        foundationLines.push(`- ${point}`);
+      }
+      foundationLines.push('');
+    }
+  }
+
   foundationLines.push('### Brand Voice');
   foundationLines.push('');
   foundationLines.push(`**Voice:** ${profile.voice}`);

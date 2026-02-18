@@ -6,7 +6,12 @@ import { AppConfig, ScrapedApp } from '@/lib/types';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { scraped, config: userConfig } = body as { scraped: ScrapedApp; config?: Partial<AppConfig> };
+    const { scraped, config: userConfig, goals, tone } = body as {
+      scraped: ScrapedApp;
+      config?: Partial<AppConfig>;
+      goals?: string[];
+      tone?: string;
+    };
 
     if (!scraped || !scraped.name) {
       return NextResponse.json({ error: 'Scraped app data is required' }, { status: 400 });
@@ -22,7 +27,7 @@ export async function POST(request: NextRequest) {
       competitors: userConfig?.competitors?.length ? userConfig.competitors : baseConfig.competitors,
     };
 
-    const plan = generateMarketingPlan(config, scraped);
+    const plan = generateMarketingPlan(config, scraped, goals, tone);
 
     // Auto-save to SQLite
     try {
