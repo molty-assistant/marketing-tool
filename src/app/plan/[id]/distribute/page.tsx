@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, use } from 'react';
+import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import PlanNav from '@/components/PlanNav';
@@ -44,10 +44,11 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState<AtomizeResponse | null>(null);
+  const [isCached, setIsCached] = useState(false);
 
   const [filter, setFilter] = useState<string>('all');
 
-  const storageKey = useMemo(() => `atoms-${id}-${platforms.sort().join(',')}-${sourceContent ? 'custom' : 'auto'}`, [id, platforms, sourceContent]);
+  const storageKey = `distribute-${id}`;
 
   const loadPlan = () => {
     setPlanLoading(true);
@@ -87,10 +88,11 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
     if (!stored) return;
     try {
       setData(JSON.parse(stored));
+      setIsCached(true);
     } catch {
       /* ignore */
     }
-  }, [storageKey]);
+  }, [id]);
 
   const togglePlatform = (p: string) => {
     setPlatforms((prev) => {
@@ -116,8 +118,9 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to atomize content');
 
-      setData(json);
       sessionStorage.setItem(storageKey, JSON.stringify(json));
+      setData(json);
+      setIsCached(false);
       toastSuccess('Content atomized');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to atomize content';
@@ -163,18 +166,27 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
     <div className="max-w-5xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Turn one core piece of content into platform-native posts for Instagram, TikTok, LinkedIn, Twitter, Reddit, and email — generated in seconds from your marketing brief.
+      </div>
+
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">📣 Distribute</h1>
           <p className="text-slate-400">{plan.config.app_name} — One core piece, many posts</p>
         </div>
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
-        >
-          {loading ? 'Generating…' : '✨ Generate'}
-        </button>
+        <div className="flex items-center gap-3">
+          {data && isCached && (
+            <span className="text-xs text-slate-500">Cached · ↻ Regenerate to refresh</span>
+          )}
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+          >
+            {loading ? 'Generating…' : '✨ Generate'}
+          </button>
+        </div>
       </div>
 
       <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6 space-y-4">

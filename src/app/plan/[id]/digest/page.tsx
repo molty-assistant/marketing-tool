@@ -150,6 +150,10 @@ export default function DigestPage({ params }: { params: Promise<{ id: string }>
     <div className="max-w-6xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Get a weekly performance digest with content insights, AI recommendations, and prioritised next actions to keep your marketing momentum going.
+      </div>
+
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">📊 Weekly Digest</h1>

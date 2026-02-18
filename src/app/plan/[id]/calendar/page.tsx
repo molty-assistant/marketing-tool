@@ -252,6 +252,10 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
     <div className="max-w-6xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Plan your content calendar with AI-scheduled posts across all platforms for the next 4 weeks — see what to post, when, and with what copy.
+      </div>
+
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">📅 Content Calendar</h1>

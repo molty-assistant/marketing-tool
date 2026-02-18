@@ -208,6 +208,9 @@ export default function SocialPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <PlanNav planId={planId} />
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Generate platform-native captions and hashtags for Instagram and TikTok, then publish directly via Buffer — or download images for manual posting.
+      </div>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-2">📱 Social Publishing</h1>
         <p className="text-gray-400 mb-8">Generate and publish content to Instagram & TikTok via Buffer</p>

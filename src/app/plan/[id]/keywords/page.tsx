@@ -114,7 +114,20 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
   const [loading, setLoading] = useState(false);
   const [planLoading, setPlanLoading] = useState(() => !readSessionPlan(id));
   const [data, setData] = useState<KeywordData | null>(null);
+  const [isCached, setIsCached] = useState(false);
   const [error, setError] = useState('');
+
+  const storageKey = `keywords-${id}`;
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (stored) {
+        setData(JSON.parse(stored) as KeywordData);
+        setIsCached(true);
+      }
+    } catch {}
+  }, [id]);
 
   useEffect(() => {
     if (plan) {
@@ -153,7 +166,9 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
         throw new Error(err.error || 'Request failed');
       }
       const result: KeywordData = await res.json();
+      try { sessionStorage.setItem(storageKey, JSON.stringify(result)); } catch {}
       setData(result);
+      setIsCached(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
@@ -168,8 +183,17 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <PlanNav planId={id} appName={appName} />
 
+        <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+          Discover high-value ASO keywords for your app — filter by search volume, difficulty score, and relevance to find the terms that will boost your store ranking.
+        </div>
+
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">🔑 Keyword Research</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold mb-2">🔑 Keyword Research</h1>
+            {data && isCached && (
+              <span className="text-xs text-slate-500">Cached · Re-run research to refresh</span>
+            )}
+          </div>
           <p className="text-slate-400">
             Discover high-value ASO/SEO keywords for{' '}
             <span className="text-white font-medium">{appName || 'your app'}</span>.

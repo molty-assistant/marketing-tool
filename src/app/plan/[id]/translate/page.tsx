@@ -119,6 +119,9 @@ export default function TranslatePage({
     Partial<Record<LanguageCode, Partial<Record<TranslationSection, string>>>>
   >({});
   const [activeLang, setActiveLang] = useState<LanguageCode>('es');
+  const [isCached, setIsCached] = useState(false);
+
+  const storageKey = `translate-${id}`;
 
   const [loading, setLoading] = useState(false);
   const [planLoading, setPlanLoading] = useState(true);
@@ -155,6 +158,22 @@ export default function TranslatePage({
 
   useEffect(() => {
     loadPlan();
+  }, [id]);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as {
+        translations: Partial<Record<LanguageCode, Partial<Record<TranslationSection, string>>>>;
+        activeLang?: LanguageCode;
+      };
+      if (parsed?.translations) setTranslations(parsed.translations);
+      if (parsed?.activeLang) setActiveLang(parsed.activeLang);
+      setIsCached(true);
+    } catch {
+      /* ignore */
+    }
   }, [id]);
 
   const requestedLanguages = useMemo(() => {
@@ -210,9 +229,11 @@ export default function TranslatePage({
         }
       }
 
-      setTranslations(next);
       const first = requestedLanguages[0] || 'es';
+      sessionStorage.setItem(storageKey, JSON.stringify({ translations: next, activeLang: first }));
+      setTranslations(next);
       setActiveLang(first);
+      setIsCached(false);
       toastSuccess('Translations generated successfully');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to generate translations';
@@ -270,10 +291,19 @@ export default function TranslatePage({
     <div className="max-w-5xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Translate your App Store copy into 10 languages — ready to paste directly into your store listing without any editing.
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">🌍 Translate / Localise</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold text-white">🌍 Translate / Localise</h1>
+            {hasResults && isCached && (
+              <span className="text-xs text-slate-500">Cached · Generate to refresh</span>
+            )}
+          </div>
           <p className="text-slate-400">
             {plan.config.app_name} — Generate localised app store copy in multiple languages
           </p>

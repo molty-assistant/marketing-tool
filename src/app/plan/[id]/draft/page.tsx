@@ -85,6 +85,9 @@ export default function DraftPage({
   });
 
   const [draft, setDraft] = useState<Partial<Record<DraftSection, string>>>({});
+  const [isCached, setIsCached] = useState(false);
+
+  const storageKey = `draft-${id}`;
   const [loading, setLoading] = useState(false);
   const [planLoading, setPlanLoading] = useState(true);
   const [planError, setPlanError] = useState('');
@@ -123,6 +126,17 @@ export default function DraftPage({
     loadPlan();
   }, [id]);
 
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (!stored) return;
+      setDraft(JSON.parse(stored) as Partial<Record<DraftSection, string>>);
+      setIsCached(true);
+    } catch {
+      /* ignore */
+    }
+  }, [id]);
+
   const selectedSections = useMemo(() => {
     return SECTION_OPTIONS.map((s) => s.key).filter((k) => selected[k]);
   }, [selected]);
@@ -155,10 +169,11 @@ export default function DraftPage({
     setError('');
     try {
       const data = await generate(selectedSections);
-      setDraft((prev) => ({
-        ...prev,
-        ...(data.draft as Partial<Record<DraftSection, string>>),
-      }));
+      const patch = data.draft as Partial<Record<DraftSection, string>>;
+      const nextDraft = { ...draft, ...patch };
+      sessionStorage.setItem(storageKey, JSON.stringify(nextDraft));
+      setDraft(nextDraft);
+      setIsCached(false);
       toastSuccess('Draft generated successfully');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to generate draft';
@@ -176,7 +191,10 @@ export default function DraftPage({
       const data = await generate([section]);
       const value = data.draft?.[section];
       if (typeof value === 'string') {
-        setDraft((prev) => ({ ...prev, [section]: value }));
+        const nextDraft = { ...draft, [section]: value };
+        sessionStorage.setItem(storageKey, JSON.stringify(nextDraft));
+        setDraft(nextDraft);
+        setIsCached(false);
       }
       toastSuccess(`Regenerated ${sectionToTitle(section)}`);
     } catch (err) {
@@ -234,10 +252,19 @@ export default function DraftPage({
     <div className="max-w-5xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Generate polished App Store descriptions, landing page hero copy, and feature bullets — choose your tone and section, then copy straight to your listing.
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">📝 First Draft Generator</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold text-white">📝 First Draft Generator</h1>
+            {Object.keys(draft).length > 0 && isCached && (
+              <span className="text-xs text-slate-500">Cached · ↻ Generate to refresh</span>
+            )}
+          </div>
           <p className="text-slate-400">
             {plan.config.app_name} — Generate a complete first draft for your listing
           </p>

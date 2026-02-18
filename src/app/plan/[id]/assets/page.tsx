@@ -915,6 +915,10 @@ export default function AssetsPage({
     <div className="max-w-5xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Generate social media graphics and device mockups — download ready-to-post images sized for Instagram, TikTok, and other platforms.
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>

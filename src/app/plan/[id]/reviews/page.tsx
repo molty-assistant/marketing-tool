@@ -227,6 +227,10 @@ export default function ReviewsPage({ params }: { params: Promise<{ id: string }
     <div className="max-w-6xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Monitor your App Store reviews, analyse sentiment trends, and surface the most common user themes — so you know what&apos;s working and what to fix next.
+      </div>
+
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">⭐ Review Monitoring</h1>

@@ -96,6 +96,10 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
     <div className="max-w-4xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Preview how your app appears in Google search results — tweak your title and meta description to maximise click-through from organic search.
+      </div>
+
       <div className="mb-8">
         <div className="flex items-center gap-4 min-w-0 mb-2">
           {plan.config.icon && <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />}

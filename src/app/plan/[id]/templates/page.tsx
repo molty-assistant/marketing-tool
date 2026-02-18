@@ -155,6 +155,10 @@ export default function TemplatesPage({
   const [planError, setPlanError] = useState('');
   const { success: toastSuccess, error: toastError } = useToast();
 
+  const storageKey = `templates-${id}`;
+  const [isCached, setIsCached] = useState(false);
+  const [cachedPopulated, setCachedPopulated] = useState<Record<string, string> | null>(null);
+
   const loadPlan = () => {
     setPlanLoading(true);
     setPlanError('');
@@ -187,6 +191,17 @@ export default function TemplatesPage({
 
   useEffect(() => {
     loadPlan();
+  }, [id]);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      if (!stored) return;
+      setCachedPopulated(JSON.parse(stored) as Record<string, string>);
+      setIsCached(true);
+    } catch {
+      /* ignore */
+    }
   }, [id]);
 
   const appName = plan?.config?.app_name;
@@ -229,6 +244,10 @@ export default function TemplatesPage({
     <div className="px-4 py-8">
       <div className="max-w-5xl mx-auto">
         <PlanNav planId={id} appName={appName} />
+
+        <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+          Ready-to-copy marketing templates pre-filled with your app&apos;s details — App Store blurbs, social bios, Product Hunt taglines, and more.
+        </div>
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Templates</h1>

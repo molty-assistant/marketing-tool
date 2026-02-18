@@ -383,6 +383,10 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
     <div className="max-w-4xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Your complete AI-generated marketing brief — explore the tabs above to create ad copy, translate listings, distribute content across platforms, and build your full marketing pack.
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 flex-wrap gap-4">
         <div>
@@ -492,6 +496,41 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
           appContext={`${plan.config.app_name} — ${plan.config.one_liner}. Category: ${plan.config.category}. Audience: ${plan.config.target_audience}. Pricing: ${plan.config.pricing}.`}
         />
       ))}
+
+      {/* What's next — recommended workflow */}
+      <div className="mt-10 mb-4 bg-slate-800/30 border border-slate-700/40 rounded-2xl p-5">
+        <h2 className="text-base font-semibold text-white mb-4">🗺️ What&apos;s next? Recommended workflow</h2>
+        <ol className="space-y-3">
+          {[
+            { step: 1, href: 'foundation', emoji: '🧱', label: 'Foundation', desc: 'Set your brand voice and positioning angles — the strategic base for everything else.' },
+            { step: 2, href: 'draft', emoji: '📝', label: 'Draft', desc: 'Generate polished App Store copy and landing page hero text in multiple tones.' },
+            { step: 3, href: 'variants', emoji: '🏆', label: 'Variants', desc: 'Create and score multiple headlines side-by-side to find your strongest hook.' },
+            { step: 4, href: 'translate', emoji: '🌍', label: 'Translate', desc: 'Translate your copy into 10 languages for global store listings.' },
+            { step: 5, href: 'distribute', emoji: '📣', label: 'Distribute', desc: 'Turn one core piece into platform-native posts for every channel at once.' },
+            { step: 6, href: 'emails', emoji: '✉️', label: 'Emails', desc: 'Generate a welcome or launch email sequence for new users.' },
+            { step: 7, href: 'calendar', emoji: '📅', label: 'Calendar', desc: 'Plan your posting schedule for the next 4 weeks across all platforms.' },
+            { step: 8, href: 'keywords', emoji: '🔑', label: 'Keywords', desc: 'Find high-value ASO keywords to boost your store ranking.' },
+          ].map(({ step, href, emoji, label, desc }) => (
+            <li key={href}>
+              <a
+                href={`/plan/${id}/${href}`}
+                className="flex items-start gap-3 group hover:bg-slate-700/30 rounded-xl px-3 py-2 -mx-3 transition-colors"
+              >
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center mt-0.5">
+                  {step}
+                </span>
+                <div>
+                  <span className="text-sm font-medium text-white group-hover:text-indigo-300 transition-colors">
+                    {emoji} {label}
+                  </span>
+                  <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                </div>
+                <span className="ml-auto text-slate-600 group-hover:text-slate-400 text-sm transition-colors flex-shrink-0 mt-0.5">→</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
 
       {/* Method credit */}
       <div className="text-center text-sm text-slate-600 mt-8 mb-4">

@@ -232,6 +232,10 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
     <div className="max-w-5xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Review and approve AI-generated content before it goes live — edit any section inline or regenerate it before adding to your posting queue.
+      </div>
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
         <div>

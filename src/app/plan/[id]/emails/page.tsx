@@ -165,6 +165,10 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
     <div className="max-w-5xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Generate a welcome email sequence, launch announcement series, or nurture drip campaign — tailored to your app&apos;s tone and audience.
+      </div>
+
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">✉️ Email Sequence</h1>

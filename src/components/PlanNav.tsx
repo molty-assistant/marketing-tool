@@ -8,25 +8,25 @@ interface PlanNavProps {
 }
 
 const NAV_ITEMS = [
-  { href: '', label: '📋 Brief', exact: true },
-  { href: '/foundation', label: '🧱 Foundation' },
-  { href: '/draft', label: '📝 Draft' },
-  { href: '/variants', label: '🏆 Variants' },
-  { href: '/preview', label: '📱 Preview' },
-  { href: '/approvals', label: '✅ Approvals' },
-  { href: '/emails', label: '✉️ Emails' },
-  { href: '/calendar', label: '📅 Calendar' },
-  { href: '/digest', label: '📊 Digest' },
-  { href: '/distribute', label: '📣 Distribute' },
-  { href: '/translate', label: '🌍 Translate' },
-  { href: '/serp', label: '🔍 SERP' },
-  { href: '/competitors', label: '🏆 Competitors' },
-  { href: '/assets', label: '🎨 Assets' },
-  { href: '/reviews', label: '⭐ Reviews' },
-  { href: '/keywords', label: '🔑 Keywords' },
-  { href: '/social', label: '📱 Social' },
-  { href: '/templates', label: '🧩 Templates' },
-  { href: '/schedule', label: '⏰ Schedule' },
+  { href: '', label: '📋 Brief', description: 'Your app\'s core marketing brief', exact: true },
+  { href: '/foundation', label: '🧱 Foundation', description: 'Brand voice & competitive positioning' },
+  { href: '/draft', label: '📝 Draft', description: 'App Store copy in multiple tones' },
+  { href: '/variants', label: '🏆 Variants', description: 'A/B test different headline angles' },
+  { href: '/preview', label: '📱 Preview', description: 'App Store & Play Store listing preview' },
+  { href: '/approvals', label: '✅ Approvals', description: 'Review & approve generated content' },
+  { href: '/emails', label: '✉️ Emails', description: 'Welcome & launch email sequences' },
+  { href: '/calendar', label: '📅 Calendar', description: 'AI content calendar for all platforms' },
+  { href: '/digest', label: '📊 Digest', description: 'Weekly performance summary & next actions' },
+  { href: '/distribute', label: '📣 Distribute', description: 'One post → Instagram, TikTok, LinkedIn, Twitter' },
+  { href: '/translate', label: '🌍 Translate', description: 'App Store copy in 10 languages' },
+  { href: '/serp', label: '🔍 SERP', description: 'Google search result preview' },
+  { href: '/competitors', label: '🏆 Competitors', description: 'Competitive intelligence & gap analysis' },
+  { href: '/assets', label: '🎨 Assets', description: 'Social graphics & device mockups' },
+  { href: '/reviews', label: '⭐ Reviews', description: 'App Store review monitoring & sentiment' },
+  { href: '/keywords', label: '🔑 Keywords', description: 'ASO keyword research by volume & difficulty' },
+  { href: '/social', label: '📱 Social', description: 'Generate & post to Instagram/TikTok' },
+  { href: '/templates', label: '🧩 Templates', description: 'Ready-to-copy marketing templates' },
+  { href: '/schedule', label: '⏰ Schedule', description: 'Content calendar & auto-posting' },
 ];
 
 export default function PlanNav({ planId, appName }: PlanNavProps) {
@@ -60,13 +60,21 @@ export default function PlanNav({ planId, appName }: PlanNavProps) {
             <a
               key={item.href}
               href={fullPath}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              title={item.description}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex flex-col items-start ${
                 isActive
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
               }`}
             >
-              {item.label}
+              <span>{item.label}</span>
+              <span
+                className={`text-[10px] font-normal leading-tight mt-0.5 ${
+                  isActive ? 'text-indigo-200' : 'text-slate-500'
+                }`}
+              >
+                {item.description}
+              </span>
             </a>
           );
         })}

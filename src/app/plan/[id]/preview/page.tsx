@@ -156,6 +156,10 @@ export default function PlanPreviewPage({
     <div className="max-w-6xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        See exactly how your app looks in the App Store and Google Play — with your real listing data, so you can spot issues before they go live.
+      </div>
+
       <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-white">📱 App Store Preview</h1>

@@ -183,6 +183,10 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
     <div className="max-w-6xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Build your brand&apos;s strategic foundation — define your voice, personality traits, vocabulary guide, and positioning angles that guide all your marketing content.
+      </div>
+
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">🧱 Foundation Layer</h1>

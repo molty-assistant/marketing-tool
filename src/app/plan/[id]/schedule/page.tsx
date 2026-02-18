@@ -140,6 +140,10 @@ export default function SchedulePage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <PlanNav planId={planId} />
 
+        <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+          Schedule posts for auto-publishing across your connected platforms — set a date and time, then let the system handle generation and posting.
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">📅 Content Schedule</h1>
           <div className="flex gap-2">

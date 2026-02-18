@@ -227,6 +227,10 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
     <div className="max-w-6xl mx-auto">
       <PlanNav planId={id} appName={plan.config.app_name} />
 
+      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        Analyse your top competitors — their positioning, pricing, strengths, and weaknesses — and identify gaps you can exploit in your messaging.
+      </div>
+
       <div className="flex items-start justify-between gap-4 flex-wrap mb-8">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-white break-words">🏆 Competitors</h1>
