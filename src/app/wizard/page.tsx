@@ -4,11 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
+import { DISTRIBUTION_CHANNELS } from '@/lib/constants';
 
 type WizardStep = 0 | 1 | 2 | 3 | 4;
-
-type Platform = 'X' | 'Instagram' | 'TikTok' | 'LinkedIn' | 'Facebook' | 'Threads';
-const PLATFORMS: Platform[] = ['X', 'Instagram', 'TikTok', 'LinkedIn', 'Facebook', 'Threads'];
 
 type Goal =
   | 'Launch campaign'
@@ -34,7 +32,7 @@ const TONES: { id: Tone; label: string; desc: string }[] = [
 
 type WizardState = {
   url: string;
-  platforms: Platform[];
+  platforms: string[];
   goals: Goal[];
   tone: Tone;
 };
@@ -43,7 +41,7 @@ const STORAGE_KEY = 'onboarding-wizard-v2';
 
 const DEFAULT_STATE: WizardState = {
   url: '',
-  platforms: ['X', 'Instagram'],
+  platforms: ['twitter', 'instagram'],
   goals: ['Full marketing pack'],
   tone: 'professional',
 };
@@ -89,7 +87,7 @@ export default function WizardPage() {
     setState((prev) => ({
       ...prev,
       ...stored,
-      platforms: Array.isArray(stored.platforms) ? (stored.platforms as Platform[]) : prev.platforms,
+      platforms: Array.isArray(stored.platforms) ? (stored.platforms as string[]) : prev.platforms,
       goals: Array.isArray(stored.goals) ? (stored.goals as Goal[]) : prev.goals,
     }));
   }, []);
@@ -144,11 +142,11 @@ export default function WizardPage() {
     if (step > 0) setStep((s) => (s - 1) as WizardStep);
   };
 
-  const togglePlatform = (p: Platform) => {
+  const togglePlatform = (id: string) => {
     setError('');
     setState((prev) => ({
       ...prev,
-      platforms: prev.platforms.includes(p) ? prev.platforms.filter((x) => x !== p) : [...prev.platforms, p],
+      platforms: prev.platforms.includes(id) ? prev.platforms.filter((x) => x !== id) : [...prev.platforms, id],
     }));
   };
 
@@ -309,12 +307,12 @@ export default function WizardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {PLATFORMS.map((p) => {
-                const checked = state.platforms.includes(p);
+              {DISTRIBUTION_CHANNELS.map((ch) => {
+                const checked = state.platforms.includes(ch.id);
                 return (
                   <button
-                    key={p}
-                    onClick={() => togglePlatform(p)}
+                    key={ch.id}
+                    onClick={() => togglePlatform(ch.id)}
                     className={
                       'text-left rounded-xl border p-4 transition-all ' +
                       (checked
@@ -336,7 +334,7 @@ export default function WizardPage() {
                           </svg>
                         )}
                       </div>
-                      <div className="font-semibold text-white">{p}</div>
+                      <div className="font-semibold text-white">{ch.label}</div>
                     </div>
                   </button>
                 );
@@ -448,7 +446,11 @@ export default function WizardPage() {
 
                 <div>
                   <div className="text-slate-400 text-xs mb-1">Platforms</div>
-                  <div className="text-white">{state.platforms.join(', ')}</div>
+                  <div className="text-white">
+                    {state.platforms
+                      .map((id) => DISTRIBUTION_CHANNELS.find((ch) => ch.id === id)?.label ?? id)
+                      .join(', ')}
+                  </div>
                 </div>
 
                 <div>

@@ -6,17 +6,9 @@ import Link from 'next/link';
 import { ScrapedApp, AppConfig, RecentAnalysis } from '@/lib/types';
 import { useToast } from '@/components/Toast';
 import ErrorRetry from '@/components/ErrorRetry';
+import { DISTRIBUTION_CHANNELS } from '@/lib/constants';
 
 const APP_TYPES: AppConfig['app_type'][] = ['web', 'mobile', 'saas', 'desktop', 'cli', 'api', 'browser-extension'];
-
-const DISTRIBUTION_CHANNELS = [
-  { id: 'reddit', label: 'Reddit' },
-  { id: 'hackernews', label: 'Hacker News' },
-  { id: 'producthunt', label: 'Product Hunt' },
-  { id: 'twitter', label: 'Twitter / X' },
-  { id: 'linkedin', label: 'LinkedIn' },
-  { id: 'appstore', label: 'App Store' },
-];
 
 function EditableListField({
   label,
@@ -149,8 +141,8 @@ function AnalyzeContent() {
         setCompetitors([]);
         setChannels(
           isApp
-            ? ['reddit', 'twitter', 'producthunt', 'appstore']
-            : ['reddit', 'hackernews', 'twitter', 'linkedin', 'producthunt']
+            ? ['reddit', 'twitter', 'product_hunt', 'app_store']
+            : ['reddit', 'twitter', 'linkedin', 'product_hunt']
         );
         setConfigReady(true);
 
