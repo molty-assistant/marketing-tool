@@ -346,12 +346,11 @@ export default function SocialPage() {
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="text-sm text-gray-300 mb-2">✅ Video ready</div>
               <a
-                href={videoUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-300 hover:text-blue-200 underline break-all"
+                href={`/api/download-video?uri=${encodeURIComponent(videoUrl)}`}
+                download="promo-video.mp4"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
               >
-                Download video
+                ⬇️ Download MP4
               </a>
             </div>
           )}
