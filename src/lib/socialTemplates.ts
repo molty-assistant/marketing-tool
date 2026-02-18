@@ -8,6 +8,7 @@ export type SocialPlatform =
   | 'facebook-og';
 
 export type SocialStyle = 'gradient' | 'dark' | 'light';
+export type SocialVisualMode = 'screenshot' | 'hero' | 'hybrid';
 
 export interface SocialTemplate {
   platform: SocialPlatform;
@@ -175,8 +176,10 @@ export function generateSocialTemplates(opts: {
   platforms: SocialPlatform[];
   style: SocialStyle;
   accentColor: string;
+  visualMode?: SocialVisualMode;
 }): SocialTemplate[] {
   const { plan, platforms, style } = opts;
+  const visualMode: SocialVisualMode = opts.visualMode || 'screenshot';
   const accent = typeof opts.accentColor === 'string' && opts.accentColor.startsWith('#') ? opts.accentColor : '#667eea';
   const accent2 = mix(accent, '#ffffff', 0.22);
 
@@ -420,12 +423,57 @@ export function generateSocialTemplates(opts: {
       const width = 1080;
       const height = 1080;
 
-      const mainVisual = screenshot
-        ? `<img src="${screenshot}" style="width:100%;height:100%;object-fit:cover;border-radius:28px;" />`
+      const category = safeText(plan?.config?.category, safeText(plan?.scraped?.category, '')).toLowerCase();
+      const vibeIcon = category.includes('photo')
+        ? '📍'
+        : category.includes('travel')
+          ? '🧭'
+          : category.includes('fitness')
+            ? '⚡'
+            : '✨';
+
+      const heroVisual = `
+<div style="width:100%;height:100%;border-radius:28px;position:relative;overflow:hidden;border:1px solid var(--border);background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, #000 30%, transparent));">
+  <div style="position:absolute;inset:-30%;background:radial-gradient(520px 420px at 30% 30%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%), radial-gradient(520px 420px at 70% 70%, color-mix(in srgb, var(--accent2) 45%, transparent), transparent 72%);filter: blur(0px);opacity:0.95;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.55));"></div>
+
+  <div style="position:absolute;left:26px;top:26px;display:flex;flex-direction:column;gap:10px;">
+    <div class="chip" style="padding:10px 14px;gap:10px;">
+      <div style="font-size:18px;">${vibeIcon}</div>
+      <div class="small" style="font-weight:800;">${safeText(plan?.config?.category, safeText(plan?.scraped?.category, 'In the wild')) || 'In the wild'}</div>
+    </div>
+    <div style="font-size:44px;line-height:1;font-weight:950;letter-spacing:-0.04em;">${safeText(plan?.config?.app_name, 'Your App')}</div>
+    <div class="small muted" style="max-width:560px;">${oneLiner}</div>
+  </div>
+
+  <div style="position:absolute;right:24px;bottom:22px;display:flex;gap:12px;align-items:flex-end;">
+    <div style="width:220px;height:220px;border-radius:26px;background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.10);backdrop-filter: blur(10px);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div style="font-size:90px;opacity:0.95;">🌅</div>
+    </div>
+    <div style="width:160px;height:160px;border-radius:26px;background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.10);backdrop-filter: blur(10px);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div style="font-size:74px;opacity:0.95;">📷</div>
+    </div>
+  </div>
+</div>`;
+
+      const screenshotVisual = screenshot
+        ? `<img src="${screenshot}" style="width:100%;height:100%;object-fit:cover;transform:scale(1.12);border-radius:28px;" />`
         : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${iconImg(
             iconUrl,
             220
           )}</div>`;
+
+      const mainVisual =
+        visualMode === 'hero'
+          ? heroVisual
+          : visualMode === 'hybrid'
+            ? `<div style="position:relative;width:100%;height:100%;">
+                ${heroVisual}
+                <div style="position:absolute;left:26px;bottom:26px;width:420px;height:260px;border-radius:26px;overflow:hidden;border:1px solid rgba(255,255,255,0.14);box-shadow:0 18px 45px rgba(0,0,0,0.35);background:rgba(0,0,0,0.18);">
+                  ${screenshotVisual}
+                </div>
+              </div>`
+            : screenshotVisual;
 
       const body = `
 <div style="position:absolute;inset:50px;display:flex;flex-direction:column;gap:22px;">
@@ -442,7 +490,7 @@ export function generateSocialTemplates(opts: {
     <div style="position:relative;height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:14px;">
       <div>
         <div class="h2" style="font-size:52px;">${headline}</div>
-        <div class="p muted" style="margin-top:10px;">${oneLiner}</div>
+        <div class="p muted" style="margin-top:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:60px;">${oneLiner}</div>
       </div>
 
       <div style="border-radius:28px;overflow:hidden;border:1px solid var(--border);box-shadow:0 18px 40px rgba(0,0,0,0.28);background:rgba(0,0,0,0.18);">${mainVisual}</div>
