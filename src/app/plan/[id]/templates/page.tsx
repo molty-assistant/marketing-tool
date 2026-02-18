@@ -159,6 +159,9 @@ export default function TemplatesPage({
   const [isCached, setIsCached] = useState(false);
   const [cachedPopulated, setCachedPopulated] = useState<Record<string, string> | null>(null);
 
+  const [edited, setEdited] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
   const loadPlan = () => {
     setPlanLoading(true);
     setPlanError('');
@@ -194,10 +197,26 @@ export default function TemplatesPage({
   }, [id]);
 
   useEffect(() => {
+    // Load persisted template edits (if any)
+    fetch(`/api/plans/${id}/templates`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const templates = json?.templates;
+        if (!templates || typeof templates !== 'object') return;
+        setEdited((prev) => ({ ...prev, ...(templates as Record<string, string>) }));
+      })
+      .catch(() => {
+        /* ignore */
+      });
+  }, [id]);
+
+  useEffect(() => {
     try {
       const stored = sessionStorage.getItem(storageKey);
       if (!stored) return;
-      setCachedPopulated(JSON.parse(stored) as Record<string, string>);
+      const parsed = JSON.parse(stored) as Record<string, string>;
+      setCachedPopulated(parsed);
+      setEdited(parsed);
       setIsCached(true);
     } catch {
       /* ignore */
@@ -216,13 +235,26 @@ export default function TemplatesPage({
   useEffect(() => {
     if (!plan) return;
     try {
-      const payload: Record<string, string> = {};
-      for (const t of populatedTemplates) payload[t.id] = t.populated;
-      sessionStorage.setItem(storageKey, JSON.stringify(payload));
+      // If we don't have any edited content yet, seed it from populated templates.
+      setEdited((prev) => {
+        if (Object.keys(prev).length > 0) return prev;
+        const payload: Record<string, string> = {};
+        for (const tpl of populatedTemplates) payload[tpl.id] = tpl.populated;
+        return payload;
+      });
     } catch {
       /* ignore */
     }
-  }, [id, plan, populatedTemplates]);
+  }, [plan, populatedTemplates]);
+
+  useEffect(() => {
+    try {
+      if (Object.keys(edited).length === 0) return;
+      sessionStorage.setItem(storageKey, JSON.stringify(edited));
+    } catch {
+      /* ignore */
+    }
+  }, [storageKey, edited]);
 
   const handleCopy = async (text: string) => {
     try {
@@ -230,6 +262,40 @@ export default function TemplatesPage({
       toastSuccess('Copied to clipboard');
     } catch {
       toastError('Failed to copy');
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const entries = Object.entries(edited);
+      if (entries.length === 0) {
+        toastError('Nothing to save');
+        return;
+      }
+
+      await Promise.all(
+        entries.map(([templateId, content]) =>
+          fetch(`/api/plans/${id}/templates/${templateId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+          }).then(async (res) => {
+            if (res.ok) return;
+            const j = await res.json().catch(() => ({}));
+            throw new Error(j?.error || 'Failed to save templates');
+          })
+        )
+      );
+
+      toastSuccess('Saved template changes');
+      setIsCached(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to save templates';
+      toastError(msg);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -266,6 +332,13 @@ export default function TemplatesPage({
             {cachedPopulated && isCached && (
               <span className="text-xs text-slate-500">Cached</span>
             )}
+            <button
+              onClick={handleSaveChanges}
+              disabled={saving || Object.keys(edited).length === 0}
+              className="ml-auto bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/40 disabled:cursor-not-allowed text-white text-sm px-4 py-2 rounded-xl transition-colors"
+            >
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
           </div>
           <p className="text-slate-400">
             Browse ready-to-use marketing copy templates. We\'ll auto-fill placeholders
@@ -281,8 +354,9 @@ export default function TemplatesPage({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {populatedTemplates.map((t) => {
-            const charCount = t.populated.length;
+            const charCount = (edited[t.id] ?? t.populated).length;
             const overLimit = charCount > t.charLimit;
+            const current = edited[t.id] ?? t.populated;
 
             return (
               <div
@@ -299,7 +373,7 @@ export default function TemplatesPage({
                   </div>
 
                   <button
-                    onClick={() => handleCopy(t.populated)}
+                    onClick={() => handleCopy(current)}
                     className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
                   >
                     📋 Copy
@@ -316,15 +390,17 @@ export default function TemplatesPage({
                     )}
                   </div>
 
-                  <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4">
-                    <pre className="whitespace-pre-wrap text-sm text-slate-200 font-sans">
-                      {t.populated}
-                    </pre>
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-2">
+                    <textarea
+                      value={current}
+                      onChange={(e) => setEdited((prev) => ({ ...prev, [t.id]: e.target.value }))}
+                      className="w-full min-h-[160px] bg-transparent p-2 text-sm text-slate-200 font-sans whitespace-pre-wrap focus:outline-none"
+                    />
                   </div>
                 </div>
 
                 <div className="text-xs text-slate-500">
-                  Preview: {clamp(t.populated.replace(/\s+/g, ' ').trim(), 140)}
+                  Preview: {clamp(current.replace(/\s+/g, ' ').trim(), 140)}
                 </div>
               </div>
             );
