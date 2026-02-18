@@ -1,0 +1,9 @@
+{
+  "defaultApp": "lightscout",
+  "apps": {
+    "lightscout": {
+      "name": "LightScout",
+      "tagline": "Generate marketing assets from your product in minutes"
+    }
+  }
+}
