@@ -18,7 +18,7 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy to Railway
-        run: railway up --detach
+        run: railway up --detach --service marketing-tool
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           # Link to specific project + service so no interactive prompt needed
