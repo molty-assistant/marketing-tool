@@ -90,6 +90,10 @@ function EditableListField({
   );
 }
 
+function OptionalLabel() {
+  return <span className="ml-1.5 text-xs font-normal text-slate-500">(optional)</span>;
+}
+
 function AnalyzeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -103,6 +107,7 @@ function AnalyzeContent() {
 
   // Editable config state
   const [configReady, setConfigReady] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [appName, setAppName] = useState('');
   const [oneLiner, setOneLiner] = useState('');
   const [category, setCategory] = useState('');
@@ -333,7 +338,9 @@ function AnalyzeContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Category</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">
+                  Category<OptionalLabel />
+                </label>
                 <input
                   type="text"
                   value={category}
@@ -345,7 +352,9 @@ function AnalyzeContent() {
 
             {/* One-liner */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">One-Liner</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">
+                One-Liner<OptionalLabel />
+              </label>
               <input
                 type="text"
                 value={oneLiner}
@@ -358,7 +367,9 @@ function AnalyzeContent() {
             {/* Row 2: App Type + Pricing */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">App Type</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">
+                  App Type<OptionalLabel />
+                </label>
                 <select
                   value={appType}
                   onChange={(e) => setAppType(e.target.value as AppConfig['app_type'])}
@@ -372,7 +383,9 @@ function AnalyzeContent() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Pricing</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">
+                  Pricing<OptionalLabel />
+                </label>
                 <input
                   type="text"
                   value={pricing}
@@ -385,7 +398,9 @@ function AnalyzeContent() {
 
             {/* Target Audience */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Target Audience</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">
+                Target Audience<OptionalLabel />
+              </label>
               <input
                 type="text"
                 value={targetAudience}
@@ -395,25 +410,11 @@ function AnalyzeContent() {
               />
             </div>
 
-            {/* Differentiators */}
-            <EditableListField
-              label="Differentiators / Key Features"
-              items={differentiators}
-              onChange={setDifferentiators}
-              placeholder="Add a feature or differentiator..."
-            />
-
-            {/* Competitors */}
-            <EditableListField
-              label="Competitors"
-              items={competitors}
-              onChange={setCompetitors}
-              placeholder="Add a competitor..."
-            />
-
             {/* Distribution Channels */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Distribution Channels</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Distribution Channels<OptionalLabel />
+              </label>
               <div className="flex flex-wrap gap-2">
                 {DISTRIBUTION_CHANNELS.map((ch) => (
                   <button
@@ -429,6 +430,41 @@ function AnalyzeContent() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Advanced options — collapsible */}
+            <div className="border border-slate-700/60 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setAdvancedOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/40 hover:bg-slate-800/70 transition-colors text-left"
+              >
+                <span className="text-sm font-medium text-slate-300">
+                  Advanced options
+                  <OptionalLabel />
+                </span>
+                <span className="text-slate-500 text-sm ml-2">{advancedOpen ? '−' : '+'}</span>
+              </button>
+
+              {advancedOpen && (
+                <div className="px-4 py-4 space-y-5 border-t border-slate-700/60">
+                  {/* Differentiators */}
+                  <EditableListField
+                    label="Differentiators / Key Features"
+                    items={differentiators}
+                    onChange={setDifferentiators}
+                    placeholder="Add a feature or differentiator..."
+                  />
+
+                  {/* Competitors */}
+                  <EditableListField
+                    label="Competitors"
+                    items={competitors}
+                    onChange={setCompetitors}
+                    placeholder="Add a competitor..."
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
