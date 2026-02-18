@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 interface PlanNavProps {
@@ -37,12 +38,12 @@ export default function PlanNav({ planId, appName }: PlanNavProps) {
     <div className="mb-6">
       {/* Back to dashboard */}
       <div className="mb-3">
-        <a
+        <Link
           href="/dashboard"
           className="text-slate-400 hover:text-slate-200 text-sm transition-colors"
         >
           ← All Plans
-        </a>
+        </Link>
         {appName && (
           <span className="text-slate-500 text-sm ml-2">/ {appName}</span>
         )}
@@ -57,7 +58,7 @@ export default function PlanNav({ planId, appName }: PlanNavProps) {
             : pathname.startsWith(fullPath);
 
           return (
-            <a
+            <Link
               key={item.href}
               href={fullPath}
               title={item.description}
@@ -75,7 +76,7 @@ export default function PlanNav({ planId, appName }: PlanNavProps) {
               >
                 {item.description}
               </span>
-            </a>
+            </Link>
           );
         })}
       </nav>
