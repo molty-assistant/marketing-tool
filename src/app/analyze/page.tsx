@@ -214,7 +214,7 @@ function AnalyzeContent() {
 
       // Store plan in sessionStorage and navigate
       sessionStorage.setItem(`plan-${plan.id}`, JSON.stringify(plan));
-      toastSuccess('Marketing plan generated!');
+      toastSuccess('Plan saved');
       router.push(`/plan/${plan.id}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to generate plan';

@@ -29,12 +29,15 @@ export async function POST(request: NextRequest) {
 
     const plan = generateMarketingPlan(config, scraped, goals, tone);
 
-    // Auto-save to SQLite
+    // Auto-save to SQLite (DB-first: only return success if persisted)
     try {
       savePlan(plan);
     } catch (dbErr) {
       console.error('Failed to save plan to database:', dbErr);
-      // Don't fail the request if DB save fails — plan is still returned
+      return NextResponse.json(
+        { error: 'Failed to save plan. Please try again.' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(plan);

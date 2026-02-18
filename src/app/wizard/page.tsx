@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useToast } from '@/components/Toast';
 
 type WizardStep = 0 | 1 | 2 | 3 | 4;
 
@@ -72,6 +73,7 @@ function isValidUrl(input: string) {
 
 export default function WizardPage() {
   const router = useRouter();
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const [step, setStep] = useState<WizardStep>(0);
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
@@ -190,10 +192,12 @@ export default function WizardPage() {
       sessionStorage.setItem(`plan-${plan.id}`, JSON.stringify(plan));
       sessionStorage.setItem(`${STORAGE_KEY}:last-run`, JSON.stringify({ ...state, planId: plan.id }));
 
+      toastSuccess('Plan saved');
       router.push(`/plan/${plan.id}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to generate plan';
       setError(msg);
+      toastError(msg);
     } finally {
       setGenerating(false);
     }
