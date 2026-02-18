@@ -62,20 +62,13 @@ export default function PlanNav({ planId, appName }: PlanNavProps) {
               key={item.href}
               href={fullPath}
               title={item.description}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex flex-col items-start ${
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                 isActive
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
               }`}
             >
               <span>{item.label}</span>
-              <span
-                className={`text-[10px] font-normal leading-tight mt-0.5 ${
-                  isActive ? 'text-indigo-200' : 'text-slate-500'
-                }`}
-              >
-                {item.description}
-              </span>
             </Link>
           );
         })}
