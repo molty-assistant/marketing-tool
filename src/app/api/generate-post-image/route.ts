@@ -78,9 +78,10 @@ export async function POST(request: NextRequest) {
 
     const template = templates[0];
 
-    // Render to PNG via our render-png API
-    const baseUrl = request.nextUrl.origin;
-    const renderRes = await fetch(`${baseUrl}/api/render-png`, {
+    // Render to PNG via our render-png API — use localhost to avoid HTTPS SSL errors on Railway
+    const internalBase = `http://localhost:${process.env.PORT || 3000}`;
+    const baseUrl = (body.publicBase as string | undefined) || request.nextUrl.origin;
+    const renderRes = await fetch(`${internalBase}/api/render-png`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

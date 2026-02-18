@@ -109,17 +109,22 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
       generated = JSON.parse(match[0]);
     }
 
+    // Internal base URL — use localhost to avoid HTTPS SSL errors on Railway
+    const internalBase = `http://localhost:${process.env.PORT || 3000}`;
+    const publicBase = `https://${process.env.RAILWAY_PUBLIC_DOMAIN || request.nextUrl.host}`;
+
     // Step 2: Generate a social image (stored on persistent volume)
     let image: { filename?: string; publicUrl?: string; fullPublicUrl?: string } | null = null;
     try {
       const imgPlatform = platform === 'tiktok' ? 'instagram-story' : 'instagram-post';
-      const imgRes = await fetch(`${request.nextUrl.origin}/api/generate-post-image`, {
+      const imgRes = await fetch(`${internalBase}/api/generate-post-image`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planId,
           platform: imgPlatform,
           caption: generated.caption,
+          publicBase,
         }),
       });
       if (imgRes.ok) {
@@ -130,7 +135,7 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
     }
 
     // Step 3: Post to Buffer via our dedicated endpoint (which calls Zapier MCP)
-    const bufferRes = await fetch(`${request.nextUrl.origin}/api/post-to-buffer`, {
+    const bufferRes = await fetch(`${internalBase}/api/post-to-buffer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
