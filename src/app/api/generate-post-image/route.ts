@@ -11,7 +11,9 @@ import crypto from 'crypto';
  * (Railway persistent volume), then return a public URL that Buffer can fetch.
  *
  * POST /api/generate-post-image
- * { planId, platform: "instagram-post" | "instagram-story", caption?, style? }
+ * { planId, platform: "instagram-post" | "instagram-story", caption?, style?, visualMode? }
+ *
+ * visualMode: "screenshot" | "hero" | "hybrid" (default: screenshot)
  *
  * Returns:
  * {
@@ -33,6 +35,7 @@ export async function POST(request: NextRequest) {
     const planId = body.planId;
     const platform = body.platform || 'instagram-post';
     const style = body.style || 'gradient';
+    const visualMode = body.visualMode || 'screenshot';
     const caption = body.caption || '';
 
     if (!planId) {
@@ -69,6 +72,7 @@ export async function POST(request: NextRequest) {
       plan,
       platforms: [platform],
       style,
+      visualMode,
       accentColor: config.accent_color || '#667eea',
     });
 

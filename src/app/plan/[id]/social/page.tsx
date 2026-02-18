@@ -42,6 +42,7 @@ export default function SocialPage() {
   const [hashtagsInput, setHashtagsInput] = useState('');
 
   // Step 3
+  const [imageMode, setImageMode] = useState<'screenshot' | 'hero' | 'hybrid'>('hybrid');
   const [imageGenerating, setImageGenerating] = useState(false);
   const [imageError, setImageError] = useState('');
   const [image, setImage] = useState<ImageResult | null>(null);
@@ -180,7 +181,7 @@ export default function SocialPage() {
       const res = await fetch('/api/generate-post-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, platform: 'instagram-post', caption }),
+        body: JSON.stringify({ planId, platform: 'instagram-post', caption, visualMode: imageMode }),
       });
 
       const data = await res.json();
@@ -432,6 +433,45 @@ export default function SocialPage() {
               <p className="text-sm text-slate-400 mb-5">
                 Generate an image or video tailored to your post idea.
               </p>
+
+              <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setImageMode('screenshot')}
+                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
+                    imageMode === 'screenshot'
+                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                  }`}
+                >
+                  <div className="text-sm font-semibold">Screenshot</div>
+                  <div className="text-xs text-slate-400 mt-0.5">Real UI. Safe and accurate.</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImageMode('hero')}
+                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
+                    imageMode === 'hero'
+                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                  }`}
+                >
+                  <div className="text-sm font-semibold">Hero image</div>
+                  <div className="text-xs text-slate-400 mt-0.5">Inspiring visual. No screenshot.</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImageMode('hybrid')}
+                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
+                    imageMode === 'hybrid'
+                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                  }`}
+                >
+                  <div className="text-sm font-semibold">Hybrid</div>
+                  <div className="text-xs text-slate-400 mt-0.5">Hero + small UI card.</div>
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <button
