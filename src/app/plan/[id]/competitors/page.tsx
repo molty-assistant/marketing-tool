@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
-import PlanNav from '@/components/PlanNav';
 import ErrorRetry from '@/components/ErrorRetry';
 import { DraftSkeleton } from '@/components/Skeleton';
 import type { MarketingPlan } from '@/lib/types';
@@ -225,8 +224,6 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="max-w-6xl mx-auto">
-      <PlanNav planId={id} appName={plan.config.app_name} />
-
       <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Analyse your top competitors — their positioning, pricing, strengths, and weaknesses — and identify gaps you can exploit in your messaging.
       </div>

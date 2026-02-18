@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
-import PlanNav from '@/components/PlanNav';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
 
@@ -250,8 +249,6 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="max-w-6xl mx-auto">
-      <PlanNav planId={id} appName={plan.config.app_name} />
-
       <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Plan your content calendar with AI-scheduled posts across all platforms for the next 4 weeks — see what to post, when, and with what copy.
       </div>

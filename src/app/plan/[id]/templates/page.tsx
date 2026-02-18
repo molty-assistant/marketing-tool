@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import type { MarketingPlan } from '@/lib/types';
-import PlanNav from '@/components/PlanNav';
 import ErrorRetry from '@/components/ErrorRetry';
 import { PageSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
@@ -320,8 +319,6 @@ export default function TemplatesPage({
   return (
     <div className="px-4 py-8">
       <div className="max-w-5xl mx-auto">
-        <PlanNav planId={id} appName={appName} />
-
         <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
           Ready-to-copy marketing templates pre-filled with your app&apos;s details — App Store blurbs, social bios, Product Hunt taglines, and more.
         </div>

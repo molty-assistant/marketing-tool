@@ -2,7 +2,6 @@
 
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import PlanNav from '@/components/PlanNav';
 import type { OverviewResponse, SectionStatus } from '@/app/api/plans/[id]/overview/route';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -298,8 +297,6 @@ export default function OverviewPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="max-w-4xl mx-auto">
-      <PlanNav planId={id} appName={plan.config.app_name} />
-
       {/* ── Plan Header ─────────────────────────────────────────── */}
       <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-start gap-4 flex-1 min-w-0">

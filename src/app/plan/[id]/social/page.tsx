@@ -2,7 +2,6 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import PlanNav from '@/components/PlanNav';
 
 type Platform = 'instagram' | 'tiktok';
 
@@ -288,8 +287,6 @@ export default function SocialPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      <PlanNav planId={planId} />
-
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Page description */}

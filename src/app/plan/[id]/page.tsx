@@ -9,12 +9,19 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  ChevronRight,
+  FileText,
+  Megaphone,
+  Package,
+  PenLine,
+  Search,
+} from 'lucide-react';
 import { MarketingPlan } from '@/lib/types';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import EnhanceButton from '@/components/EnhanceButton';
 import VariantPicker from '@/components/VariantPicker';
-import PlanNav from '@/components/PlanNav';
 import { PlanDetailSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
@@ -414,8 +421,6 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <PlanNav planId={id} appName={plan.config.app_name} />
-
       <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Your complete AI-generated marketing brief — explore the tabs above to create ad copy, translate listings, distribute content across platforms, and build your full marketing pack.
       </div>
@@ -491,6 +496,81 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
               </button>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Hubs */}
+      <div className="mb-8">
+        <div className="text-sm font-semibold text-white mb-3">Explore hubs</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            {
+              title: 'Strategy',
+              description: 'Brief, foundation & competitors',
+              href: `/plan/${id}/strategy`,
+              icon: FileText,
+            },
+            {
+              title: 'Content',
+              description: 'Drafts, emails, templates, translations',
+              href: `/plan/${id}/content`,
+              icon: PenLine,
+            },
+            {
+              title: 'Distribution',
+              description: 'Social posts, scheduling & calendar',
+              href: `/plan/${id}/distribution`,
+              icon: Megaphone,
+              highlight: true,
+            },
+            {
+              title: 'SEO & ASO',
+              description: 'Keywords, SERP preview & variants',
+              href: `/plan/${id}/seo`,
+              icon: Search,
+            },
+            {
+              title: 'Export',
+              description: 'Assets, preview & sharing',
+              href: `/plan/${id}/export`,
+              icon: Package,
+            },
+          ].map((hub) => {
+            const Icon = hub.icon;
+            return (
+              <Link href={hub.href} key={hub.href}>
+                <div
+                  className={
+                    'group flex items-center justify-between p-5 bg-slate-800/50 border border-white/[0.06] rounded-xl hover:border-indigo-500/30 hover:bg-slate-800/80 transition-all cursor-pointer'
+                  }
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={
+                        hub.highlight
+                          ? 'w-10 h-10 rounded-lg bg-indigo-500/15 flex items-center justify-center border border-indigo-500/20'
+                          : 'w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center'
+                      }
+                    >
+                      <Icon className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-white flex items-center gap-2">
+                        {hub.title}
+                        {hub.highlight && (
+                          <span className="inline-flex w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        {hub.description}
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 

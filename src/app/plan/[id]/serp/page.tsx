@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import { MarketingPlan } from '@/lib/types';
 import { SerpPreview } from '@/components/SerpPreview';
-import PlanNav from '@/components/PlanNav';
 import { SerpSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 
@@ -119,8 +118,6 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <PlanNav planId={id} appName={plan.config.app_name} />
-
       <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Preview how your app appears in Google search results — tweak your title and meta description to maximise click-through from organic search.
       </div>
