@@ -1,9 +1,17 @@
 'use client';
 
-import { useState, useEffect, use, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  use,
+  useCallback,
+  type ComponentPropsWithoutRef,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MarketingPlan } from '@/lib/types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import EnhanceButton from '@/components/EnhanceButton';
 import VariantPicker from '@/components/VariantPicker';
 import PlanNav from '@/components/PlanNav';
@@ -13,48 +21,19 @@ import { useToast } from '@/components/Toast';
 import ExportBundleButton from '@/components/ExportBundleButton';
 import GenerateAllButton from '@/components/GenerateAllButton';
 
-// Simple markdown to HTML converter for our structured content
-function renderMarkdown(md: string): string {
-  return md
-    // Headers
-    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    // Bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Italic
-    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
-    // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-indigo-400 hover:text-indigo-300 underline">$1</a>')
-    // Blockquotes
-    .replace(/^>\s*(.+)$/gm, '<blockquote>$1</blockquote>')
-    // Inline code
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    // Checkboxes
-    .replace(/^- \[ \] (.+)$/gm, '<li><input type="checkbox" disabled /> $1</li>')
-    .replace(/^- \[x\] (.+)$/gm, '<li><input type="checkbox" checked disabled /> $1</li>')
-    // Unordered lists
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    // Ordered lists
-    .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
-    // Table rows
-    .replace(/^\|(.+)\|$/gm, (_, content) => {
-      const cells = content.split('|').map((c: string) => c.trim());
-      if (cells.every((c: string) => /^[-:]+$/.test(c))) return '';
-      const cellHtml = cells.map((c: string) => `<td>${c}</td>`).join('');
-      return `<tr>${cellHtml}</tr>`;
-    })
-    // Horizontal rules
-    .replace(/^---$/gm, '<hr />')
-    // Paragraphs (lines that aren't tags)
-    .replace(/^(?!<[a-z]|$)(.+)$/gm, '<p>$1</p>')
-    // Wrap consecutive li elements
-    .replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
-    // Wrap consecutive tr elements
-    .replace(/((?:<tr>.*<\/tr>\n?)+)/g, '<table>$1</table>')
-    // Clean empty lines
-    .replace(/\n{3,}/g, '\n\n');
-}
+const markdownComponents = {
+  a: ({ href, children, ...props }: ComponentPropsWithoutRef<'a'>) => (
+    <a
+      {...props}
+      href={href}
+      target="_blank"
+      rel="noopener"
+      className="text-indigo-400 hover:text-indigo-300 underline"
+    >
+      {children}
+    </a>
+  ),
+};
 
 function CopyButton({ text, label }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -175,10 +154,14 @@ function TemplateCard({
               onPick={handleTextChange}
             />
           </div>
-          <div
-            className="markdown-content text-sm"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }}
-          />
+          <div className="markdown-content text-sm">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents}
+            >
+              {displayContent}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </div>
@@ -218,14 +201,22 @@ function StageSection({
           {isAssetsStage && templates.length > 0 ? (
             <div className="mt-4 space-y-3">
               {/* Stage 4 header line */}
-              <div
-                className="markdown-content mb-2"
-                dangerouslySetInnerHTML={{
-                  __html: renderMarkdown(
-                    content.split('\n').filter((l) => !l.startsWith('### ') && !templates.some((t) => t.content.includes(l.trim()) && l.trim())).slice(0, 2).join('\n')
-                  ),
-                }}
-              />
+              <div className="markdown-content mb-2">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {content
+                    .split('\n')
+                    .filter(
+                      (l) =>
+                        !l.startsWith('### ') &&
+                        !templates.some((t) => t.content.includes(l.trim()) && l.trim())
+                    )
+                    .slice(0, 2)
+                    .join('\n')}
+                </ReactMarkdown>
+              </div>
               {templates.map((t, i) => (
                 <TemplateCard
                   key={i}
@@ -236,10 +227,14 @@ function StageSection({
               ))}
             </div>
           ) : (
-            <div
-              className="markdown-content mt-4"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
-            />
+            <div className="markdown-content mt-4">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={markdownComponents}
+              >
+                {content}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
       )}
