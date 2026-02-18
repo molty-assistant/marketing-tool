@@ -3,12 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
 function getApiKey() {
-  return (
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    // Prefer env vars when set; fallback to repo key per project instruction.
-    (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '')
-  );
+  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
 }
 
 /**
@@ -28,7 +23,7 @@ export async function POST(request: NextRequest) {
     const apiKey = getApiKey();
 
     const system =
-      'You are an expert at writing Veo 2 video generation prompts. Given a social media post caption, write a single cinematic video prompt. Rules: one focused scene, specify shot type (close-up/wide/medium), specify camera movement (dolly in/pan/crane), specify lighting and mood, under 100 words, no quotation marks around text.';
+      'You are an expert at writing Veo 2 video generation prompts. Given a social media post caption, write a single cinematic video prompt. Rules: one focused scene, specify shot type (close-up/wide/medium), specify camera movement (dolly in/pan/crane), specify lighting and mood, under 100 words, no quotation marks. Return ONLY valid JSON with exactly this schema: {"prompt":"..."}.';
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -61,29 +56,46 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!text || typeof text !== 'string') {
+    const parts = data?.candidates?.[0]?.content?.parts;
+    const text = Array.isArray(parts)
+      ? parts.map((p: any) => (typeof p?.text === 'string' ? p.text : '')).join('\n').trim()
+      : '';
+
+    if (!text) {
       return NextResponse.json({ error: 'Empty AI response' }, { status: 502 });
     }
 
-    let parsed: unknown;
+    // We ask for JSON, but models sometimes return plain text or slightly different keys.
+    let parsed: unknown = null;
     try {
       parsed = JSON.parse(text);
     } catch {
       const match = text.match(/\{[\s\S]*\}/);
-      if (!match) {
-        return NextResponse.json({ error: 'Invalid AI response' }, { status: 502 });
+      if (match) {
+        try {
+          parsed = JSON.parse(match[0]);
+        } catch {
+          parsed = null;
+        }
       }
-      parsed = JSON.parse(match[0]);
     }
 
-    const prompt = (parsed as { prompt?: unknown })?.prompt;
-    if (!prompt || typeof prompt !== 'string') {
+    const obj = (parsed && typeof parsed === 'object') ? (parsed as Record<string, unknown>) : null;
+    const promptCandidate =
+      (obj && typeof obj.prompt === 'string' && obj.prompt) ||
+      (obj && typeof (obj as any).videoPrompt === 'string' && (obj as any).videoPrompt) ||
+      (obj && typeof (obj as any).veoPrompt === 'string' && (obj as any).veoPrompt) ||
+      (typeof parsed === 'string' ? parsed : '') ||
+      '';
+
+    // Final fallback: if the model ignored JSON but returned a short prompt, accept it.
+    const prompt = (promptCandidate || text).trim();
+    if (!prompt) {
       return NextResponse.json({ error: 'AI response missing prompt' }, { status: 502 });
     }
 
-    return NextResponse.json({ prompt: prompt.trim() });
+    return NextResponse.json({ prompt });
   } catch (err) {
     console.error('caption-to-veo-prompt error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
