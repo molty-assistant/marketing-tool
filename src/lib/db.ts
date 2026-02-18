@@ -60,6 +60,22 @@ CREATE TABLE IF NOT EXISTS approval_queue (
       )
     `);
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS content_schedule (
+        id TEXT PRIMARY KEY,
+        plan_id TEXT NOT NULL,
+        platform TEXT NOT NULL DEFAULT 'instagram',
+        content_type TEXT NOT NULL DEFAULT 'post',
+        topic TEXT,
+        scheduled_at TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'scheduled',
+        post_id TEXT,
+        error TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+      )
+    `);
+
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some((c) => c.name === 'share_token')) {

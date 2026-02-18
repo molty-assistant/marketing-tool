@@ -25,6 +25,7 @@ const NAV_ITEMS = [
   { href: '/reviews', label: '⭐ Reviews' },
   { href: '/keywords', label: '🔑 Keywords' },
   { href: '/social', label: '📱 Social' },
+  { href: '/schedule', label: '⏰ Schedule' },
 ];
 
 export default function PlanNav({ planId, appName }: PlanNavProps) {
