@@ -79,6 +79,21 @@ function ToneBar({ label, value }: { label: string; value: number }) {
   );
 }
 
+function GenerationError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  if (!message) return null;
+  return (
+    <div className="mt-5 rounded-2xl bg-red-950/30 border border-red-800/50 p-4">
+      <div className="text-sm text-red-200">{message}</div>
+      <button
+        onClick={onRetry}
+        className="mt-3 bg-red-800 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+      >
+        Retry
+      </button>
+    </div>
+  );
+}
+
 export default function FoundationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
@@ -93,6 +108,10 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
   const [loadingBV, setLoadingBV] = useState(false);
   const [loadingPos, setLoadingPos] = useState(false);
   const [loadingComp, setLoadingComp] = useState(false);
+
+  const [brandVoiceError, setBrandVoiceError] = useState('');
+  const [positioningError, setPositioningError] = useState('');
+  const [competitiveError, setCompetitiveError] = useState('');
 
   const [expandedAngle, setExpandedAngle] = useState<string | null>(null);
 
@@ -135,44 +154,74 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
 
   const generateBrandVoice = async () => {
     setLoadingBV(true);
+    setBrandVoiceError('');
     try {
-      const r = await fetch('/api/brand-voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: id }) });
+      const r = await fetch('/api/brand-voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: id }),
+      });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed');
       persist({ brandVoice: d.brandVoice });
       setBrandVoice(d.brandVoice);
       setIsCached(false);
       toastOk('Brand voice generated');
-    } catch (e) { toastErr(e instanceof Error ? e.message : 'Failed'); }
-    finally { setLoadingBV(false); }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed';
+      setBrandVoiceError(msg);
+      toastErr(msg);
+    } finally {
+      setLoadingBV(false);
+    }
   };
 
   const generatePositioning = async () => {
     setLoadingPos(true);
+    setPositioningError('');
     try {
-      const r = await fetch('/api/positioning-angles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: id }) });
+      const r = await fetch('/api/positioning-angles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: id }),
+      });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed');
       persist({ positioning: d.positioning });
       setPositioning(d.positioning);
       setIsCached(false);
       toastOk('Positioning angles generated');
-    } catch (e) { toastErr(e instanceof Error ? e.message : 'Failed'); }
-    finally { setLoadingPos(false); }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed';
+      setPositioningError(msg);
+      toastErr(msg);
+    } finally {
+      setLoadingPos(false);
+    }
   };
 
   const generateCompetitive = async () => {
     setLoadingComp(true);
+    setCompetitiveError('');
     try {
-      const r = await fetch('/api/competitive-analysis', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: id }) });
+      const r = await fetch('/api/competitive-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: id }),
+      });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed');
       persist({ competitive: d.competitive });
       setCompetitive(d.competitive);
       setIsCached(false);
       toastOk('Competitive analysis generated');
-    } catch (e) { toastErr(e instanceof Error ? e.message : 'Failed'); }
-    finally { setLoadingComp(false); }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed';
+      setCompetitiveError(msg);
+      toastErr(msg);
+    } finally {
+      setLoadingComp(false);
+    }
   };
 
   if (planLoading) return <DraftSkeleton />;
@@ -216,6 +265,8 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
             {loadingBV ? 'Generating…' : brandVoice ? '🔄 Regenerate' : '✨ Generate'}
           </button>
         </div>
+
+        <GenerationError message={brandVoiceError} onRetry={generateBrandVoice} />
 
         {!brandVoice ? (
           <div className="mt-5 text-slate-500 text-sm">Not generated yet.</div>
@@ -283,6 +334,8 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
           </button>
         </div>
 
+        <GenerationError message={positioningError} onRetry={generatePositioning} />
+
         {!positioning ? (
           <div className="mt-5 text-slate-500 text-sm">Not generated yet.</div>
         ) : (
@@ -344,6 +397,8 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
             {loadingComp ? 'Generating…' : competitive ? '🔄 Regenerate' : '✨ Generate'}
           </button>
         </div>
+
+        <GenerationError message={competitiveError} onRetry={generateCompetitive} />
 
         {!competitive ? (
           <div className="mt-5 text-slate-500 text-sm">Not generated yet.</div>
