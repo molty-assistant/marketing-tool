@@ -516,13 +516,13 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
         <ol className="space-y-3">
           {[
             { step: 1, href: 'foundation', emoji: '🧱', label: 'Foundation', desc: 'Set your brand voice and positioning angles — the strategic base for everything else.' },
-            { step: 2, href: 'draft', emoji: '📝', label: 'Draft', desc: 'Generate polished App Store copy and landing page hero text in multiple tones.' },
-            { step: 3, href: 'variants', emoji: '🏆', label: 'Variants', desc: 'Create and score multiple headlines side-by-side to find your strongest hook.' },
-            { step: 4, href: 'translate', emoji: '🌍', label: 'Translate', desc: 'Translate your copy into 10 languages for global store listings.' },
-            { step: 5, href: 'distribute', emoji: '📣', label: 'Distribute', desc: 'Turn one core piece into platform-native posts for every channel at once.' },
-            { step: 6, href: 'emails', emoji: '✉️', label: 'Emails', desc: 'Generate a welcome or launch email sequence for new users.' },
-            { step: 7, href: 'calendar', emoji: '📅', label: 'Calendar', desc: 'Plan your posting schedule for the next 4 weeks across all platforms.' },
-            { step: 8, href: 'keywords', emoji: '🔑', label: 'Keywords', desc: 'Find high-value ASO keywords to boost your store ranking.' },
+            { step: 2, href: 'variants', emoji: '🏆', label: 'Copy variants', desc: 'Create and score multiple headline angles side-by-side to find your strongest hook.' },
+            { step: 3, href: 'draft', emoji: '📝', label: 'Draft', desc: 'Generate polished listing copy and landing-page hero options in multiple tones.' },
+            { step: 4, href: 'distribute', emoji: '📣', label: 'Distribute', desc: 'Turn one core idea into platform-native posts for every channel at once.' },
+            { step: 5, href: 'emails', emoji: '✉️', label: 'Emails', desc: 'Generate a welcome or launch email sequence for new users.' },
+            { step: 6, href: 'social', emoji: '📱', label: 'Social', desc: 'Generate platform-native captions and queue posts to Buffer.' },
+            { step: 7, href: 'keywords', emoji: '🔑', label: 'Keywords', desc: 'Find high-value ASO keywords to boost your store ranking.' },
+            { step: 8, href: 'schedule', emoji: '⏰', label: 'Schedule', desc: 'Plan and schedule your next month of content.' },
           ].map(({ step, href, emoji, label, desc }) => (
             <li key={href}>
               <a
