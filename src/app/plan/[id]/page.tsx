@@ -258,6 +258,19 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
   const [pdfExporting, setPdfExporting] = useState(false);
   const pdfRef = useRef<HTMLDivElement | null>(null);
 
+  const getSafeOrigin = () => {
+    try {
+      const u = new URL(window.location.href);
+      // In Basic Auth URLs, credentials may be present in href/origin.
+      u.username = '';
+      u.password = '';
+      return `${u.protocol}//${u.host}`;
+    } catch {
+      return window.location.origin;
+    }
+  };
+
+
   useEffect(() => {
     // Try sessionStorage first (just generated)
     const stored = sessionStorage.getItem(`plan-${id}`);
@@ -284,7 +297,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
         setPlan(data);
         if (data.shareToken) {
           setShareToken(data.shareToken);
-          setShareUrl(`${window.location.origin}/shared/${data.shareToken}`);
+          setShareUrl(`${getSafeOrigin()}/shared/${data.shareToken}`);
         }
         sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
       })
@@ -365,7 +378,7 @@ export default function PlanPage({ params }: { params: Promise<{ id: string }> }
     try {
       const res = await fetch(`/api/plans/${id}/share`, { method: 'POST' });
       const data = await res.json();
-      const fullUrl = `${window.location.origin}${data.shareUrl}`;
+      const fullUrl = `${getSafeOrigin()}${data.shareUrl}`;
       setShareToken(data.token);
       setShareUrl(fullUrl);
       await navigator.clipboard.writeText(fullUrl);
