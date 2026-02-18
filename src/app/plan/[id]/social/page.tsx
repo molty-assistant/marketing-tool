@@ -178,10 +178,23 @@ export default function SocialPage() {
     setQueueResult(null);
 
     try {
+      // Generate an image brief from the caption hook (best-effort). If it fails, we still render.
+      let imageBrief: any = null;
+      try {
+        const briefRes = await fetch('/api/caption-to-image-brief', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ caption, platform: selectedPlatform }),
+        });
+        if (briefRes.ok) imageBrief = await briefRes.json();
+      } catch {
+        // ignore
+      }
+
       const res = await fetch('/api/generate-post-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, platform: 'instagram-post', caption, visualMode: imageMode }),
+        body: JSON.stringify({ planId, platform: 'instagram-post', caption, visualMode: imageMode, imageBrief }),
       });
 
       const data = await res.json();
