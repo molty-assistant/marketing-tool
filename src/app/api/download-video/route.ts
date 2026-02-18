@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || 'AIzaSyDUDWAd7UkEE3zPeUpqyqBzG0IU26-bGdU';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '');
 
 // Proxy Veo 2 video downloads — the raw URI requires an API key header
 // which browsers can't send via a plain <a href> link.

@@ -7,7 +7,7 @@ function getApiKey() {
     process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_API_KEY ||
     // Prefer env vars when set; fallback to repo key per project instruction.
-    'AIzaSyDUDWAd7UkEE3zPeUpqyqBzG0IU26-bGdU'
+    (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '')
   );
 }
 

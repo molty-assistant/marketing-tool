@@ -40,7 +40,7 @@ function getApiKey() {
     process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_API_KEY ||
     // Confirmed working key (project instruction). Prefer env vars when set.
-    'AIzaSyDUDWAd7UkEE3zPeUpqyqBzG0IU26-bGdU'
+    (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '')
   );
 }
 
