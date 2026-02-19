@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import type { MarketingPlan } from '@/lib/types';
 
 import {
@@ -43,7 +44,14 @@ export default async function DistributionHubPage({
 }) {
   const { id } = await params;
 
-  const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
+  const h = await headers();
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  const proto = h.get('x-forwarded-proto') ?? 'http';
+
+  // Build an internal base URL from request headers (never embed credentials).
+  // This avoids issues when users visit the app with `user:pass@host` URL syntax.
+  const baseUrl = host ? `${proto}://${host}` : `http://localhost:${process.env.PORT || 3000}`;
+
   const planRes = await fetch(`${baseUrl}/api/plans/${id}`, {
     headers: {
       // Needed to bypass Basic Auth middleware for internal server-to-server fetches.

@@ -268,25 +268,21 @@ export default function TemplatesPage({
     if (saving) return;
     setSaving(true);
     try {
-      const entries = Object.entries(edited);
-      if (entries.length === 0) {
+      if (Object.keys(edited).length === 0) {
         toastError('Nothing to save');
         return;
       }
 
-      await Promise.all(
-        entries.map(([templateId, content]) =>
-          fetch(`/api/plans/${id}/templates/${templateId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content }),
-          }).then(async (res) => {
-            if (res.ok) return;
-            const j = await res.json().catch(() => ({}));
-            throw new Error(j?.error || 'Failed to save templates');
-          })
-        )
-      );
+      const res = await fetch(`/api/plans/${id}/templates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templates: edited }),
+      });
+
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j?.error || 'Failed to save templates');
+      }
 
       toastSuccess('Saved template changes');
       setIsCached(false);
