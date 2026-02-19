@@ -94,7 +94,7 @@ function defaultHeadline(plan: MarketingPlan): string {
   if (oneLiner) {
     const trimmed = oneLiner.replace(/\s+/g, ' ').trim();
     // If it's long, take first sentence/phrase.
-    const cut = trimmed.split(/\.|\n|\r|\!/)[0]?.trim();
+    const cut = trimmed.split(/\.|\n|\r|\!|\?|—|–|:|\|/)[0]?.trim();
     return cut.length <= 64 ? cut : `${cut.slice(0, 61)}…`;
   }
   return `Meet ${safeText(plan?.config?.app_name, safeText(plan?.scraped?.name, 'Your App'))}`;
@@ -205,7 +205,12 @@ export function generateSocialTemplates(opts: {
   const text = style === 'light' ? '#0b1220' : '#e6eaf2';
 
   const name = safeText(plan?.config?.app_name, safeText(plan?.scraped?.name, 'Your App'));
-  const oneLiner = safeText(plan?.config?.one_liner, safeText(plan?.scraped?.shortDescription, safeText(plan?.scraped?.description, '')));
+  const oneLinerRaw = safeText(
+    plan?.config?.one_liner,
+    safeText(plan?.scraped?.shortDescription, safeText(plan?.scraped?.description, ''))
+  );
+  // Keep the supporting line punchy; long scraped descriptions break the layout.
+  const oneLiner = oneLinerRaw.length > 140 ? `${oneLinerRaw.slice(0, 137).trim()}…` : oneLinerRaw;
   const bullets = pickTop(plan?.config?.differentiators, 3);
   const fallbackBullets = pickTop(plan?.scraped?.features, 3);
   const features = bullets.length ? bullets : fallbackBullets;
