@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export interface SerpPreviewProps {
   title: string;
@@ -75,7 +78,7 @@ export function SerpPreview({
       {editable && (
         <div className="space-y-4 bg-slate-800/50 border border-slate-700 rounded-xl p-5">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <Label className="block mb-2">
               Title
               <span
                 className={`ml-2 text-xs ${
@@ -85,31 +88,31 @@ export function SerpPreview({
                 {titleLength} / 60 chars
                 {titleLength > 60 && ' ⚠️ Too long'}
               </span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={localTitle}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="bg-slate-900 border-slate-600 rounded-lg px-4"
               placeholder="Enter page title..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <Label className="block mb-2">
               URL
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={localUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="bg-slate-900 border-slate-600 rounded-lg px-4"
               placeholder="https://example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <Label className="block mb-2">
               Description
               <span
                 className={`ml-2 text-xs ${
@@ -119,12 +122,12 @@ export function SerpPreview({
                 {descriptionLength} / 160 chars
                 {descriptionLength > 160 && ' ⚠️ Too long'}
               </span>
-            </label>
-            <textarea
+            </Label>
+            <Textarea
               value={localDescription}
               onChange={(e) => handleDescriptionChange(e.target.value)}
               rows={3}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="bg-slate-900 border-slate-600 rounded-lg px-4 resize-none"
               placeholder="Enter meta description..."
             />
           </div>

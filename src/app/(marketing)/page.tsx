@@ -3,6 +3,9 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GenerationOverlay from '@/components/GenerationOverlay';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 function Icon({ children }: { children: React.ReactNode }) {
   return (
@@ -180,25 +183,25 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="mt-7 bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5">
-            <label htmlFor="landing-url" className="block text-sm font-medium text-slate-300 mb-3 text-left">
+            <Label htmlFor="landing-url" className="block mb-3 text-left">
               Paste a URL to generate your brief
-            </label>
+            </Label>
             <div className="flex flex-col sm:flex-row gap-3">
-              <input
+              <Input
                 id="landing-url"
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="https://linear.app (or an App Store / Play link)"
-                className="w-full sm:flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="sm:flex-1 h-auto bg-slate-950 rounded-xl px-4 py-3 focus-visible:border-transparent"
               />
-              <button
+              <Button
                 onClick={handleStart}
-                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition-colors whitespace-nowrap"
+                className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
               >
                 Generate brief →
-              </button>
+              </Button>
             </div>
             {error && <p className="text-red-400 text-sm mt-2 text-left">{error}</p>}
 

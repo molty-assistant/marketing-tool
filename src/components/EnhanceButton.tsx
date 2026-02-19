@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/components/Toast';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 
 type Tone = 'professional' | 'casual' | 'technical' | 'enthusiastic';
 
@@ -83,24 +85,25 @@ export default function EnhanceButton({ text, appContext, onTextChange }: Enhanc
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {/* Tone selector */}
-      <select
+      <Select
         value={tone}
         onChange={(e) => setTone(e.target.value as Tone)}
         disabled={loading}
-        className="text-xs bg-slate-700 text-slate-300 border border-slate-600 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+        className="w-auto h-auto text-xs bg-slate-700 text-slate-300 border-slate-600 rounded-lg px-2 py-1.5 focus-visible:ring-1 disabled:opacity-50"
       >
         {TONE_OPTIONS.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
         ))}
-      </select>
+      </Select>
 
       {/* Enhance / Re-enhance button */}
-      <button
+      <Button
         onClick={handleEnhance}
         disabled={loading || cooldown}
-        className="text-xs bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+        size="sm"
+        className="h-auto text-xs disabled:bg-indigo-800 px-3 py-1.5 rounded-lg"
       >
         {loading ? (
           <>
@@ -127,16 +130,18 @@ export default function EnhanceButton({ text, appContext, onTextChange }: Enhanc
         ) : (
           '✨ Enhance with AI'
         )}
-      </button>
+      </Button>
 
       {/* Revert button (only shown when enhanced) */}
       {enhanced && !loading && (
-        <button
+        <Button
           onClick={handleRevert}
-          className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
+          variant="secondary"
+          size="sm"
+          className="h-auto text-xs text-slate-300 px-3 py-1.5 rounded-lg"
         >
           ↩️ Revert
-        </button>
+        </Button>
       )}
 
       {/* Error toast */}

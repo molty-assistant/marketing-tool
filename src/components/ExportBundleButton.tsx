@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 const TONES = ['professional', 'casual', 'bold', 'minimal'] as const;
 const LANGUAGES = [
@@ -95,12 +96,12 @@ export default function ExportBundleButton({
 
   return (
     <>
-      <button
+      <Button
         onClick={() => setOpen(true)}
-        className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
+        className="w-full sm:w-auto h-auto text-sm px-4 py-2.5 sm:py-2 rounded-lg"
       >
         ⬇️ Download Full Pack
-      </button>
+      </Button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -118,13 +119,15 @@ export default function ExportBundleButton({
                   Includes your brief, tone variants, translations, and assets (PNG).
                 </p>
               </div>
-              <button
+              <Button
                 onClick={() => setOpen(false)}
                 disabled={exporting}
+                variant="ghost"
+                size="icon-sm"
                 className="text-slate-400 hover:text-slate-200 disabled:opacity-50"
               >
                 ✕
-              </button>
+              </Button>
             </div>
 
             <div className="p-5 space-y-6">
@@ -135,16 +138,18 @@ export default function ExportBundleButton({
                     <div className="text-sm font-semibold text-white">Tones</div>
                     <div className="text-xs text-slate-400">Default: all</div>
                   </div>
-                  <button
+                  <Button
                     type="button"
-                    className="text-xs text-indigo-400 hover:text-indigo-300"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto text-xs text-indigo-400 hover:text-indigo-300 px-0"
                     onClick={() =>
                       setSelectedTones(tonesAllChecked ? [] : [...TONES])
                     }
                     disabled={exporting}
                   >
                     {tonesAllChecked ? 'Clear' : 'Select all'}
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -227,20 +232,21 @@ export default function ExportBundleButton({
               </div>
 
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={() => setOpen(false)}
                   disabled={exporting}
-                  className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                  variant="secondary"
+                  className="h-auto text-sm px-4 py-2 rounded-lg disabled:opacity-50"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={download}
                   disabled={exporting}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                  className="h-auto text-sm px-4 py-2 rounded-lg disabled:opacity-50"
                 >
                   {exporting ? 'Working…' : 'Download ZIP'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

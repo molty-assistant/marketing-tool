@@ -5,6 +5,10 @@ import Link from 'next/link';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
 import type { MarketingPlan } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 type ApprovalQueueStatus = 'pending' | 'approved' | 'rejected';
 
@@ -239,12 +243,13 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
           <h1 className="text-2xl font-bold text-white">✅ Approvals</h1>
           <p className="text-slate-400">Approve, reject, and edit content before export.</p>
         </div>
-        <button
+        <Button
           onClick={loadQueue}
-          className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 rounded-xl transition-colors"
+          variant="secondary"
+          className="h-auto px-4 py-2.5"
         >
           ↻ Refresh
-        </button>
+        </Button>
       </div>
 
       {/* Stats bar */}
@@ -278,41 +283,41 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Section type</label>
-            <input
+            <Label className="block text-xs text-slate-400 mb-1">Section type</Label>
+            <Input
               value={newItem.sectionType}
               onChange={(e) => setNewItem((p) => ({ ...p, sectionType: e.target.value }))}
-              className="w-full bg-slate-950/40 border border-slate-700/60 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="bg-slate-950/40 border-slate-700/60 text-slate-200 focus-visible:ring-indigo-500/40"
             />
           </div>
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Section label</label>
-            <input
+            <Label className="block text-xs text-slate-400 mb-1">Section label</Label>
+            <Input
               value={newItem.sectionLabel}
               onChange={(e) => setNewItem((p) => ({ ...p, sectionLabel: e.target.value }))}
-              className="w-full bg-slate-950/40 border border-slate-700/60 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="bg-slate-950/40 border-slate-700/60 text-slate-200 focus-visible:ring-indigo-500/40"
             />
           </div>
         </div>
 
         <div className="mt-4">
-          <label className="block text-xs text-slate-400 mb-1">Content</label>
-          <textarea
+          <Label className="block text-xs text-slate-400 mb-1">Content</Label>
+          <Textarea
             value={newItem.content}
             onChange={(e) => setNewItem((p) => ({ ...p, content: e.target.value }))}
             placeholder="Paste generated content here…"
-            className="w-full min-h-[110px] bg-slate-950/40 border border-slate-700/60 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            className="min-h-[110px] bg-slate-950/40 border-slate-700/60 p-3 text-slate-200 placeholder:text-slate-600 focus-visible:ring-indigo-500/40"
           />
         </div>
 
         <div className="mt-4 flex justify-end">
-          <button
+          <Button
             onClick={handleCreate}
             disabled={creating}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="h-auto px-5 py-2.5 disabled:bg-indigo-600/50"
           >
             {creating ? 'Adding…' : '➕ Add'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -359,77 +364,90 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
                   </div>
 
                   <div className="flex gap-2 flex-wrap justify-end">
-                    <button
+                    <Button
                       onClick={() => handleApprove(item.id, 'approved')}
                       disabled={isBusy}
-                      className="text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-100 px-3 py-1.5 rounded-lg"
                     >
                       ✓ Approve
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleApprove(item.id, 'rejected')}
                       disabled={isBusy}
-                      className="text-xs bg-red-600/15 hover:bg-red-600/25 border border-red-500/30 text-red-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto bg-red-600/15 hover:bg-red-600/25 border border-red-500/30 text-red-100 px-3 py-1.5 rounded-lg"
                     >
                       ✕ Reject
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         setEditing((p) => ({ ...p, [item.id]: !p[item.id] }));
                         setEditDraft((p) => ({ ...p, [item.id]: displayValue }));
                       }}
                       disabled={isBusy}
-                      className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                      variant="secondary"
+                      size="sm"
+                      className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
                     >
                       {isEditing ? 'Close' : '✏️ Edit'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleDelete(item.id)}
                       disabled={isBusy}
-                      className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                      variant="secondary"
+                      size="sm"
+                      className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
                       title="Delete"
                     >
                       🗑
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
                 <div className="p-4">
                   {isEditing ? (
                     <>
-                      <textarea
+                      <Textarea
                         value={currentEditValue}
                         onChange={(e) => setEditDraft((p) => ({ ...p, [item.id]: e.target.value }))}
-                        className="w-full min-h-[140px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                        className="min-h-[140px] bg-slate-950/40 border-slate-700/50 p-3 text-slate-200 focus-visible:ring-indigo-500/40"
                       />
                       <div className="flex justify-between items-center gap-3 mt-3 flex-wrap">
-                        <button
+                        <Button
                           onClick={async () => {
                             await navigator.clipboard.writeText(currentEditValue);
                             toastSuccess('Copied');
                           }}
-                          className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                          variant="secondary"
+                          size="sm"
+                          className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
                         >
                           📋 Copy
-                        </button>
+                        </Button>
                         <div className="flex gap-2">
-                          <button
+                          <Button
                             onClick={() => {
                               setEditing((p) => ({ ...p, [item.id]: false }));
                               setEditDraft((p) => ({ ...p, [item.id]: displayValue }));
                             }}
                             disabled={isBusy}
-                            className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                            variant="secondary"
+                            size="sm"
+                            className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
                           >
                             Cancel
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => handleSaveEdit(item)}
                             disabled={isBusy}
-                            className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                            size="sm"
+                            className="h-auto px-3 py-1.5 rounded-lg"
                           >
                             {isBusy ? 'Saving…' : 'Save'}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </>

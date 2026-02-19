@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState, use } from 'react';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 function clampText(text: string, maxChars: number) {
   if (text.length <= maxChars) return text;
@@ -329,26 +332,26 @@ export default function PlanPreviewPage({
           <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6">
             <h2 className="text-sm font-semibold text-white mb-4">Inline editor</h2>
 
-            <label className="block text-xs text-slate-400 mb-1">App name</label>
-            <input
+            <Label className="block text-xs text-slate-400 mb-1">App name</Label>
+            <Input
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              className="w-full bg-slate-900/40 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="bg-slate-900/40 border-slate-700 text-white"
             />
 
-            <label className="block text-xs text-slate-400 mb-1 mt-4">Subtitle</label>
-            <input
+            <Label className="block text-xs text-slate-400 mb-1 mt-4">Subtitle</Label>
+            <Input
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
-              className="w-full bg-slate-900/40 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="bg-slate-900/40 border-slate-700 text-white"
             />
 
-            <label className="block text-xs text-slate-400 mb-1 mt-4">Description</label>
-            <textarea
+            <Label className="block text-xs text-slate-400 mb-1 mt-4">Description</Label>
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={10}
-              className="w-full bg-slate-900/40 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 whitespace-pre-wrap"
+              className="bg-slate-900/40 border-slate-700 text-white whitespace-pre-wrap"
             />
 
             <div className="mt-4 text-xs text-slate-500">

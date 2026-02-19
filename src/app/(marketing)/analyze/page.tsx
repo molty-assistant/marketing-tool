@@ -3,6 +3,9 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import GenerationOverlay from '@/components/GenerationOverlay'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 function normalizeUrl(input: string): string {
   return input.trim().match(/^https?:\/\//i) ? input.trim() : `https://${input.trim()}`
@@ -72,25 +75,25 @@ function AnalyzeContent() {
         </p>
 
         <div className="mt-6">
-          <label htmlFor="analyze-url" className="block text-sm font-medium text-slate-300 mb-2">
+          <Label htmlFor="analyze-url" className="block mb-2">
             URL
-          </label>
+          </Label>
           <div className="flex flex-col sm:flex-row gap-3">
-            <input
+            <Input
               id="analyze-url"
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && start()}
               placeholder="https://linear.app (or App Store / Play Store link)"
-              className="w-full sm:flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="sm:flex-1 h-auto bg-slate-950 px-4 py-3 focus-visible:border-transparent"
             />
-            <button
+            <Button
               onClick={start}
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition-colors whitespace-nowrap"
+              className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
             >
               Generate plan →
-            </button>
+            </Button>
           </div>
           {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
         </div>

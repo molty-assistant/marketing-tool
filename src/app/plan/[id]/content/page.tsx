@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ChevronRight, PenLine, Mail, LayoutTemplate, Languages } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 export default async function ContentHubPage({
   params,
@@ -49,7 +50,7 @@ export default async function ContentHubPage({
           const Icon = section.icon;
           return (
             <Link href={section.href} key={section.href}>
-              <div className="group flex items-center justify-between p-5 bg-slate-800/50 border border-white/[0.06] rounded-xl hover:border-indigo-500/30 hover:bg-slate-800/80 transition-all cursor-pointer">
+              <Card className="group flex items-center justify-between p-5 bg-slate-800/50 border-white/[0.06] rounded-xl hover:border-indigo-500/30 hover:bg-slate-800/80 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
                     <Icon className="w-5 h-5 text-indigo-400" />
@@ -64,7 +65,7 @@ export default async function ContentHubPage({
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" />
-              </div>
+              </Card>
             </Link>
           );
         })}

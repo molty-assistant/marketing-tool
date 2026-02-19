@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
 
 type ErrorBoundaryProps = {
   children: React.ReactNode;
@@ -46,13 +47,13 @@ export default class ErrorBoundary extends React.Component<
                 {this.state.error.message}
               </p>
             ) : null}
-            <button
+            <Button
               type="button"
               onClick={this.handleTryAgain}
-              className="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-3 rounded-xl transition-all"
+              className="h-auto font-semibold px-5 py-3"
             >
               Try again
-            </button>
+            </Button>
           </div>
         </div>
       );

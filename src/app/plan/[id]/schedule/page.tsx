@@ -2,6 +2,10 @@
 
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 
 interface ScheduleItem {
   id: string;
@@ -144,41 +148,52 @@ export default function SchedulePage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">📅 Content Schedule</h1>
           <div className="flex gap-2">
-            <select
+            <Select
               value={platform}
               onChange={e => setPlatform(e.target.value as 'instagram' | 'tiktok')}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+              className="w-auto h-auto bg-slate-800 border-slate-700 rounded-lg px-3 py-2 text-sm"
             >
               <option value="instagram">📸 Instagram</option>
               <option value="tiktok">🎵 TikTok</option>
-            </select>
-            <button
+            </Select>
+            <Button
               onClick={() => { setAddDate(formatDate(weekDates[0])); setShowAddModal(true); }}
-              className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              variant="secondary"
+              className="h-auto px-4 py-2 rounded-lg text-sm font-medium"
             >
               + Add Post
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleAutoGenerate}
               disabled={generating}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="h-auto px-4 py-2 rounded-lg text-sm font-medium"
             >
               {generating ? '⏳ Generating…' : '✨ Auto-generate Week'}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Week navigation */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setWeekOffset(w => w - 1)} className="text-slate-400 hover:text-white px-3 py-1">
+          <Button
+            onClick={() => setWeekOffset(w => w - 1)}
+            variant="ghost"
+            size="sm"
+            className="h-auto text-slate-400 hover:text-white px-3 py-1"
+          >
             ← Prev
-          </button>
+          </Button>
           <span className="text-slate-300 font-medium">
             {dayLabel(weekDates[0])} — {dayLabel(weekDates[6])}
           </span>
-          <button onClick={() => setWeekOffset(w => w + 1)} className="text-slate-400 hover:text-white px-3 py-1">
+          <Button
+            onClick={() => setWeekOffset(w => w + 1)}
+            variant="ghost"
+            size="sm"
+            className="h-auto text-slate-400 hover:text-white px-3 py-1"
+          >
             Next →
-          </button>
+          </Button>
         </div>
 
         {/* Calendar grid */}
@@ -248,19 +263,21 @@ export default function SchedulePage() {
               </div>
               <div className="flex gap-2 mt-6">
                 {selectedItem.status === 'scheduled' && (
-                  <button
+                  <Button
                     onClick={() => handleCancel(selectedItem.id)}
-                    className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    variant="destructive"
+                    className="h-auto px-4 py-2 rounded-lg text-sm font-medium"
                   >
                     Cancel Post
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
                   onClick={() => setSelectedItem(null)}
-                  className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors ml-auto"
+                  variant="secondary"
+                  className="h-auto px-4 py-2 rounded-lg text-sm font-medium ml-auto"
                 >
                   Close
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -273,49 +290,64 @@ export default function SchedulePage() {
               <h3 className="text-lg font-bold mb-4">Add Scheduled Post</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Date</label>
-                  <input type="date" value={addDate} onChange={e => setAddDate(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
+                  <Label className="block text-sm text-slate-400 mb-1">Date</Label>
+                  <Input
+                    type="date"
+                    value={addDate}
+                    onChange={e => setAddDate(e.target.value)}
+                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Time</label>
-                  <input type="time" value={addTime} onChange={e => setAddTime(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
+                  <Label className="block text-sm text-slate-400 mb-1">Time</Label>
+                  <Input
+                    type="time"
+                    value={addTime}
+                    onChange={e => setAddTime(e.target.value)}
+                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Platform</label>
-                  <select value={addPlatform} onChange={e => setAddPlatform(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                  <Label className="block text-sm text-slate-400 mb-1">Platform</Label>
+                  <Select
+                    value={addPlatform}
+                    onChange={e => setAddPlatform(e.target.value)}
+                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                  >
                     <option value="instagram">📸 Instagram</option>
                     <option value="tiktok">🎵 TikTok</option>
-                  </select>
+                  </Select>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Content Type</label>
-                  <select value={addType} onChange={e => setAddType(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                  <Label className="block text-sm text-slate-400 mb-1">Content Type</Label>
+                  <Select
+                    value={addType}
+                    onChange={e => setAddType(e.target.value)}
+                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                  >
                     <option value="post">Post</option>
                     <option value="reel">Reel</option>
                     <option value="story">Story</option>
                     <option value="carousel">Carousel</option>
-                  </select>
+                  </Select>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Topic (optional)</label>
-                  <input type="text" value={addTopic} onChange={e => setAddTopic(e.target.value)}
+                  <Label className="block text-sm text-slate-400 mb-1">Topic (optional)</Label>
+                  <Input type="text" value={addTopic} onChange={e => setAddTopic(e.target.value)}
                     placeholder="e.g. 5 tips for better productivity"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
+                    className="bg-slate-800 border-slate-700 rounded-lg text-sm" />
                 </div>
               </div>
               <div className="flex gap-2 mt-6">
-                <button onClick={handleAdd}
-                  className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <Button onClick={handleAdd}
+                  className="h-auto px-4 py-2 rounded-lg text-sm font-medium">
                   Add
-                </button>
-                <button onClick={() => setShowAddModal(false)}
-                  className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                </Button>
+                <Button onClick={() => setShowAddModal(false)}
+                  variant="secondary"
+                  className="h-auto px-4 py-2 rounded-lg text-sm font-medium">
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>
