@@ -55,6 +55,15 @@ function safeText(input: unknown, fallback: string) {
   return s || fallback;
 }
 
+function proxyUrl(url: string | undefined): string {
+  const s = typeof url === 'string' ? url.trim() : '';
+  if (!s) return '';
+  if (s.startsWith('http://') || s.startsWith('https://')) {
+    return `/api/image-proxy?url=${encodeURIComponent(s)}`;
+  }
+  return s;
+}
+
 function pickTop(items: unknown, n: number): string[] {
   if (!Array.isArray(items)) return [];
   return items
@@ -157,8 +166,8 @@ function htmlShell(opts: {
 }
 
 function iconImg(iconUrl?: string, size = 64) {
-  const safe = typeof iconUrl === 'string' ? iconUrl : '';
-  if (safe.startsWith('http')) {
+  const safe = proxyUrl(iconUrl);
+  if (safe) {
     return `<img src="${safe}" width="${size}" height="${size}" style="width:${size}px;height:${size}px;border-radius:${Math.round(
       size * 0.28
     )}px;box-shadow:0 12px 30px rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);object-fit:cover" />`;
@@ -191,7 +200,10 @@ export function generateSocialTemplates(opts: {
   const { plan, platforms, style } = opts;
   const visualMode: SocialVisualMode = opts.visualMode || 'screenshot';
   const imageBrief = opts.imageBrief || null;
-  const bgImageUrl = typeof opts.bgImageUrl === 'string' && opts.bgImageUrl.startsWith('http') ? opts.bgImageUrl : undefined;
+  const bgImageUrl =
+    typeof opts.bgImageUrl === 'string' && opts.bgImageUrl.startsWith('http')
+      ? proxyUrl(opts.bgImageUrl)
+      : undefined;
   const accent = typeof opts.accentColor === 'string' && opts.accentColor.startsWith('#') ? opts.accentColor : '#667eea';
   const accent2 = mix(accent, '#ffffff', 0.22);
 
@@ -371,7 +383,7 @@ export function generateSocialTemplates(opts: {
       const screenshotBlock = screenshot
         ? `
         <div style="height:100%;border-radius:18px;overflow:hidden;border:1px solid var(--border);box-shadow:0 18px 40px rgba(0,0,0,0.25);background:rgba(0,0,0,0.2);">
-          <img src="${screenshot}" style="width:100%;height:100%;object-fit:cover;" />
+          <img src="${proxyUrl(screenshot)}" style="width:100%;height:100%;object-fit:cover;" />
         </div>`
         : `
         <div style="height:100%;border-radius:18px;border:1px solid var(--border);background:color-mix(in srgb, var(--card) 88%, transparent);padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -478,7 +490,7 @@ export function generateSocialTemplates(opts: {
 </div>`;
 
       const screenshotVisual = screenshot
-        ? `<img src="${screenshot}" style="width:100%;height:100%;object-fit:cover;transform:scale(1.12);border-radius:28px;" />`
+        ? `<img src="${proxyUrl(screenshot)}" style="width:100%;height:100%;object-fit:cover;transform:scale(1.12);border-radius:28px;" />`
         : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${iconImg(
             iconUrl,
             220
