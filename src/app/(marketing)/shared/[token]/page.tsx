@@ -127,8 +127,40 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
     URL.revokeObjectURL(url);
   };
 
-  const handleExportPdf = () => {
-    window.print();
+  const [pdfExporting, setPdfExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (pdfExporting) return;
+    setPdfExporting(true);
+
+    try {
+      const res = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to export PDF');
+      }
+
+      const blob = await res.blob();
+      const cd = res.headers.get('content-disposition') || '';
+      const match = /filename="?([^";]+)"?/i.exec(cd);
+      const filename = match?.[1] || `marketing-brief-${plan.config.app_name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert('Sorry — something went wrong exporting your PDF. Please try again.');
+    } finally {
+      setPdfExporting(false);
+    }
   };
 
   const stageLabels = [
@@ -173,9 +205,10 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
           </button>
           <button
             onClick={handleExportPdf}
-            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
+            disabled={pdfExporting}
+            className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors disabled:opacity-50"
           >
-            📄 Export PDF
+            {pdfExporting ? 'Preparing…' : '📄 Export PDF'}
           </button>
         </div>
       </div>

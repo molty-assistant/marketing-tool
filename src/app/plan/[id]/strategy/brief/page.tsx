@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useMemo, useRef, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -56,7 +56,6 @@ export default function StrategyBriefPage({
   const { error: toastError } = useToast();
 
   const [pdfExporting, setPdfExporting] = useState(false);
-  const pdfRef = useRef<HTMLDivElement | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -90,10 +89,6 @@ export default function StrategyBriefPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const appContext = useMemo(() => {
-    if (!plan) return '';
-    return `${plan.config.app_name} — ${plan.config.one_liner}. Category: ${plan.config.category}. Audience: ${plan.config.target_audience}. Pricing: ${plan.config.pricing}.`;
-  }, [plan]);
 
   if (loading) return <PlanDetailSkeleton />;
 
@@ -128,28 +123,34 @@ export default function StrategyBriefPage({
 
   const handleExportPdf = async () => {
     if (pdfExporting) return;
-    const el = pdfRef.current;
-    if (!el) return;
 
     setPdfExporting(true);
     try {
-      const mod = await import('html2pdf.js');
-      const html2pdf = (mod as unknown as { default: any }).default || (mod as any);
+      const res = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: id }),
+      });
 
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.error || 'Failed to export PDF');
+      }
+
+      const blob = await res.blob();
+      const cd = res.headers.get('content-disposition') || '';
+      const match = /filename=\"?([^\";]+)\"?/i.exec(cd);
       const safeName = plan?.config?.app_name
         ? plan.config.app_name.toLowerCase().replace(/\s+/g, '-')
         : 'plan';
+      const filename = match?.[1] || `marketing-brief-${safeName}.pdf`;
 
-      await html2pdf()
-        .set({
-          margin: [12, 12, 12, 12],
-          filename: `marketing-brief-${safeName}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        })
-        .from(el)
-        .save();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to export PDF';
       toastError(msg);
@@ -214,41 +215,6 @@ export default function StrategyBriefPage({
         </div>
       </div>
 
-      {/* Hidden PDF export container */}
-      <div
-        ref={pdfRef}
-        className="fixed left-[-9999px] top-0 w-[800px] bg-white text-slate-900 p-10"
-      >
-        <div className="flex items-start justify-between gap-6 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">{plan.config.app_name}</h1>
-            <p className="text-sm text-slate-600 mt-1">{plan.config.one_liner}</p>
-            <p className="text-xs text-slate-500 mt-2">
-              Generated {new Date(plan.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          {(plan.scraped?.icon || plan.config?.icon) && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={plan.scraped?.icon || plan.config?.icon}
-              alt=""
-              className="w-12 h-12 rounded-xl"
-            />
-          )}
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Brief</h2>
-          <div className="text-sm">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-              {plan.generated}
-            </ReactMarkdown>
-          </div>
-        </div>
-
-        {/* Include app context as a footer note (useful for exports) */}
-        <div className="text-xs text-slate-500 border-t pt-4">{appContext}</div>
-      </div>
     </div>
   );
 }
