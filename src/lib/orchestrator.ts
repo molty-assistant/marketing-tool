@@ -69,6 +69,8 @@ export interface ExecuteOrchestrationResult {
   outputRefs: Record<string, unknown>;
 }
 
+type HeaderValueReader = Pick<Headers, 'get'>;
+
 const BASE_STEPS: Array<{ id: Exclude<OrchestrationStepId, 'generate-video'>; label: string }> = [
   { id: 'brand-voice', label: 'Brand Voice' },
   { id: 'positioning-angles', label: 'Positioning Angles' },
@@ -190,6 +192,61 @@ function parseOutputRefs(outputRefsJson: string): Record<string, unknown> {
   return {};
 }
 
+function firstHeaderValue(value: string | null): string | null {
+  if (!value) return null;
+  const first = value.split(',')[0]?.trim();
+  return first || null;
+}
+
+export function getBaseUrlFromHeaders(headers: HeaderValueReader): string | null {
+  const rawHost = firstHeaderValue(headers.get('x-forwarded-host')) ?? firstHeaderValue(headers.get('host'));
+  if (!rawHost) return null;
+
+  // Reject malformed host values before constructing an internal URL.
+  if (rawHost.includes('/') || rawHost.includes('\\') || rawHost.includes('@')) {
+    return null;
+  }
+
+  const rawProto = firstHeaderValue(headers.get('x-forwarded-proto'))?.toLowerCase();
+  const proto = rawProto === 'https' || rawProto === 'http' ? rawProto : 'http';
+
+  try {
+    const parsed = new URL(`${proto}://${rawHost}`);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return null;
+  }
+}
+
+export function getForwardedInternalAuthHeaders(headers: HeaderValueReader): Record<string, string> {
+  const forwarded: Record<string, string> = {};
+
+  const authorization = headers.get('authorization');
+  if (authorization) {
+    forwarded.authorization = authorization;
+  }
+
+  const apiKey = headers.get('x-api-key');
+  if (apiKey) {
+    forwarded['x-api-key'] = apiKey;
+  }
+
+  const cookie = headers.get('cookie');
+  if (cookie) {
+    forwarded.cookie = cookie;
+  }
+
+  return forwarded;
+}
+
+export function parseRunStepsJson(stepsJson: string, includeVideo: boolean): OrchestrationStepState[] {
+  return parseSteps(stepsJson, includeVideo);
+}
+
+export function parseRunOutputRefsJson(outputRefsJson: string): Record<string, unknown> {
+  return parseOutputRefs(outputRefsJson);
+}
+
 export function parseRunInputJson(inputJson: string): OrchestratePackInput {
   try {
     const parsed = JSON.parse(inputJson);
@@ -245,7 +302,8 @@ function toErrorMessage(error: unknown): string {
 async function executeStep(
   stepId: OrchestrationStepId,
   input: NormalizedOrchestratePackInput,
-  requestUrl?: string
+  internalBaseUrl?: string,
+  internalAuthHeaders?: Record<string, string>
 ): Promise<unknown> {
   const { planId } = input;
 
@@ -364,14 +422,17 @@ async function executeStep(
     }
 
     case 'generate-video': {
-      if (!requestUrl) {
-        throw new Error('Video step requires request URL context');
+      if (!internalBaseUrl) {
+        throw new Error('Video step requires internal base URL context');
       }
 
-      const endpoint = new URL('/api/generate-video', requestUrl);
+      const endpoint = new URL('/api/generate-video', internalBaseUrl);
       const resp = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          ...internalAuthHeaders,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           planId,
           prompt: buildVideoPrompt(input),
@@ -405,7 +466,8 @@ async function executeStep(
 export async function executeOrchestrationRun(params: {
   runId: string;
   input: OrchestratePackInput;
-  requestUrl?: string;
+  internalBaseUrl?: string | null;
+  internalAuthHeaders?: Record<string, string>;
   resumeFromFailed?: boolean;
 }): Promise<ExecuteOrchestrationResult> {
   const run = getRun(params.runId);
@@ -526,7 +588,12 @@ export async function executeOrchestrationRun(params: {
     });
 
     try {
-      const outputRef = await executeStep(steps[i].id, input, params.requestUrl);
+      const outputRef = await executeStep(
+        steps[i].id,
+        input,
+        params.internalBaseUrl ?? undefined,
+        params.internalAuthHeaders
+      );
       outputRefs[steps[i].id] = outputRef;
 
       steps[i] = {

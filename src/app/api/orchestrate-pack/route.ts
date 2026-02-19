@@ -3,6 +3,8 @@ import { createRun, getPlan, updateRun } from '@/lib/db';
 import {
   buildInitialSteps,
   executeOrchestrationRun,
+  getBaseUrlFromHeaders,
+  getForwardedInternalAuthHeaders,
   normalizeOrchestratePackInput,
   type OrchestratePackInput,
 } from '@/lib/orchestrator';
@@ -48,10 +50,14 @@ export async function POST(request: NextRequest) {
 
     runId = run.id;
 
+    const internalBaseUrl = getBaseUrlFromHeaders(request.headers);
+    const internalAuthHeaders = getForwardedInternalAuthHeaders(request.headers);
+
     const result = await executeOrchestrationRun({
       runId,
       input: normalizedInput,
-      requestUrl: request.url,
+      internalBaseUrl,
+      internalAuthHeaders,
     });
 
     return NextResponse.json({
