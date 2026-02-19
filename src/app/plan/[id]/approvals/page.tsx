@@ -229,7 +229,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Review and approve AI-generated content before it goes live — edit any section inline or regenerate it before adding to your posting queue.
       </div>
 
@@ -268,7 +268,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* Create */}
-      <div className="bg-slate-800/30 border border-slate-700/60 rounded-2xl p-5 mb-6">
+      <div className="bg-slate-800/30 border border-slate-700/60 rounded-2xl p-6 mb-8">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div>
             <div className="text-sm font-semibold text-white">Add to approval queue</div>

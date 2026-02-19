@@ -32,7 +32,7 @@ const METRICS: Array<{ key: keyof Omit<VariantScore, 'text' | 'feedback'>; label
 function ScoreSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
-      <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
         <div className="h-5 w-48 bg-zinc-800 rounded" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {[1, 2].map((i) => (
@@ -56,7 +56,7 @@ function MetricBars({ scores, winner }: { scores: VariantScore[]; winner: number
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {scores.map((s, idx) => (
-        <div key={idx} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5">
+        <div key={idx} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="min-w-0">
               <div className="text-xs text-zinc-400 mb-1">Variant {idx + 1}</div>
@@ -217,7 +217,7 @@ export default function VariantsPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Generate multiple headline and hook variants, then score them side-by-side for clarity, emotion, urgency, and uniqueness — find your strongest angle before you go live.
       </div>
 
@@ -231,7 +231,7 @@ export default function VariantsPage({ params }: { params: Promise<{ id: string 
         </div>
       </div>
 
-      <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 mb-6">
+      <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 mb-8">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div>
             <div className="text-sm font-semibold text-white">Copy variants</div>

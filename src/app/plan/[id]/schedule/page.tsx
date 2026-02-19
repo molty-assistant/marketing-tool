@@ -137,7 +137,7 @@ export default function SchedulePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
           Schedule posts for auto-publishing across your connected platforms — set a date and time, then let the system handle generation and posting.
         </div>
 
@@ -229,7 +229,7 @@ export default function SchedulePage() {
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setSelectedItem(null)}>
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
               <h3 className="text-lg font-bold mb-4">Scheduled Post</h3>
-              <div className="space-y-3 text-sm">
+              <div className="space-y-4 text-sm">
                 <div><span className="text-slate-400">Platform:</span> {PLATFORM_EMOJI[selectedItem.platform]} {selectedItem.platform}</div>
                 <div><span className="text-slate-400">Type:</span> {selectedItem.content_type}</div>
                 <div><span className="text-slate-400">Scheduled:</span> {selectedItem.scheduled_at}</div>

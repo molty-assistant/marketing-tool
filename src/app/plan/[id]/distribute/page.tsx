@@ -172,7 +172,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Turn one core piece of content into platform-native posts for Instagram, TikTok, LinkedIn, Twitter, Reddit, and email — generated in seconds from your marketing brief.
       </div>
 
@@ -200,7 +200,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6 space-y-4">
+      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8 space-y-4">
         <div>
           <div className="text-sm font-semibold text-white mb-2">Platforms</div>
           <div className="flex flex-wrap gap-2">
@@ -224,7 +224,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
         {!data && (
           <div>
             <div className="text-sm font-semibold text-white mb-2">What you’ll get</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(platforms.length ? platforms : DEFAULT_PLATFORMS).map((p) => {
                 const meta = platformMeta[p] || { icon: '✨', description: 'Platform-native post' };
                 return (

@@ -224,7 +224,7 @@ export default function ReviewsPage({ params }: { params: Promise<{ id: string }
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Monitor your App Store reviews, analyse sentiment trends, and surface the most common user themes — so you know what&apos;s working and what to fix next.
       </div>
 
@@ -235,7 +235,7 @@ export default function ReviewsPage({ params }: { params: Promise<{ id: string }
         </div>
       </div>
 
-      <section className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 mb-6">
+      <section className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-6 mb-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-white">📥 Load reviews</h2>
@@ -294,7 +294,7 @@ export default function ReviewsPage({ params }: { params: Promise<{ id: string }
           {scraping ? (
             <ReviewsSkeleton />
           ) : !reviews.length ? (
-            <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 text-sm text-zinc-500">
+            <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-6 text-sm text-zinc-500">
               No reviews loaded yet.
             </div>
           ) : (
@@ -335,7 +335,7 @@ export default function ReviewsPage({ params }: { params: Promise<{ id: string }
           <h2 className="text-lg font-semibold text-white mb-3">🧠 Sentiment &amp; themes</h2>
 
           {!sentiment ? (
-            <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 text-sm text-zinc-500">
+            <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-6 text-sm text-zinc-500">
               Run “Analyze Sentiment” after you’ve loaded reviews.
             </div>
           ) : (

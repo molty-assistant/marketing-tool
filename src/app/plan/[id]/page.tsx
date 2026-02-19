@@ -229,7 +229,7 @@ export default function PlanOverviewPage({
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-6 mb-6">
+      <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-6 mb-8">
         <div className="flex items-start gap-4">
           {computed.icon && (
             // eslint-disable-next-line @next/next/no-img-element

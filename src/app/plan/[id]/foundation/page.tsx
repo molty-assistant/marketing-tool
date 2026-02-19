@@ -234,7 +234,7 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Build your brand&apos;s strategic foundation — define your voice, personality traits, vocabulary guide, and positioning angles that guide all your marketing content.
       </div>
 
@@ -251,7 +251,7 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* ── Brand Voice ───────────────────────────── */}
-      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 mb-6">
+      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-white">🎙️ Brand Voice</h2>
@@ -319,7 +319,7 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
       </section>
 
       {/* ── Positioning Angles ────────────────────── */}
-      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 mb-6">
+      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-white">🎯 Positioning Angles</h2>
@@ -383,7 +383,7 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
       </section>
 
       {/* ── Competitive Analysis ──────────────────── */}
-      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 mb-10">
+      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-10">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-white">⚔️ Competitive Analysis</h2>

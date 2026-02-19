@@ -153,7 +153,7 @@ export default function PlanPreviewPage({
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         See exactly how your app looks in the App Store and Google Play — with your real listing data, so you can spot issues before they go live.
       </div>
 
@@ -326,7 +326,7 @@ export default function PlanPreviewPage({
 
         {/* Editor */}
         <div className="lg:col-span-2">
-          <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-5">
+          <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6">
             <h2 className="text-sm font-semibold text-white mb-4">Inline editor</h2>
 
             <label className="block text-xs text-slate-400 mb-1">App name</label>
@@ -356,7 +356,7 @@ export default function PlanPreviewPage({
             </div>
           </div>
 
-          <div className="mt-4 bg-slate-800/40 border border-slate-700 rounded-2xl p-5">
+          <div className="mt-4 bg-slate-800/40 border border-slate-700 rounded-2xl p-6">
             <h3 className="text-sm font-semibold text-white mb-2">Using your plan data</h3>
             <div className="text-xs text-slate-400 leading-5">
               <div>

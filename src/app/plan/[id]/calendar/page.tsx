@@ -249,7 +249,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Plan your content calendar with AI-scheduled posts across all platforms for the next 4 weeks — see what to post, when, and with what copy.
       </div>
 
@@ -268,7 +268,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
         </button>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6">
+      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <div className="text-sm font-semibold text-white mb-2">Platforms</div>

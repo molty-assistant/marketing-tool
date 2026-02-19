@@ -317,7 +317,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
         ) : (
           <>
             {summaryVisible && (
-              <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 mb-6">
+              <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8">
                 <div className="flex flex-wrap gap-2 items-center text-sm">
                   <span className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-200">
                     Total: {summary.total}
@@ -427,7 +427,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                 return (
                   <div
                     key={item.id}
-                    className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5"
+                    className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6"
                   >
                     <div className="text-xs text-slate-400 mb-2 flex flex-wrap items-center gap-2">
                       <span>{emoji}</span>

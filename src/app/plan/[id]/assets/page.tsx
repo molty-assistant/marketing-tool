@@ -339,7 +339,7 @@ function ScreenshotCompositorSection({
   };
 
   return (
-    <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 mt-10">
+    <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mt-10">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-lg font-semibold text-white">📱 Screenshot Compositor</h2>
@@ -912,7 +912,7 @@ export default function AssetsPage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Generate social media graphics and device mockups — download ready-to-post images sized for Instagram, TikTok, and other platforms.
       </div>
 
@@ -950,7 +950,7 @@ export default function AssetsPage({
       )}
 
       {/* Color Customization */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-8">
+      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
         <h2 className="text-sm font-semibold text-white mb-3">Color Theme</h2>
         <div className="flex flex-wrap gap-2 mb-4">
           {COLOR_PRESETS.map((preset) => (
@@ -1027,7 +1027,7 @@ export default function AssetsPage({
       <ScreenshotCompositorSection planId={id} appName={plan.config.app_name} />
 
       {/* Social Images */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mt-10 mb-8">
+      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mt-10 mb-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-sm font-semibold text-white">📣 Social Images</h2>
@@ -1134,7 +1134,7 @@ export default function AssetsPage({
       </div>
 
       {/* Tips */}
-      <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 mt-8 mb-8">
+      <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mt-8 mb-8">
         <h3 className="text-sm font-semibold text-white mb-2">💡 Tips</h3>
         <ul className="text-sm text-slate-400 space-y-1">
           <li>

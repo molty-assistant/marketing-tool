@@ -269,7 +269,7 @@ export default function DraftPage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
         Generate polished App Store descriptions, landing page hero copy, and feature bullets — choose your tone and section, then copy straight to your listing.
       </div>
 
@@ -305,7 +305,7 @@ export default function DraftPage({
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6">
+      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h2 className="text-sm font-semibold text-white mb-3">Sections</h2>

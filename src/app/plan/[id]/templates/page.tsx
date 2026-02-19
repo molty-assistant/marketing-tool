@@ -296,7 +296,7 @@ export default function TemplatesPage({
 
   if (planLoading) {
     return (
-      <div className="px-4 py-8">
+      <div className="px-4 pb-8">
         <PageSkeleton />
       </div>
     );
@@ -304,7 +304,7 @@ export default function TemplatesPage({
 
   if (planError) {
     return (
-      <div className="px-4 py-8">
+      <div className="px-4 pb-8">
         <ErrorRetry error={planError} onRetry={loadPlan} />
       </div>
     );
@@ -313,9 +313,9 @@ export default function TemplatesPage({
   const hasAppInfo = Boolean(plan?.config?.app_name || plan?.config?.one_liner);
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-4 pb-8">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-6 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
           Ready-to-copy marketing templates pre-filled with your app&apos;s details — App Store blurbs, social bios, Product Hunt taglines, and more.
         </div>
 
@@ -354,7 +354,7 @@ export default function TemplatesPage({
             return (
               <div
                 key={t.id}
-                className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5"
+                className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6"
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div>
