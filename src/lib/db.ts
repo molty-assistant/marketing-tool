@@ -92,6 +92,10 @@ CREATE TABLE IF NOT EXISTS approval_queue (
       )
     `);
 
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_orch_runs_plan_id ON orchestration_runs(plan_id)
+    `);
+
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some((c) => c.name === 'share_token')) {
@@ -315,9 +319,15 @@ export function savePlan(plan: {
 }): void {
   const db = getDb();
   const stmt = db.prepare(`
-    INSERT OR REPLACE INTO plans (id, config, scraped, generated, stages, created_at, updated_at)
+    INSERT INTO plans (id, config, scraped, generated, stages, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-  `);
+    ON CONFLICT(id) DO UPDATE SET
+      config = excluded.config,
+      scraped = excluded.scraped,
+      generated = excluded.generated,
+      stages = excluded.stages,
+      updated_at = datetime('now')
+`);
   stmt.run(
     plan.id,
     JSON.stringify(plan.config),

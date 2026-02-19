@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlan, getRun, updateRun } from '@/lib/db';
+import { getDb, getPlan, getRun, updateRun } from '@/lib/db';
 import {
   executeOrchestrationRun,
   parseRunInputJson,
@@ -20,11 +20,31 @@ export async function POST(
     return NextResponse.json({ error: 'Run not found' }, { status: 404 });
   }
 
-  if (run.status !== 'failed') {
+  const updatedAtMs = run.updated_at ? new Date(run.updated_at + 'Z').getTime() : 0;
+  const isStaleRunning =
+    run.status === 'running' && updatedAtMs && Date.now() - updatedAtMs > 10 * 60 * 1000;
+
+  if (run.status !== 'failed' && !isStaleRunning) {
     return NextResponse.json(
-      { error: 'Only failed runs can be retried', runId, status: run.status },
+      {
+        error: 'Only failed runs can be retried (or stale running runs)',
+        runId,
+        status: run.status,
+      },
       { status: 400 }
     );
+  }
+
+  // Atomic swap: prevent concurrent retries
+  const db = getDb();
+  const swap = db
+    .prepare(
+      "UPDATE orchestration_runs SET status = 'running', updated_at = datetime('now') WHERE id = ? AND status IN ('failed','running')"
+    )
+    .run(runId);
+
+  if (swap.changes === 0) {
+    return NextResponse.json({ error: 'Run is already being executed', runId }, { status: 409 });
   }
 
   let body: Partial<OrchestratePackInput> = {};

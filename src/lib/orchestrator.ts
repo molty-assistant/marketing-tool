@@ -380,8 +380,7 @@ async function executeStep(
       });
 
       if (!resp.ok) {
-        const text = await resp.text();
-        throw new Error(`Video kickoff failed (${resp.status}): ${text.slice(0, 250)}`);
+        throw new Error(`Video kickoff failed (${resp.status}). Please retry later.`);
       }
 
       const payload = (await resp.json()) as { operationName?: string };
