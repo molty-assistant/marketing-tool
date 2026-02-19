@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb, getPlan, getRun, updateRun } from '@/lib/db';
 import {
   executeOrchestrationRun,
-  getBaseUrlFromHeaders,
+  internalBaseUrl,
   getForwardedInternalAuthHeaders,
   parseRunInputJson,
   type OrchestratePackInput,
@@ -78,13 +78,13 @@ export async function POST(
   }
 
   try {
-    const internalBaseUrl = getBaseUrlFromHeaders(request.headers);
+    const baseUrl = internalBaseUrl();
     const internalAuthHeaders = getForwardedInternalAuthHeaders(request.headers);
 
     const result = await executeOrchestrationRun({
       runId,
       input: mergedInput,
-      internalBaseUrl,
+      internalBaseUrl: baseUrl,
       internalAuthHeaders,
       resumeFromFailed: true,
     });

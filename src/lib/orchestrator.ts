@@ -192,30 +192,11 @@ function parseOutputRefs(outputRefsJson: string): Record<string, unknown> {
   return {};
 }
 
-function firstHeaderValue(value: string | null): string | null {
-  if (!value) return null;
-  const first = value.split(',')[0]?.trim();
-  return first || null;
-}
-
-export function getBaseUrlFromHeaders(headers: HeaderValueReader): string | null {
-  const rawHost = firstHeaderValue(headers.get('x-forwarded-host')) ?? firstHeaderValue(headers.get('host'));
-  if (!rawHost) return null;
-
-  // Reject malformed host values before constructing an internal URL.
-  if (rawHost.includes('/') || rawHost.includes('\\') || rawHost.includes('@')) {
-    return null;
-  }
-
-  const rawProto = firstHeaderValue(headers.get('x-forwarded-proto'))?.toLowerCase();
-  const proto = rawProto === 'https' || rawProto === 'http' ? rawProto : 'http';
-
-  try {
-    const parsed = new URL(`${proto}://${rawHost}`);
-    return `${parsed.protocol}//${parsed.host}`;
-  } catch {
-    return null;
-  }
+export function internalBaseUrl(): string {
+  // Safe for server-to-server fetches within this Next.js process.
+  // Do NOT derive from request headers (SSRF risk).
+  const port = process.env.PORT ?? '3000';
+  return `http://localhost:${port}`;
 }
 
 export function getForwardedInternalAuthHeaders(headers: HeaderValueReader): Record<string, string> {
