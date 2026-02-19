@@ -54,11 +54,31 @@ const SECTION_OPTIONS: {
   },
 ];
 
-const TONE_OPTIONS: { value: Tone; label: string; help: string }[] = [
-  { value: 'professional', label: 'Professional', help: 'Clear, credible, polished.' },
-  { value: 'casual', label: 'Casual', help: 'Friendly, conversational.' },
-  { value: 'bold', label: 'Bold', help: 'Punchy, energetic, confident.' },
-  { value: 'minimal', label: 'Minimal', help: 'Short, tight, no fluff.' },
+const TONE_OPTIONS: { value: Tone; label: string; help: string; sample: string }[] = [
+  {
+    value: 'professional',
+    label: 'Professional',
+    help: 'Clear, credible, polished.',
+    sample: '"Designed for teams who demand reliability — at every scale."',
+  },
+  {
+    value: 'casual',
+    label: 'Casual',
+    help: 'Friendly, conversational.',
+    sample: '"Honestly? It just works. And it\'s kind of amazing."',
+  },
+  {
+    value: 'bold',
+    label: 'Bold',
+    help: 'Punchy, energetic, confident.',
+    sample: '"Stop settling. Start winning. Your competitors already did."',
+  },
+  {
+    value: 'minimal',
+    label: 'Minimal',
+    help: 'Short, tight, no fluff.',
+    sample: '"Fast. Simple. Done."',
+  },
 ];
 
 function sectionToTitle(section: DraftSection) {
@@ -330,6 +350,7 @@ export default function DraftPage({
                 >
                   <div className="text-sm text-white">{t.label}</div>
                   <div className="text-xs text-slate-500">{t.help}</div>
+                  <div className="text-xs italic text-slate-400 mt-0.5">{t.sample}</div>
                 </button>
               ))}
             </div>

@@ -29,6 +29,15 @@ interface AtomizeResponse {
 
 const DEFAULT_PLATFORMS = ['instagram', 'tiktok', 'linkedin', 'twitter', 'reddit', 'email'];
 
+const platformMeta: Record<string, { icon: string; description: string }> = {
+  instagram: { icon: '📸', description: 'Caption + 5 hashtags, 2,200 char limit' },
+  tiktok: { icon: '🎬', description: 'Hook + script outline for 15–60s video' },
+  linkedin: { icon: '💼', description: 'Professional post, up to 3,000 chars' },
+  twitter: { icon: '🐦', description: 'Tweet thread, 280 chars per tweet' },
+  reddit: { icon: '👽', description: 'Title + body post, community-aware' },
+  email: { icon: '✉️', description: 'Subject line + email body' },
+};
+
 export default function DistributePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { success: toastSuccess, error: toastError } = useToast();
@@ -169,34 +178,24 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">📣 Distribute</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold text-white">📣 Distribute</h1>
+            {data && isCached && (
+              <span className="text-xs text-slate-500">Cached · ↻ Regenerate to refresh</span>
+            )}
+          </div>
           <p className="text-slate-400">{plan.config.app_name} — One core piece, many posts</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-2.5">
-            <div className="text-[11px] uppercase tracking-wide text-slate-500">Preview</div>
-            <div className="text-sm text-slate-200 mt-1">
-              <span className="text-slate-400">Channels:</span> {platforms.length ? platforms.join(', ') : DEFAULT_PLATFORMS.join(', ')}
-            </div>
-            <div className="text-sm text-slate-200">
-              <span className="text-slate-400">Audience:</span> {plan.config.target_audience || '—'}
-            </div>
-            <div className="text-sm text-slate-200">
-              <span className="text-slate-400">Content:</span> {sourceContent.trim() ? 'Platform-native posts (from your source)' : 'Core piece + platform-native posts'}
-            </div>
+        <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-2.5">
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Preview</div>
+          <div className="text-sm text-slate-200 mt-1">
+            <span className="text-slate-400">Channels:</span> {platforms.length ? platforms.join(', ') : DEFAULT_PLATFORMS.join(', ')}
           </div>
-
-          <div className="flex items-center gap-3">
-            {data && isCached && (
-            <span className="text-xs text-slate-500">Cached · ↻ Regenerate to refresh</span>
-          )}
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
-          >
-            {loading ? 'Generating…' : '✨ Generate'}
-          </button>
+          <div className="text-sm text-slate-200">
+            <span className="text-slate-400">Audience:</span> {plan.config.target_audience || '—'}
+          </div>
+          <div className="text-sm text-slate-200">
+            <span className="text-slate-400">Content:</span> {sourceContent.trim() ? 'Platform-native posts (from your source)' : 'Core piece + platform-native posts'}
           </div>
         </div>
       </div>
@@ -222,6 +221,29 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
           <div className="text-xs text-slate-500 mt-2">Tip: leave source blank to auto-generate a core blog post/announcement.</div>
         </div>
 
+        {!data && (
+          <div>
+            <div className="text-sm font-semibold text-white mb-2">What you’ll get</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {(platforms.length ? platforms : DEFAULT_PLATFORMS).map((p) => {
+                const meta = platformMeta[p] || { icon: '✨', description: 'Platform-native post' };
+                return (
+                  <div
+                    key={p}
+                    className="bg-slate-900/40 border border-slate-700/40 rounded-xl px-3 py-2.5"
+                  >
+                    <div className="text-xs text-white flex items-center gap-2">
+                      <span aria-hidden>{meta.icon}</span>
+                      <span className="font-medium capitalize">{p}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-1 leading-snug">{meta.description}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div>
           <div className="text-sm font-semibold text-white mb-2">Optional source content</div>
           <textarea
@@ -230,6 +252,16 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
             placeholder="Paste a blog post, launch announcement, or notes… (optional)"
             className="w-full min-h-[140px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
           />
+        </div>
+
+        <div className="flex items-center justify-end gap-3">
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+          >
+            {loading ? 'Generating…' : data ? '↻ Regenerate' : '✨ Generate'}
+          </button>
         </div>
 
         {data?.metadata?.tokens != null && (
