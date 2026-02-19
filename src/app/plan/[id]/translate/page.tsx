@@ -6,6 +6,8 @@ import type { MarketingPlan } from '@/lib/types';
 import { DraftSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
+import DismissableTip from '@/components/DismissableTip';
 
 type TranslationSection =
   | 'app_store_description'
@@ -32,49 +34,49 @@ const LANGUAGE_OPTIONS: {
   flag: string;
   help?: string;
 }[] = [
-  { code: 'es', label: 'Spanish', flag: '🇪🇸' },
-  { code: 'fr', label: 'French', flag: '🇫🇷' },
-  { code: 'de', label: 'German', flag: '🇩🇪' },
-  { code: 'it', label: 'Italian', flag: '🇮🇹' },
-  { code: 'nl', label: 'Dutch', flag: '🇳🇱' },
-  { code: 'pt-BR', label: 'Portuguese (Brazil)', flag: '🇧🇷' },
-  { code: 'ja', label: 'Japanese', flag: '🇯🇵' },
-  { code: 'ko', label: 'Korean', flag: '🇰🇷' },
-  { code: 'zh-Hans', label: 'Chinese (Simplified)', flag: '🇨🇳' },
-  { code: 'ar', label: 'Arabic', flag: '🇸🇦' },
-];
+    { code: 'es', label: 'Spanish', flag: '🇪🇸' },
+    { code: 'fr', label: 'French', flag: '🇫🇷' },
+    { code: 'de', label: 'German', flag: '🇩🇪' },
+    { code: 'it', label: 'Italian', flag: '🇮🇹' },
+    { code: 'nl', label: 'Dutch', flag: '🇳🇱' },
+    { code: 'pt-BR', label: 'Portuguese (Brazil)', flag: '🇧🇷' },
+    { code: 'ja', label: 'Japanese', flag: '🇯🇵' },
+    { code: 'ko', label: 'Korean', flag: '🇰🇷' },
+    { code: 'zh-Hans', label: 'Chinese (Simplified)', flag: '🇨🇳' },
+    { code: 'ar', label: 'Arabic', flag: '🇸🇦' },
+  ];
 
 const SECTION_OPTIONS: {
   key: TranslationSection;
   label: string;
   help: string;
 }[] = [
-  {
-    key: 'app_store_description',
-    label: 'App Store description',
-    help: 'Full description for the store listing.',
-  },
-  {
-    key: 'short_description',
-    label: 'Short description',
-    help: 'A concise store-friendly tagline.',
-  },
-  {
-    key: 'keywords',
-    label: 'Keywords',
-    help: 'Comma-separated keywords for ASO.',
-  },
-  {
-    key: 'whats_new',
-    label: "What's New",
-    help: 'Release notes / update text.',
-  },
-  {
-    key: 'feature_bullets',
-    label: 'Feature bullets',
-    help: 'A bullet list of benefits/features.',
-  },
-];
+    {
+      key: 'app_store_description',
+      label: 'App Store description',
+      help: 'Full description for the store listing.',
+    },
+    {
+      key: 'short_description',
+      label: 'Short description',
+      help: 'A concise store-friendly tagline.',
+    },
+    {
+      key: 'keywords',
+      label: 'Keywords',
+      help: 'Comma-separated keywords for ASO.',
+    },
+    {
+      key: 'whats_new',
+      label: "What's New",
+      help: 'Release notes / update text.',
+    },
+    {
+      key: 'feature_bullets',
+      label: 'Feature bullets',
+      help: 'A bullet list of benefits/features.',
+    },
+  ];
 
 function sectionToTitle(section: TranslationSection) {
   return SECTION_OPTIONS.find((s) => s.key === section)?.label || section;
@@ -91,7 +93,7 @@ export default function TranslatePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [selectedLanguages, setSelectedLanguages] = useState<Record<LanguageCode, boolean>>({
     es: true,
@@ -123,41 +125,9 @@ export default function TranslatePage({
   const storageKey = `translate-${id}`;
 
   const [loading, setLoading] = useState(false);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
   const [error, setError] = useState('');
   const [copiedAll, setCopiedAll] = useState(false);
   const { success: toastSuccess, error: toastError } = useToast();
-
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-        return;
-      } catch { /* fall through */ }
-    }
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((err) => {
-        setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setPlanLoading(false));
-  };
-
-  useEffect(() => {
-    loadPlan();
-  }, [id]);
 
   useEffect(() => {
     try {
@@ -288,9 +258,7 @@ export default function TranslatePage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Translate your App Store copy into 10 languages — ready to paste directly into your store listing without any editing.
-      </div>
+      <DismissableTip id="translate-tip">Translate your App Store copy into 10 languages — ready to paste directly into your store listing without any editing.</DismissableTip>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
@@ -400,11 +368,10 @@ export default function TranslatePage({
                 <button
                   key={lang}
                   onClick={() => setActiveLang(lang)}
-                  className={`text-sm border rounded-xl px-3 py-2 transition-colors ${
-                    activeLang === lang
+                  className={`text-sm border rounded-xl px-3 py-2 transition-colors ${activeLang === lang
                       ? 'bg-indigo-600/20 border-indigo-500/50 text-white'
                       : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40 text-slate-200'
-                  }`}
+                    }`}
                 >
                   {languageToTitle(lang)}
                 </button>
@@ -428,11 +395,10 @@ export default function TranslatePage({
             return (
               <div
                 key={s.key}
-                className={`rounded-2xl overflow-hidden border ${
-                  hasValue
+                className={`rounded-2xl overflow-hidden border ${hasValue
                     ? 'bg-slate-800/30 border-slate-700/60'
                     : 'bg-slate-900/20 border-slate-700/30'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-700/40">
                   <div className="min-w-0">

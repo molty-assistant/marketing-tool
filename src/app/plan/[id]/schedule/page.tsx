@@ -1,11 +1,19 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import DismissableTip from '@/components/DismissableTip';
 
 interface ScheduleItem {
   id: string;
@@ -57,9 +65,8 @@ function dayLabel(d: Date): string {
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-export default function SchedulePage() {
-  const params = useParams();
-  const planId = params.id as string;
+export default function SchedulePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: planId } = use(params);
 
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -139,11 +146,9 @@ export default function SchedulePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-          Schedule posts for auto-publishing across your connected platforms — set a date and time, then let the system handle generation and posting.
-        </div>
+    <div className="min-h-screen text-white">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <DismissableTip id="schedule-tip">Schedule posts for auto-publishing across your connected platforms — set a date and time, then let the system handle generation and posting.</DismissableTip>
 
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">📅 Content Schedule</h1>
@@ -207,9 +212,8 @@ export default function SchedulePage() {
               return (
                 <div
                   key={formatDate(date)}
-                  className={`bg-slate-900 border rounded-xl p-3 min-h-[160px] ${
-                    isToday ? 'border-indigo-500' : 'border-slate-800'
-                  }`}
+                  className={`bg-slate-900 border rounded-xl p-3 min-h-[160px] ${isToday ? 'border-indigo-500' : 'border-slate-800'
+                    }`}
                 >
                   <div className={`text-xs font-medium mb-2 ${isToday ? 'text-indigo-400' : 'text-slate-500'}`}>
                     {dayLabel(date)}
@@ -219,9 +223,8 @@ export default function SchedulePage() {
                       <button
                         key={item.id}
                         onClick={() => setSelectedItem(item)}
-                        className={`w-full text-left p-2 rounded-lg border text-xs transition-colors hover:brightness-110 ${
-                          STATUS_COLORS[item.status] || STATUS_COLORS.scheduled
-                        }`}
+                        className={`w-full text-left p-2 rounded-lg border text-xs transition-colors hover:brightness-110 ${STATUS_COLORS[item.status] || STATUS_COLORS.scheduled
+                          }`}
                       >
                         <div className="flex items-center gap-1 mb-0.5">
                           <span>{PLATFORM_EMOJI[item.platform] || '📱'}</span>
@@ -240,118 +243,126 @@ export default function SchedulePage() {
         )}
 
         {/* Detail modal */}
-        {selectedItem && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setSelectedItem(null)}>
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold mb-4">Scheduled Post</h3>
-              <div className="space-y-4 text-sm">
-                <div><span className="text-slate-400">Platform:</span> {PLATFORM_EMOJI[selectedItem.platform]} {selectedItem.platform}</div>
-                <div><span className="text-slate-400">Type:</span> {selectedItem.content_type}</div>
-                <div><span className="text-slate-400">Scheduled:</span> {selectedItem.scheduled_at}</div>
-                <div><span className="text-slate-400">Topic:</span> {selectedItem.topic || '—'}</div>
-                <div>
-                  <span className="text-slate-400">Status:</span>{' '}
-                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs border ${STATUS_COLORS[selectedItem.status]}`}>
-                    {selectedItem.status}
-                  </span>
-                </div>
-                {selectedItem.error && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-xs">
-                    {selectedItem.error}
+        <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+          <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Scheduled Post</DialogTitle>
+              <DialogDescription className="text-slate-400">
+                Details for {selectedItem?.platform} {selectedItem?.content_type}
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedItem && (
+              <>
+                <div className="space-y-4 text-sm mt-2">
+                  <div><span className="text-slate-400">Platform:</span> {PLATFORM_EMOJI[selectedItem.platform]} {selectedItem.platform}</div>
+                  <div><span className="text-slate-400">Type:</span> {selectedItem.content_type}</div>
+                  <div><span className="text-slate-400">Scheduled:</span> {selectedItem.scheduled_at}</div>
+                  <div><span className="text-slate-400">Topic:</span> {selectedItem.topic || '—'}</div>
+                  <div>
+                    <span className="text-slate-400">Status:</span>{' '}
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs border ${STATUS_COLORS[selectedItem.status]}`}>
+                      {selectedItem.status}
+                    </span>
                   </div>
-                )}
-              </div>
-              <div className="flex gap-2 mt-6">
-                {selectedItem.status === 'scheduled' && (
+                  {selectedItem.error && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-xs">
+                      {selectedItem.error}
+                    </div>
+                  )}
+                </div>
+                <DialogFooter className="gap-2 sm:gap-0 mt-4">
+                  {selectedItem.status === 'scheduled' && (
+                    <Button
+                      onClick={() => handleCancel(selectedItem.id)}
+                      variant="destructive"
+                    >
+                      Cancel Post
+                    </Button>
+                  )}
                   <Button
-                    onClick={() => handleCancel(selectedItem.id)}
-                    variant="destructive"
-                    className="h-auto px-4 py-2 rounded-lg text-sm font-medium"
+                    onClick={() => setSelectedItem(null)}
+                    variant="secondary"
                   >
-                    Cancel Post
+                    Close
                   </Button>
-                )}
-                <Button
-                  onClick={() => setSelectedItem(null)}
-                  variant="secondary"
-                  className="h-auto px-4 py-2 rounded-lg text-sm font-medium ml-auto"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+                </DialogFooter>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Add modal */}
-        {showAddModal && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold mb-4">Add Scheduled Post</h3>
-              <div className="space-y-4">
-                <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Date</Label>
-                  <Input
-                    type="date"
-                    value={addDate}
-                    onChange={e => setAddDate(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Time</Label>
-                  <Input
-                    type="time"
-                    value={addTime}
-                    onChange={e => setAddTime(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Platform</Label>
-                  <Select
-                    value={addPlatform}
-                    onChange={e => setAddPlatform(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
-                  >
-                    <option value="instagram">📸 Instagram</option>
-                    <option value="tiktok">🎵 TikTok</option>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Content Type</Label>
-                  <Select
-                    value={addType}
-                    onChange={e => setAddType(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
-                  >
-                    <option value="post">Post</option>
-                    <option value="reel">Reel</option>
-                    <option value="story">Story</option>
-                    <option value="carousel">Carousel</option>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Topic (optional)</Label>
-                  <Input type="text" value={addTopic} onChange={e => setAddTopic(e.target.value)}
-                    placeholder="e.g. 5 tips for better productivity"
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm" />
-                </div>
+        <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+          <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Scheduled Post</DialogTitle>
+              <DialogDescription className="text-slate-400">
+                Manually schedule a new piece of content.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 mt-2">
+              <div>
+                <Label className="block text-sm text-slate-400 mb-1">Date</Label>
+                <Input
+                  type="date"
+                  value={addDate}
+                  onChange={e => setAddDate(e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white rounded-lg text-sm"
+                />
               </div>
-              <div className="flex gap-2 mt-6">
-                <Button onClick={handleAdd}
-                  className="h-auto px-4 py-2 rounded-lg text-sm font-medium">
-                  Add
-                </Button>
-                <Button onClick={() => setShowAddModal(false)}
-                  variant="secondary"
-                  className="h-auto px-4 py-2 rounded-lg text-sm font-medium">
-                  Cancel
-                </Button>
+              <div>
+                <Label className="block text-sm text-slate-400 mb-1">Time</Label>
+                <Input
+                  type="time"
+                  value={addTime}
+                  onChange={e => setAddTime(e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <Label className="block text-sm text-slate-400 mb-1">Platform</Label>
+                <Select
+                  value={addPlatform}
+                  onChange={e => setAddPlatform(e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white rounded-lg text-sm"
+                >
+                  <option value="instagram">📸 Instagram</option>
+                  <option value="tiktok">🎵 TikTok</option>
+                </Select>
+              </div>
+              <div>
+                <Label className="block text-sm text-slate-400 mb-1">Content Type</Label>
+                <Select
+                  value={addType}
+                  onChange={e => setAddType(e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white rounded-lg text-sm"
+                >
+                  <option value="post">Post</option>
+                  <option value="reel">Reel</option>
+                  <option value="story">Story</option>
+                  <option value="carousel">Carousel</option>
+                </Select>
+              </div>
+              <div>
+                <Label className="block text-sm text-slate-400 mb-1">Topic (optional)</Label>
+                <Input type="text" value={addTopic} onChange={e => setAddTopic(e.target.value)}
+                  placeholder="e.g. 5 tips for better productivity"
+                  className="bg-slate-800 border-slate-700 text-white rounded-lg text-sm" />
               </div>
             </div>
-          </div>
-        )}
+
+            <DialogFooter className="gap-2 sm:gap-0 mt-4">
+              <Button onClick={() => setShowAddModal(false)} variant="secondary">
+                Cancel
+              </Button>
+              <Button onClick={handleAdd}>
+                Add
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

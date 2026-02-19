@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -46,9 +47,8 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
 
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-white text-sm shadow-lg backdrop-blur-sm transition-all duration-300 ${bg} ${
-        exiting ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
-      }`}
+      className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-white text-sm shadow-lg backdrop-blur-sm transition-all duration-300 ${bg} ${exiting ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
+        }`}
     >
       <span className="font-bold">{icon}</span>
       <span className="flex-1">{toast.message}</span>
@@ -58,8 +58,9 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
           setTimeout(() => onRemove(toast.id), 300);
         }}
         className="text-white/60 hover:text-white ml-2"
+        aria-label="Dismiss"
       >
-        ×
+        <X className="w-3.5 h-3.5" />
       </button>
     </div>
   );

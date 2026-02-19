@@ -47,42 +47,46 @@ const NAV_GROUPS: NavGroup[] = [
     key: 'strategy',
     label: 'Strategy',
     icon: FileText,
-    href: '/strategy',
+    href: '/strategy/brief',
     children: [
       { label: 'Brief', href: '/strategy/brief' },
       { label: 'Foundation', href: '/foundation' },
       { label: 'Competitors', href: '/competitors' },
+      { label: 'Reviews', href: '/reviews' },
     ],
   },
   {
     key: 'content',
     label: 'Content',
     icon: PenLine,
-    href: '/content',
+    href: '/draft',
     children: [
       { label: 'Copy Draft', href: '/draft' },
       { label: 'Email sequences', href: '/emails' },
       { label: 'Templates', href: '/templates' },
       { label: 'Translations', href: '/translate' },
+      { label: 'Approvals', href: '/approvals' },
     ],
   },
   {
     key: 'distribution',
     label: 'Distribution',
     icon: Megaphone,
-    href: '/distribution',
+    href: '/social',
     hot: true,
     children: [
       { label: 'Social Posts', href: '/social' },
       { label: 'Schedule', href: '/schedule' },
       { label: 'Calendar', href: '/calendar' },
+      { label: 'Distribute', href: '/distribute' },
+      { label: 'Performance', href: '/performance' },
     ],
   },
   {
     key: 'seo',
     label: 'SEO & ASO',
     icon: Search,
-    href: '/seo',
+    href: '/keywords',
     children: [
       { label: 'Keywords', href: '/keywords' },
       { label: 'SERP Preview', href: '/serp' },
@@ -93,10 +97,11 @@ const NAV_GROUPS: NavGroup[] = [
     key: 'export',
     label: 'Export',
     icon: Package,
-    href: '/export',
+    href: '/assets',
     children: [
       { label: 'Assets', href: '/assets' },
       { label: 'Preview', href: '/preview' },
+      { label: 'Digest', href: '/digest' },
     ],
   },
 ];
@@ -207,8 +212,8 @@ export function PlanSidebar({
               group.key === 'overview'
                 ? pathname === groupHref
                 : pathname === groupHref ||
-                  pathname.startsWith(groupHref + '/') ||
-                  group.children?.some((c) => pathname === `${basePath}${c.href}`);
+                pathname.startsWith(groupHref + '/') ||
+                group.children?.some((c) => pathname === `${basePath}${c.href}`);
 
             if (!group.children?.length) {
               return (
@@ -252,7 +257,7 @@ export function PlanSidebar({
                           variant="secondary"
                           className="bg-indigo-500/15 text-indigo-300 border border-indigo-500/20"
                         >
-                          Hot
+                          New
                         </Badge>
                       )}
                     </span>

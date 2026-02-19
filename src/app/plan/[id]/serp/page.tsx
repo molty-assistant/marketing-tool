@@ -1,68 +1,36 @@
 'use client';
 
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { MarketingPlan } from '@/lib/types';
 import { SerpPreview } from '@/components/SerpPreview';
 import { SerpSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
-
-function readSessionPlan(id: string): MarketingPlan | null {
-  try {
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (!stored) return null;
-    return JSON.parse(stored) as MarketingPlan;
-  } catch {
-    return null;
-  }
-}
+import { usePlan } from '@/hooks/usePlan';
+import DismissableTip from '@/components/DismissableTip';
 
 export default function SerpPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
-  const [plan, setPlan] = useState<MarketingPlan | null>(() => readSessionPlan(id));
-  const [loading, setLoading] = useState(() => !readSessionPlan(id));
-  const [fetchError, setFetchError] = useState('');
-  const [title, setTitle] = useState(() => {
-    const p = readSessionPlan(id);
-    if (!p) return '';
-    return `${p.config.app_name || ''} — ${p.config.one_liner || ''}`;
-  });
-  const [url, setUrl] = useState(() => readSessionPlan(id)?.config.app_url || '');
-  const [description, setDescription] = useState(() => readSessionPlan(id)?.config.one_liner || '');
+  const { plan, loading, error: fetchError, reload: loadFromDb } = usePlan(id);
+  const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
+  const [description, setDescription] = useState('');
   const [isCached, setIsCached] = useState(false);
+  const [fieldsInitialized, setFieldsInitialized] = useState(false);
 
   const storageKey = `serp-${id}`;
 
-  const initializeFields = useCallback((planData: MarketingPlan) => {
-    const appName = planData.config.app_name || '';
-    const oneLiner = planData.config.one_liner || '';
-    const appUrl = planData.config.app_url || '';
+  // Initialize fields from plan when it loads
+  useEffect(() => {
+    if (!plan || fieldsInitialized) return;
+    setTitle(`${plan.config.app_name || ''} — ${plan.config.one_liner || ''}`);
+    setUrl(plan.config.app_url || '');
+    setDescription(plan.config.one_liner || '');
+    setFieldsInitialized(true);
+  }, [plan, fieldsInitialized]);
 
-    setTitle(`${appName} — ${oneLiner}`);
-    setUrl(appUrl);
-    setDescription(oneLiner);
-  }, []);
-
-  const loadFromDb = useCallback(() => {
-    setLoading(true);
-    setFetchError('');
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        initializeFields(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((err) => {
-        setFetchError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setLoading(false));
-  }, [id, initializeFields]);
-
+  // Restore cached SERP state
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem(storageKey);
@@ -72,17 +40,11 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
       if (typeof parsed.url === 'string') setUrl(parsed.url);
       if (typeof parsed.description === 'string') setDescription(parsed.description);
       setIsCached(true);
+      setFieldsInitialized(true);
     } catch {
       /* ignore */
     }
   }, [id]);
-
-  useEffect(() => {
-    // If we already loaded from sessionStorage, skip
-    if (plan) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState calls are in async .then() callbacks, not synchronous
-    loadFromDb();
-  }, [plan, loadFromDb]);
 
   useEffect(() => {
     try {
@@ -118,9 +80,7 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Preview how your app appears in Google search results — tweak your title and meta description to maximise click-through from organic search.
-      </div>
+      <DismissableTip id="serp-tip">Preview how your app appears in Google search results — tweak your title and meta description to maximise click-through from organic search.</DismissableTip>
 
       <div className="mb-8">
         <div className="flex items-center gap-4 min-w-0 mb-2">

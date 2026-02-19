@@ -1,7 +1,10 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import DismissableTip from '@/components/DismissableTip';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 type Platform = 'instagram' | 'tiktok';
 
@@ -27,9 +30,8 @@ type ImageResult = {
   fullPublicUrl?: string;
 };
 
-export default function SocialPage() {
-  const params = useParams();
-  const planId = params.id as string;
+export default function SocialPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: planId } = use(params);
 
   // Step 1
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
@@ -78,7 +80,7 @@ export default function SocialPage() {
     fetch('/api/post-to-buffer')
       .then((r) => r.json())
       .then((d) => setHistory(d.posts || []))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Elapsed timer for video progress bar
@@ -300,14 +302,12 @@ export default function SocialPage() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen text-white">
+      <div className="max-w-5xl mx-auto px-4 py-8">
 
         {/* Page description */}
-        <div className="mb-8 text-sm text-slate-300 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-          Generate platform-native captions and hashtags for Instagram and TikTok, optionally create
-          media, then queue directly via Buffer.
-        </div>
+        <DismissableTip id="social-tip">Generate platform-native captions and hashtags for Instagram and TikTok, optionally create
+          media, then queue directly via Buffer.</DismissableTip>
 
         <h1 className="text-3xl font-bold mb-2">Social Publishing</h1>
         <p className="text-slate-400 mb-8">A simple 4-step flow to generate, create, and queue posts.</p>
@@ -321,11 +321,10 @@ export default function SocialPage() {
             <button
               type="button"
               onClick={() => setSelectedPlatform('instagram')}
-              className={`text-left rounded-2xl border p-5 transition-all ${
-                selectedPlatform === 'instagram'
-                  ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                  : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
-              }`}
+              className={`text-left rounded-2xl border p-5 transition-all ${selectedPlatform === 'instagram'
+                ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                }`}
             >
               <div className="text-3xl mb-3">📸</div>
               <div className="text-lg font-semibold mb-1">Instagram</div>
@@ -340,11 +339,10 @@ export default function SocialPage() {
             <button
               type="button"
               onClick={() => setSelectedPlatform('tiktok')}
-              className={`text-left rounded-2xl border p-5 transition-all ${
-                selectedPlatform === 'tiktok'
-                  ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                  : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
-              }`}
+              className={`text-left rounded-2xl border p-5 transition-all ${selectedPlatform === 'tiktok'
+                ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                }`}
             >
               <div className="text-3xl mb-3">🎵</div>
               <div className="text-lg font-semibold mb-1">TikTok</div>
@@ -371,14 +369,20 @@ export default function SocialPage() {
               </p>
 
               {!idea && (
-                <button
-                  type="button"
+                <Button
                   onClick={generateIdea}
                   disabled={ideaGenerating}
-                  className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed font-medium transition"
+                  className="bg-indigo-600 hover:bg-indigo-500"
                 >
-                  {ideaGenerating ? '✨ Generating…' : 'Generate Post Idea'}
-                </button>
+                  {ideaGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating…
+                    </>
+                  ) : (
+                    'Generate Post Idea'
+                  )}
+                </Button>
               )}
 
               {ideaError && (
@@ -417,14 +421,21 @@ export default function SocialPage() {
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-slate-700/60">
-                    <button
-                      type="button"
+                    <Button
                       onClick={generateIdea}
                       disabled={ideaGenerating}
-                      className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition"
+                      variant="secondary"
+                      size="sm"
                     >
-                      {ideaGenerating ? '✨ Regenerating…' : '↺ Regenerate'}
-                    </button>
+                      {ideaGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                          Regenerating…
+                        </>
+                      ) : (
+                        '↺ Regenerate'
+                      )}
+                    </Button>
                   </div>
                 </div>
               )}
@@ -451,11 +462,10 @@ export default function SocialPage() {
                 <button
                   type="button"
                   onClick={() => setImageMode('screenshot')}
-                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
-                    imageMode === 'screenshot'
-                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
-                  }`}
+                  className={`text-left rounded-xl border px-4 py-3 transition-all ${imageMode === 'screenshot'
+                    ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                    : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                    }`}
                 >
                   <div className="text-sm font-semibold">Screenshot</div>
                   <div className="text-xs text-slate-400 mt-0.5">Real UI. Safe and accurate.</div>
@@ -463,11 +473,10 @@ export default function SocialPage() {
                 <button
                   type="button"
                   onClick={() => setImageMode('hero')}
-                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
-                    imageMode === 'hero'
-                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
-                  }`}
+                  className={`text-left rounded-xl border px-4 py-3 transition-all ${imageMode === 'hero'
+                    ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                    : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                    }`}
                 >
                   <div className="text-sm font-semibold">Hero image</div>
                   <div className="text-xs text-slate-400 mt-0.5">Inspiring visual. No screenshot.</div>
@@ -475,11 +484,10 @@ export default function SocialPage() {
                 <button
                   type="button"
                   onClick={() => setImageMode('hybrid')}
-                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
-                    imageMode === 'hybrid'
-                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
-                  }`}
+                  className={`text-left rounded-xl border px-4 py-3 transition-all ${imageMode === 'hybrid'
+                    ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
+                    : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                    }`}
                 >
                   <div className="text-sm font-semibold">Hybrid</div>
                   <div className="text-xs text-slate-400 mt-0.5">Hero + small UI card.</div>
@@ -487,37 +495,35 @@ export default function SocialPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button
-                  type="button"
+                <Button
                   onClick={generateImage}
                   disabled={imageGenerating}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed font-medium transition"
+                  className="h-auto py-3 bg-indigo-600 hover:bg-indigo-500"
                 >
                   {imageGenerating ? (
                     <>
-                      <span className="inline-block animate-spin">⏳</span>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Generating image…
                     </>
                   ) : (
                     <>🖼 Generate Image</>
                   )}
-                </button>
+                </Button>
 
-                <button
-                  type="button"
+                <Button
                   onClick={generateVideo}
                   disabled={videoGenerating}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed font-medium transition"
+                  className="h-auto py-3 bg-indigo-600 hover:bg-indigo-500"
                 >
                   {videoGenerating ? (
                     <>
-                      <span className="inline-block animate-spin">⏳</span>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Generating video…
                     </>
                   ) : (
                     <>🎬 Generate Video (Veo 2)</>
                   )}
-                </button>
+                </Button>
               </div>
 
               {imageError && (
@@ -606,22 +612,32 @@ export default function SocialPage() {
                   : 'Your post will be queued as text + hashtags (no media).'}
               </p>
 
-              <button
-                type="button"
-                onClick={queueToBuffer}
-                disabled={queueing}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed font-medium transition"
+              <ConfirmDialog
+                title="Queue to Buffer?"
+                description={`This will immediately queue your ${selectedPlatform} post to Buffer. Are you sure?`}
+                onConfirm={queueToBuffer}
               >
-                {queueing ? 'Queueing…' : 'Add to Buffer Queue'}
-              </button>
+                <Button
+                  disabled={queueing}
+                  className="bg-indigo-600 hover:bg-indigo-500 w-full sm:w-auto"
+                >
+                  {queueing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Queueing…
+                    </>
+                  ) : (
+                    'Add to Buffer Queue'
+                  )}
+                </Button>
+              </ConfirmDialog>
 
               {queueResult && (
                 <div
-                  className={`mt-4 rounded-xl border p-3 text-sm ${
-                    queueResult.ok
-                      ? 'bg-emerald-950/30 border-emerald-700 text-emerald-200'
-                      : 'bg-red-950/40 border-red-800 text-red-200'
-                  }`}
+                  className={`mt-4 rounded-xl border p-3 text-sm ${queueResult.ok
+                    ? 'bg-emerald-950/30 border-emerald-700 text-emerald-200'
+                    : 'bg-red-950/40 border-red-800 text-red-200'
+                    }`}
                 >
                   {queueResult.message}
                 </div>
@@ -645,13 +661,12 @@ export default function SocialPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-medium capitalize">{post.platform}</span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs ${
-                        post.status === 'queued'
-                          ? 'bg-emerald-950/40 text-emerald-200 border border-emerald-800/50'
-                          : post.status === 'failed'
-                            ? 'bg-red-950/40 text-red-200 border border-red-800/50'
-                            : 'bg-slate-800 text-slate-200 border border-slate-700'
-                      }`}
+                      className={`px-2 py-0.5 rounded-full text-xs ${post.status === 'queued'
+                        ? 'bg-emerald-950/40 text-emerald-200 border border-emerald-800/50'
+                        : post.status === 'failed'
+                          ? 'bg-red-950/40 text-red-200 border border-red-800/50'
+                          : 'bg-slate-800 text-slate-200 border border-slate-700'
+                        }`}
                     >
                       {post.status}
                     </span>

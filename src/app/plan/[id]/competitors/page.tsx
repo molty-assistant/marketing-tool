@@ -6,6 +6,8 @@ import ErrorRetry from '@/components/ErrorRetry';
 import { DraftSkeleton } from '@/components/Skeleton';
 import type { MarketingPlan } from '@/lib/types';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
+import DismissableTip from '@/components/DismissableTip';
 
 type Competitor = {
   name: string;
@@ -84,9 +86,7 @@ function CompetitiveSkeleton() {
 export default function CompetitorsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [competitive, setCompetitive] = useState<Competitive | null>(null);
   const [loadingCompetitive, setLoadingCompetitive] = useState(false);
@@ -94,34 +94,6 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
   const [competitiveError, setCompetitiveError] = useState('');
 
   const { success: toastOk, error: toastErr } = useToast();
-
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-        return;
-      } catch {
-        // fall through
-      }
-    }
-
-    fetch(`/api/plans/${id}`)
-      .then((r) => {
-        if (!r.ok) throw new Error('Failed to load plan');
-        return r.json();
-      })
-      .then((d) => {
-        setPlan(d);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(d));
-      })
-      .catch((e) => setPlanError(e instanceof Error ? e.message : 'Failed to load plan'))
-      .finally(() => setPlanLoading(false));
-  };
 
   const restoreCached = () => {
     try {
@@ -145,7 +117,6 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
   };
 
   useEffect(() => {
-    loadPlan();
     restoreCached();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -167,7 +138,7 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
           }
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoadingSaved(false));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -224,9 +195,7 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Analyse your top competitors — their positioning, pricing, strengths, and weaknesses — and identify gaps you can exploit in your messaging.
-      </div>
+      <DismissableTip id="competitors-tip">Analyse your top competitors — their positioning, pricing, strengths, and weaknesses — and identify gaps you can exploit in your messaging.</DismissableTip>
 
       <div className="flex items-start justify-between gap-4 flex-wrap mb-8">
         <div className="min-w-0">

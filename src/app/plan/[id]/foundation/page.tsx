@@ -6,6 +6,10 @@ import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { DraftSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
+import { Button } from '@/components/ui/button';
+import { Sparkles, RefreshCw } from 'lucide-react';
+import DismissableTip from '@/components/DismissableTip';
 
 type BrandVoice = {
   voiceSummary: string;
@@ -95,9 +99,7 @@ function GenerationError({ message, onRetry }: { message: string; onRetry: () =>
 
 export default function FoundationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [brandVoice, setBrandVoice] = useState<BrandVoice | null>(null);
   const [positioning, setPositioning] = useState<Positioning | null>(null);
@@ -115,22 +117,6 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
   const [expandedAngle, setExpandedAngle] = useState<string | null>(null);
 
   const { success: toastOk, error: toastErr } = useToast();
-
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try { setPlan(JSON.parse(stored)); setPlanLoading(false); return; } catch { /* fall through */ }
-    }
-    fetch(`/api/plans/${id}`)
-      .then((r) => { if (!r.ok) throw new Error('Failed to load plan'); return r.json(); })
-      .then((d) => { setPlan(d); sessionStorage.setItem(`plan-${id}`, JSON.stringify(d)); })
-      .catch((e) => setPlanError(e instanceof Error ? e.message : 'Failed to load plan'))
-      .finally(() => setPlanLoading(false));
-  };
-
-  useEffect(() => { loadPlan(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Restore cached results
   useEffect(() => {
@@ -234,9 +220,7 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Build your brand&apos;s strategic foundation — define your voice, personality traits, vocabulary guide, and positioning angles that guide all your marketing content.
-      </div>
+      <DismissableTip id="foundation-tip">Build your brand&apos;s strategic foundation — define your voice, personality traits, vocabulary guide, and positioning angles that guide all your marketing content.</DismissableTip>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
@@ -250,17 +234,33 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      {/* ── Brand Voice ───────────────────────────── */}
-      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8">
+      {/* Jump-links */}
+      <nav className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/40 -mx-4 px-4 py-2.5 mb-8 flex items-center gap-3 overflow-x-auto">
+        {[
+          { id: 'brand-voice', label: '🎙️ Brand Voice' },
+          { id: 'positioning', label: '🎯 Positioning' },
+          { id: 'competitive', label: '⚔️ Competitive' },
+        ].map((s) => (
+          <a
+            key={s.id}
+            href={`#${s.id}`}
+            className="text-sm text-slate-400 hover:text-white whitespace-nowrap px-3 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors"
+          >
+            {s.label}
+          </a>
+        ))}
+      </nav>
+
+      <section id="brand-voice" className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8 scroll-mt-16">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-white">🎙️ Brand Voice</h2>
             <p className="text-sm text-slate-500">A usable voice profile for copy &amp; creative.</p>
           </div>
-          <button onClick={generateBrandVoice} disabled={loadingBV}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors">
-            {loadingBV ? 'Generating…' : brandVoice ? '🔄 Regenerate' : '✨ Generate'}
-          </button>
+          <Button onClick={generateBrandVoice} disabled={loadingBV}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white text-sm px-5 py-2.5 rounded-xl">
+            {loadingBV ? 'Generating…' : brandVoice ? <><RefreshCw className="w-4 h-4 mr-1.5" /> Regenerate</> : <><Sparkles className="w-4 h-4 mr-1.5" /> Generate</>}
+          </Button>
         </div>
 
         <GenerationError message={brandVoiceError} onRetry={generateBrandVoice} />
@@ -318,17 +318,16 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
         )}
       </section>
 
-      {/* ── Positioning Angles ────────────────────── */}
-      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8">
+      <section id="positioning" className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8 scroll-mt-16">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-white">🎯 Positioning Angles</h2>
             <p className="text-sm text-slate-500">3–5 distinct ways to frame the product.</p>
           </div>
-          <button onClick={generatePositioning} disabled={loadingPos}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors">
-            {loadingPos ? 'Generating…' : positioning ? '🔄 Regenerate' : '✨ Generate'}
-          </button>
+          <Button onClick={generatePositioning} disabled={loadingPos}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white text-sm px-5 py-2.5 rounded-xl">
+            {loadingPos ? 'Generating…' : positioning ? <><RefreshCw className="w-4 h-4 mr-1.5" /> Regenerate</> : <><Sparkles className="w-4 h-4 mr-1.5" /> Generate</>}
+          </Button>
         </div>
 
         <GenerationError message={positioningError} onRetry={generatePositioning} />
@@ -382,17 +381,16 @@ export default function FoundationPage({ params }: { params: Promise<{ id: strin
         )}
       </section>
 
-      {/* ── Competitive Analysis ──────────────────── */}
-      <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-10">
+      <section id="competitive" className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-10 scroll-mt-16">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-white">⚔️ Competitive Analysis</h2>
             <p className="text-sm text-slate-500">Competitors, gaps, opportunities &amp; messaging.</p>
           </div>
-          <button onClick={generateCompetitive} disabled={loadingComp}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors">
-            {loadingComp ? 'Generating…' : competitive ? '🔄 Regenerate' : '✨ Generate'}
-          </button>
+          <Button onClick={generateCompetitive} disabled={loadingComp}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white text-sm px-5 py-2.5 rounded-xl">
+            {loadingComp ? 'Generating…' : competitive ? <><RefreshCw className="w-4 h-4 mr-1.5" /> Regenerate</> : <><Sparkles className="w-4 h-4 mr-1.5" /> Generate</>}
+          </Button>
         </div>
 
         <GenerationError message={competitiveError} onRetry={generateCompetitive} />

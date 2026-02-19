@@ -76,6 +76,21 @@ CREATE TABLE IF NOT EXISTS approval_queue (
       )
     `);
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS social_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plan_id TEXT,
+        platform TEXT NOT NULL,
+        caption TEXT NOT NULL,
+        hashtags TEXT,
+        media_url TEXT,
+        method TEXT NOT NULL DEFAULT 'queue',
+        buffer_response TEXT,
+        status TEXT NOT NULL DEFAULT 'queued',
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `);
+
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some((c) => c.name === 'share_token')) {

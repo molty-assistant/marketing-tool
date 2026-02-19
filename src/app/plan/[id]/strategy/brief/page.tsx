@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -10,6 +10,7 @@ import { PlanDetailSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import ExportBundleButton from '@/components/ExportBundleButton';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
 
 const markdownComponents: Components = {
   a: ({ href, children }) => (
@@ -49,45 +50,11 @@ export default function StrategyBriefPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { plan, loading, error, reload: loadPlan } = usePlan(id);
 
   const { error: toastError } = useToast();
 
   const [pdfExporting, setPdfExporting] = useState(false);
-
-  const load = () => {
-    setLoading(true);
-    setError('');
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json() as Promise<MarketingPlan>;
-      })
-      .then((data) => {
-        setPlan(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : 'Failed to load plan');
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        return;
-      } catch {
-        // fall through
-      }
-    }
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
 
 
   if (loading) return <PlanDetailSkeleton />;
@@ -95,7 +62,7 @@ export default function StrategyBriefPage({
   if (error) {
     return (
       <div className="max-w-3xl mx-auto py-20">
-        <ErrorRetry error={error} onRetry={load} />
+        <ErrorRetry error={error} onRetry={loadPlan} />
       </div>
     );
   }

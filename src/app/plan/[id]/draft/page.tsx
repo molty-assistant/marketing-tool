@@ -6,6 +6,12 @@ import type { MarketingPlan } from '@/lib/types';
 import { DraftSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { usePlan } from '@/hooks/usePlan';
+import { Button } from '@/components/ui/button';
+import { ClipboardCopy, Sparkles, RefreshCw } from 'lucide-react';
+import DismissableTip from '@/components/DismissableTip';
+import { useKeyboardShortcuts, KbdHint } from '@/hooks/useKeyboardShortcuts';
 
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
@@ -22,37 +28,37 @@ const SECTION_OPTIONS: {
   label: string;
   help: string;
 }[] = [
-  {
-    key: 'app_store_description',
-    label: 'App Store description',
-    help: 'Full description for the store listing.',
-  },
-  {
-    key: 'short_description',
-    label: 'Short description',
-    help: 'A concise store-friendly tagline.',
-  },
-  {
-    key: 'keywords',
-    label: 'Keywords',
-    help: 'Comma-separated keywords for ASO.',
-  },
-  {
-    key: 'whats_new',
-    label: "What's New",
-    help: 'Release notes / update text.',
-  },
-  {
-    key: 'feature_bullets',
-    label: 'Feature bullets',
-    help: 'A bullet list of benefits/features.',
-  },
-  {
-    key: 'landing_page_hero',
-    label: 'Landing page hero copy',
-    help: 'Headline, subheadline, and CTA.',
-  },
-];
+    {
+      key: 'app_store_description',
+      label: 'App Store description',
+      help: 'Full description for the store listing.',
+    },
+    {
+      key: 'short_description',
+      label: 'Short description',
+      help: 'A concise store-friendly tagline.',
+    },
+    {
+      key: 'keywords',
+      label: 'Keywords',
+      help: 'Comma-separated keywords for ASO.',
+    },
+    {
+      key: 'whats_new',
+      label: "What's New",
+      help: 'Release notes / update text.',
+    },
+    {
+      key: 'feature_bullets',
+      label: 'Feature bullets',
+      help: 'A bullet list of benefits/features.',
+    },
+    {
+      key: 'landing_page_hero',
+      label: 'Landing page hero copy',
+      help: 'Headline, subheadline, and CTA.',
+    },
+  ];
 
 const TONE_OPTIONS: { value: Tone; label: string; help: string; sample: string }[] = [
   {
@@ -91,7 +97,7 @@ export default function DraftPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [tone, setTone] = useState<Tone>('professional');
   const [selected, setSelected] = useState<Record<DraftSection, boolean>>({
@@ -108,42 +114,11 @@ export default function DraftPage({
 
   const storageKey = `draft-${id}`;
   const [loading, setLoading] = useState(false);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
   const [error, setError] = useState('');
   const [regenerating, setRegenerating] = useState<Partial<Record<DraftSection, boolean>>>({});
   const [copiedAll, setCopiedAll] = useState(false);
+  const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const { success: toastSuccess, error: toastError } = useToast();
-
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-        return;
-      } catch { /* fall through */ }
-    }
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((err) => {
-        setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setPlanLoading(false));
-  };
-
-  useEffect(() => {
-    loadPlan();
-  }, [id]);
 
   useEffect(() => {
     try {
@@ -177,6 +152,10 @@ export default function DraftPage({
 
     return data as { draft: Record<string, string> };
   };
+
+  useKeyboardShortcuts([
+    { key: 'Enter', meta: true, handler: () => { if (!loading) handleGenerate(); } },
+  ]);
 
   const handleGenerate = async () => {
     if (selectedSections.length === 0) {
@@ -269,9 +248,7 @@ export default function DraftPage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Generate polished App Store descriptions, landing page hero copy, and feature bullets — choose your tone and section, then copy straight to your listing.
-      </div>
+      <DismissableTip id="draft-tip">Generate polished App Store descriptions, landing page hero copy, and feature bullets — choose your tone and section, then copy straight to your listing.</DismissableTip>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
@@ -287,20 +264,28 @@ export default function DraftPage({
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button
+          <Button
+            variant="secondary"
             onClick={handleCopyAll}
             disabled={Object.keys(draft).length === 0}
-            className="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-white text-sm px-4 py-2.5 rounded-xl transition-colors"
+            className="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 text-white text-sm px-4 py-2.5 rounded-xl"
           >
-            {copiedAll ? '✓ Copied!' : '📋 Copy All'}
-          </button>
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+            {copiedAll ? '✓ Copied!' : <><ClipboardCopy className="w-3.5 h-3.5 mr-1.5" /> Copy All</>}
+          </Button>
+          <ConfirmDialog
+            title="Regenerate draft?"
+            description="This will overwrite your existing draft content with new AI-generated text. Any manual edits will be lost."
+            confirmLabel="Generate"
+            onConfirm={handleGenerate}
+            enabled={Object.keys(draft).length > 0}
           >
-            {loading ? 'Generating…' : '✨ Generate Draft'}
-          </button>
+            <Button
+              disabled={loading}
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white text-sm px-5 py-2.5 rounded-xl"
+            >
+              {loading ? 'Generating…' : <><Sparkles className="w-4 h-4 mr-1.5" /> Generate Draft<KbdHint keys="⌘↵" /></>}
+            </Button>
+          </ConfirmDialog>
         </div>
       </div>
 
@@ -342,11 +327,10 @@ export default function DraftPage({
                 <button
                   key={t.value}
                   onClick={() => setTone(t.value)}
-                  className={`text-left border rounded-xl px-4 py-3 transition-colors ${
-                    tone === t.value
-                      ? 'bg-indigo-600/20 border-indigo-500/50'
-                      : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40'
-                  }`}
+                  className={`text-left border rounded-xl px-4 py-3 transition-colors ${tone === t.value
+                    ? 'bg-indigo-600/20 border-indigo-500/50'
+                    : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40'
+                    }`}
                 >
                   <div className="text-sm text-white">{t.label}</div>
                   <div className="text-xs text-slate-500">{t.help}</div>
@@ -378,11 +362,10 @@ export default function DraftPage({
           return (
             <div
               key={s.key}
-              className={`rounded-2xl overflow-hidden border ${
-                hasValue
-                  ? 'bg-slate-800/30 border-slate-700/60'
-                  : 'bg-slate-900/20 border-slate-700/30'
-              }`}
+              className={`rounded-2xl overflow-hidden border ${hasValue
+                ? 'bg-slate-800/30 border-slate-700/60'
+                : 'bg-slate-900/20 border-slate-700/30'
+                }`}
             >
               <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-700/40">
                 <div className="min-w-0">
@@ -390,25 +373,38 @@ export default function DraftPage({
                   <div className="text-xs text-slate-500">{s.help}</div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => handleRegenerate(s.key)}
-                    disabled={!!regenerating[s.key]}
-                    className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
-                    title="Regenerate this section"
+                  <ConfirmDialog
+                    title={`Regenerate ${s.label}?`}
+                    description="This will overwrite the current content for this section."
+                    confirmLabel="Regenerate"
+                    onConfirm={() => handleRegenerate(s.key)}
+                    enabled={hasValue}
                   >
-                    {regenerating[s.key] ? '…' : '🔄 Regenerate'}
-                  </button>
-                  <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={!!regenerating[s.key]}
+                      className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 text-slate-200 px-3 py-1.5 rounded-lg h-auto"
+                      title="Regenerate this section"
+                    >
+                      {regenerating[s.key] ? '…' : <><RefreshCw className="w-3 h-3 mr-1" /> Regenerate</>}
+                    </Button>
+                  </ConfirmDialog>
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={async () => {
                       if (!hasValue) return;
                       await navigator.clipboard.writeText(value);
+                      setCopiedSection(s.key);
+                      setTimeout(() => setCopiedSection(null), 2000);
                     }}
                     disabled={!hasValue}
-                    className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 text-slate-200 px-3 py-1.5 rounded-lg h-auto"
                     title="Copy section"
                   >
-                    📋 Copy
-                  </button>
+                    {copiedSection === s.key ? '✓ Copied!' : <><ClipboardCopy className="w-3 h-3 mr-1" /> Copy</>}
+                  </Button>
                 </div>
               </div>
 

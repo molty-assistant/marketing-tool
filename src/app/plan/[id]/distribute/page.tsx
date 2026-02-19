@@ -5,6 +5,9 @@ import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
+import { PageSkeleton } from '@/components/Skeleton';
+import DismissableTip from '@/components/DismissableTip';
 
 interface CorePiece {
   title: string;
@@ -42,9 +45,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [platforms, setPlatforms] = useState<string[]>([...DEFAULT_PLATFORMS]);
   const [sourceContent, setSourceContent] = useState('');
@@ -58,38 +59,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
 
   const storageKey = `distribute-${id}`;
 
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-        return;
-      } catch {
-        /* fall through */
-      }
-    }
 
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((p) => {
-        setPlan(p);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(p));
-      })
-      .catch((err) => {
-        setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setPlanLoading(false));
-  };
-
-  useEffect(() => {
-    loadPlan();
-  }, [id]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(storageKey);
@@ -140,11 +110,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
   };
 
   if (planLoading) {
-    return (
-      <div className="max-w-5xl mx-auto py-20">
-        <div className="text-slate-400">Loading…</div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (planError) {
@@ -172,9 +138,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Turn one core piece of content into platform-native posts for Instagram, TikTok, LinkedIn, Twitter, Reddit, and email — generated in seconds from your marketing brief.
-      </div>
+      <DismissableTip id="distribute-tip">Turn one core piece of content into platform-native posts for Instagram, TikTok, LinkedIn, Twitter, Reddit, and email — generated in seconds from your marketing brief.</DismissableTip>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>

@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { useToast } from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
 
 type StreamEvent =
   | { type: 'start'; total: number; planId: string }
@@ -130,13 +133,20 @@ export default function GenerateAllButton({
 
   return (
     <div className="w-full sm:w-auto">
-      <button
-        onClick={run}
-        disabled={running}
-        className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg transition-colors"
+      <ConfirmDialog
+        title="Generate Everything?"
+        description="This will run 7+ AI calls and overwrite any existing generated content. This may take a minute and uses API credits."
+        confirmLabel="Generate Everything"
+        onConfirm={run}
+        enabled={!running}
       >
-        {running ? 'Generating…' : '✨ Generate Everything'}
-      </button>
+        <Button
+          disabled={running}
+          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 text-white text-sm px-4 py-2.5 sm:py-2 rounded-lg"
+        >
+          {running ? 'Generating…' : <><Sparkles className="w-4 h-4 mr-1.5" /> Generate Everything</>}
+        </Button>
+      </ConfirmDialog>
 
       {(running || step > 0) && (
         <div className="mt-2 w-full sm:w-[320px]">

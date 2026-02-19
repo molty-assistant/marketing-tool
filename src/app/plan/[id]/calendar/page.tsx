@@ -2,9 +2,21 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
+import { PageSkeleton } from '@/components/Skeleton';
+import DismissableTip from '@/components/DismissableTip';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 type ContentType = 'post' | 'reel' | 'story' | 'thread' | 'article';
 
@@ -69,9 +81,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
   const { id } = use(params);
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [platforms, setPlatforms] = useState<string[]>([...DEFAULT_PLATFORMS]);
   const [weeks, setWeeks] = useState<number>(2);
@@ -87,34 +97,6 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
     [id, platforms, weeks]
   );
 
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-      } catch {
-        /* ignore */
-      }
-    }
-
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((p) => {
-        setPlan(p);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(p));
-      })
-      .catch((err) => {
-        setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setPlanLoading(false));
-  };
 
   const loadSavedCalendarFromDb = async () => {
     try {
@@ -131,12 +113,6 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
     }
   };
 
-  useEffect(() => {
-    loadPlan();
-    // best-effort load last generated calendar from db
-    loadSavedCalendarFromDb();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(storageKey);
@@ -221,11 +197,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
   }, [calendar, weeks]);
 
   if (planLoading) {
-    return (
-      <div className="max-w-5xl mx-auto py-20">
-        <div className="text-slate-400">Loading…</div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (planError) {
@@ -249,9 +221,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Plan your content calendar with AI-scheduled posts across all platforms for the next 4 weeks — see what to post, when, and with what copy.
-      </div>
+      <DismissableTip id="calendar-tip">Plan your content calendar with AI-scheduled posts across all platforms for the next 4 weeks — see what to post, when, and with what copy.</DismissableTip>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
@@ -276,11 +246,10 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
               {(Array.from(new Set([...DEFAULT_PLATFORMS, ...platforms]))).map((p) => (
                 <label
                   key={p}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer select-none ${
-                    platforms.includes(p)
-                      ? 'bg-indigo-600/15 border-indigo-500/40 text-white'
-                      : 'bg-slate-950/30 border-slate-700/40 text-slate-300'
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer select-none ${platforms.includes(p)
+                    ? 'bg-indigo-600/15 border-indigo-500/40 text-white'
+                    : 'bg-slate-950/30 border-slate-700/40 text-slate-300'
+                    }`}
                 >
                   <input
                     type="checkbox"
@@ -375,49 +344,39 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
         </div>
       )}
 
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/70"
-            onClick={() => setSelected(null)}
-          />
-
-          <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-5 border-b border-slate-700/60">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-xs text-slate-400">
-                    {selected.date} • <span className="capitalize">{selected.platform}</span> •{' '}
-                    <span className="capitalize">{selected.content_type}</span> • {selected.suggested_time}
-                  </div>
-                  <div className="text-white text-lg font-semibold mt-1">{selected.title}</div>
-                </div>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="text-slate-300 hover:text-white text-sm px-3 py-2 rounded-xl border border-slate-700/60 hover:bg-white/5"
-                >
-                  Close
-                </button>
+      {/* Modal */}
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="border-b border-slate-700/60 pb-4 mb-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <DialogDescription className="text-xs text-slate-400 mb-1">
+                  {selected?.date} • <span className="capitalize">{selected?.platform}</span> •{' '}
+                  <span className="capitalize">{selected?.content_type}</span> • {selected?.suggested_time}
+                </DialogDescription>
+                <DialogTitle className="text-lg font-semibold">{selected?.title}</DialogTitle>
               </div>
             </div>
+          </DialogHeader>
 
-            <div className="p-5 space-y-4 max-h-[70vh] overflow-auto">
+          {selected && (
+            <div className="space-y-6">
               <div>
-                <div className="text-sm font-semibold text-white mb-1">Draft copy</div>
+                <div className="text-sm font-semibold text-white mb-2">Draft copy</div>
                 <pre className="whitespace-pre-wrap text-sm text-slate-200 bg-slate-950/30 border border-slate-700/50 rounded-xl p-4">
-{selected.draft_copy}
+                  {selected.draft_copy}
                 </pre>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-white mb-1">Hashtags</div>
+                  <div className="text-sm font-semibold text-white mb-2">Hashtags</div>
                   <div className="text-sm text-slate-200 bg-slate-950/30 border border-slate-700/50 rounded-xl p-3">
                     {(selected.hashtags || []).length ? (selected.hashtags || []).join(' ') : '—'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white mb-1">Media notes</div>
+                  <div className="text-sm font-semibold text-white mb-2">Media notes</div>
                   <div className="text-sm text-slate-200 bg-slate-950/30 border border-slate-700/50 rounded-xl p-3">
                     {selected.media_notes || '—'}
                   </div>
@@ -480,9 +439,13 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
+          <DialogFooter className="mt-4 border-t border-slate-700/60 pt-4">
+            <Button variant="secondary" onClick={() => setSelected(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

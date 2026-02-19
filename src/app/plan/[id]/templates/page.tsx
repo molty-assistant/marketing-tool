@@ -5,17 +5,22 @@ import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { PageSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
+import { Button } from '@/components/ui/button';
+import { ClipboardCopy } from 'lucide-react';
+import DismissableTip from '@/components/DismissableTip';
+import { useKeyboardShortcuts, KbdHint } from '@/hooks/useKeyboardShortcuts';
 
 type Template = {
   id:
-    | 'app_store_short'
-    | 'app_store_full'
-    | 'twitter_bio'
-    | 'instagram_bio'
-    | 'linkedin_about'
-    | 'google_play_short'
-    | 'product_hunt_tagline'
-    | 'press_release_opener';
+  | 'app_store_short'
+  | 'app_store_full'
+  | 'twitter_bio'
+  | 'instagram_bio'
+  | 'linkedin_about'
+  | 'google_play_short'
+  | 'product_hunt_tagline'
+  | 'press_release_opener';
   name: string;
   charLimit: number;
   description: string;
@@ -149,9 +154,7 @@ export default function TemplatesPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
   const { success: toastSuccess, error: toastError } = useToast();
 
   const storageKey = `templates-${id}`;
@@ -160,40 +163,9 @@ export default function TemplatesPage({
 
   const [edited, setEdited] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
 
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-        return;
-      } catch {
-        /* fall through */
-      }
-    }
-
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((err) => {
-        setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setPlanLoading(false));
-  };
-
-  useEffect(() => {
-    loadPlan();
-  }, [id]);
 
   useEffect(() => {
     // Load persisted template edits (if any)
@@ -264,6 +236,10 @@ export default function TemplatesPage({
     }
   };
 
+  useKeyboardShortcuts([
+    { key: 's', meta: true, handler: () => { if (dirty && !saving) handleSaveChanges(); } },
+  ]);
+
   const handleSaveChanges = async () => {
     if (saving) return;
     setSaving(true);
@@ -286,6 +262,7 @@ export default function TemplatesPage({
 
       toastSuccess('Saved template changes');
       setIsCached(false);
+      setDirty(false);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to save templates';
       toastError(msg);
@@ -315,9 +292,7 @@ export default function TemplatesPage({
   return (
     <div className="px-4 pb-8">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-          Ready-to-copy marketing templates pre-filled with your app&apos;s details — App Store blurbs, social bios, Product Hunt taglines, and more.
-        </div>
+        <DismissableTip id="templates-tip">Ready-to-copy marketing templates pre-filled with your app&apos;s details — App Store blurbs, social bios, Product Hunt taglines, and more.</DismissableTip>
 
         <div className="mb-8">
           <div className="flex items-center gap-3 flex-wrap">
@@ -325,13 +300,15 @@ export default function TemplatesPage({
             {cachedPopulated && isCached && (
               <span className="text-xs text-slate-500">Cached</span>
             )}
-            <button
-              onClick={handleSaveChanges}
-              disabled={saving || Object.keys(edited).length === 0}
-              className="ml-auto bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/40 disabled:cursor-not-allowed text-white text-sm px-4 py-2 rounded-xl transition-colors"
-            >
-              {saving ? 'Saving…' : 'Save changes'}
-            </button>
+            {dirty && (
+              <Button
+                onClick={handleSaveChanges}
+                disabled={saving}
+                className="ml-auto bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/40 text-white text-sm px-4 py-2 rounded-xl"
+              >
+                {saving ? 'Saving…' : <>Save changes<KbdHint keys="⌘S" /></>}
+              </Button>
+            )}
           </div>
           <p className="text-slate-400">
             Browse ready-to-use marketing copy templates. We\'ll auto-fill placeholders
@@ -365,12 +342,14 @@ export default function TemplatesPage({
                     <p className="text-sm text-slate-400">{t.description}</p>
                   </div>
 
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => handleCopy(current)}
-                    className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                    className="shrink-0 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white h-auto"
                   >
-                    📋 Copy
-                  </button>
+                    <ClipboardCopy className="w-3.5 h-3.5 mr-1.5" /> Copy
+                  </Button>
                 </div>
 
                 <div className="mb-3">
@@ -386,7 +365,10 @@ export default function TemplatesPage({
                   <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-2">
                     <textarea
                       value={current}
-                      onChange={(e) => setEdited((prev) => ({ ...prev, [t.id]: e.target.value }))}
+                      onChange={(e) => {
+                        setEdited((prev) => ({ ...prev, [t.id]: e.target.value }));
+                        setDirty(true);
+                      }}
                       className="w-full min-h-[160px] bg-transparent p-2 text-sm text-slate-200 font-sans whitespace-pre-wrap focus:outline-none"
                     />
                   </div>

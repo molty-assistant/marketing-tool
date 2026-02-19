@@ -8,6 +8,8 @@ import {
   type SocialPlatform,
   type SocialStyle,
 } from '@/lib/socialTemplates';
+import { usePlan } from '@/hooks/usePlan';
+import DismissableTip from '@/components/DismissableTip';
 
 type CompositeDevice = 'iphone-15' | 'iphone-15-pro' | 'android';
 
@@ -641,7 +643,7 @@ export default function AssetsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
+  const { plan } = usePlan(id);
   const [assets, setAssets] = useState<GeneratedAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -681,34 +683,6 @@ export default function AssetsPage({
   const [socialZipError, setSocialZipError] = useState('');
 
   useEffect(() => {
-    // Try sessionStorage first
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        const p = JSON.parse(stored) as MarketingPlan;
-        setPlan(p);
-        return;
-      } catch {
-        /* fall through */
-      }
-    }
-
-    // Fall back to DB
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Not found');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch(() => {
-        // Plan not found
-      });
-  }, [id]);
-
-  useEffect(() => {
     if (!plan) return;
     generateAssetsFromPlan();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -716,7 +690,7 @@ export default function AssetsPage({
 
   useEffect(() => {
     if (!plan) return;
-    const selected = (Object.entries(socialPlatforms) as [SocialPlatform, boolean][]) 
+    const selected = (Object.entries(socialPlatforms) as [SocialPlatform, boolean][])
       .filter(([, on]) => on)
       .map(([k]) => k);
 
@@ -810,7 +784,7 @@ export default function AssetsPage({
     setDownloadingSocialZip(true);
     setSocialZipError('');
     try {
-      const selected = (Object.entries(socialPlatforms) as [SocialPlatform, boolean][]) 
+      const selected = (Object.entries(socialPlatforms) as [SocialPlatform, boolean][])
         .filter(([, on]) => on)
         .map(([k]) => k);
 
@@ -912,9 +886,7 @@ export default function AssetsPage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Generate social media graphics and device mockups — download ready-to-post images sized for Instagram, TikTok, and other platforms.
-      </div>
+      <DismissableTip id="assets-tip">Generate social media graphics and device mockups — download ready-to-post images sized for Instagram, TikTok, and other platforms.</DismissableTip>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">

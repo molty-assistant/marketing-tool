@@ -271,7 +271,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
+      <div className="min-h-screen text-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <PageSkeleton />
         </div>
@@ -281,7 +281,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
+      <div className="min-h-screen text-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <ErrorRetry error={error} onRetry={fetchData} />
         </div>
@@ -292,7 +292,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   const summaryVisible = !!summary && items.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">📊 Performance Tracker</h1>
@@ -364,11 +364,10 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                   <button
                     key={f.key}
                     onClick={() => setRatingFilter(f.key)}
-                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                      ratingFilter === f.key
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${ratingFilter === f.key
                         ? 'bg-indigo-600 border-indigo-500 text-white'
                         : 'bg-slate-900/60 border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
-                    }`}
+                      }`}
                   >
                     {f.label}
                   </button>
@@ -450,11 +449,10 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                           <button
                             key={r}
                             onClick={() => handleRating(item.id, r)}
-                            className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
-                              active
+                            className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${active
                                 ? `${meta.color}`
                                 : 'bg-slate-900/40 border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
-                            }`}
+                              }`}
                           >
                             {meta.emoji} {meta.label}
                           </button>
@@ -520,9 +518,9 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                                     const next = prev.map((i) =>
                                       i.id === item.id
                                         ? {
-                                            ...i,
-                                            performance_metrics: JSON.stringify(nextMetrics),
-                                          }
+                                          ...i,
+                                          performance_metrics: JSON.stringify(nextMetrics),
+                                        }
                                         : i
                                     );
                                     persistCache(next, summary);

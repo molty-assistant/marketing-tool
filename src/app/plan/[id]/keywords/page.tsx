@@ -2,6 +2,8 @@
 
 import { useState, useEffect, use } from 'react';
 import { MarketingPlan } from '@/lib/types';
+import { usePlan } from '@/hooks/usePlan';
+import DismissableTip from '@/components/DismissableTip';
 
 interface KeywordEntry {
   keyword: string;
@@ -16,15 +18,6 @@ interface KeywordData {
   suggestions: string;
 }
 
-function readSessionPlan(id: string): MarketingPlan | null {
-  try {
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (!stored) return null;
-    return JSON.parse(stored) as MarketingPlan;
-  } catch {
-    return null;
-  }
-}
 
 function DifficultyBadge({ value }: { value: number }) {
   const color =
@@ -109,9 +102,8 @@ function Skeleton() {
 export default function KeywordsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
-  const [plan, setPlan] = useState<MarketingPlan | null>(() => readSessionPlan(id));
+  const { plan, loading: planLoading } = usePlan(id);
   const [loading, setLoading] = useState(false);
-  const [planLoading, setPlanLoading] = useState(() => !readSessionPlan(id));
   const [data, setData] = useState<KeywordData | null>(null);
   const [isCached, setIsCached] = useState(false);
   const [error, setError] = useState('');
@@ -125,26 +117,8 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
         setData(JSON.parse(stored) as KeywordData);
         setIsCached(true);
       }
-    } catch {}
+    } catch { }
   }, [id]);
-
-  useEffect(() => {
-    if (plan) {
-      setPlanLoading(false);
-      return;
-    }
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((p) => {
-        setPlan(p);
-        try { sessionStorage.setItem(`plan-${id}`, JSON.stringify(p)); } catch {}
-      })
-      .catch(() => setError('Failed to load plan'))
-      .finally(() => setPlanLoading(false));
-  }, [id, plan]);
 
   const runResearch = async () => {
     if (!plan) return;
@@ -165,7 +139,7 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
         throw new Error(err.error || 'Request failed');
       }
       const result: KeywordData = await res.json();
-      try { sessionStorage.setItem(storageKey, JSON.stringify(result)); } catch {}
+      try { sessionStorage.setItem(storageKey, JSON.stringify(result)); } catch { }
       setData(result);
       setIsCached(false);
     } catch (e) {
@@ -178,11 +152,9 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
   const appName = plan?.config?.app_name || '';
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen text-white">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-          Discover high-value ASO keywords for your app — filter by search volume, difficulty score, and relevance to find the terms that will boost your store ranking.
-        </div>
+        <DismissableTip id="keywords-tip">Discover high-value ASO keywords for your app — filter by search volume, difficulty score, and relevance to find the terms that will boost your store ranking.</DismissableTip>
 
         <div className="mb-6">
           <div className="flex items-center gap-3 flex-wrap">

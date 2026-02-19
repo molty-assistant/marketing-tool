@@ -13,7 +13,7 @@ interface PostToBufferRequest {
 
 // Zapier MCP endpoint for Buffer
 const ZAPIER_MCP_URL = 'https://mcp.zapier.com/api/v1/connect';
-const ZAPIER_TOKEN = 'ZDY4MjBhNDktZWU0NC00ZDIwLThhNTctNjAyYWVjMzFhMmUzOmRNdDJqaFBKOFl4dERuVis0OVJZdEI2bGo1SVNla2dGUVptY2lxUEc0aGs9';
+const ZAPIER_TOKEN = process.env.ZAPIER_MCP_TOKEN || '';
 
 // Public base URL for Buffer to fetch attachments from (Railway production)
 const PUBLIC_BASE_URL = 'https://marketing-tool-production.up.railway.app';
@@ -24,6 +24,10 @@ export async function POST(request: NextRequest) {
 
     if (!body.caption) {
       return NextResponse.json({ error: 'Missing caption' }, { status: 400 });
+    }
+
+    if (!ZAPIER_TOKEN) {
+      return NextResponse.json({ error: 'ZAPIER_MCP_TOKEN not configured' }, { status: 500 });
     }
 
     const platform = body.platform || 'instagram';
@@ -98,20 +102,6 @@ export async function POST(request: NextRequest) {
 
     // Log to DB for tracking
     const db = getDb();
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS social_posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        plan_id TEXT,
-        platform TEXT NOT NULL,
-        caption TEXT NOT NULL,
-        hashtags TEXT,
-        media_url TEXT,
-        method TEXT NOT NULL DEFAULT 'queue',
-        buffer_response TEXT,
-        status TEXT NOT NULL DEFAULT 'queued',
-        created_at TEXT DEFAULT (datetime('now'))
-      )
-    `);
 
     const stmt = db.prepare(`
       INSERT INTO social_posts (plan_id, platform, caption, hashtags, media_url, method, buffer_response, status)
@@ -147,20 +137,6 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const db = getDb();
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS social_posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        plan_id TEXT,
-        platform TEXT NOT NULL,
-        caption TEXT NOT NULL,
-        hashtags TEXT,
-        media_url TEXT,
-        method TEXT NOT NULL DEFAULT 'queue',
-        buffer_response TEXT,
-        status TEXT NOT NULL DEFAULT 'queued',
-        created_at TEXT DEFAULT (datetime('now'))
-      )
-    `);
 
     const posts = db.prepare('SELECT * FROM social_posts ORDER BY created_at DESC LIMIT 50').all();
     return NextResponse.json({ posts });

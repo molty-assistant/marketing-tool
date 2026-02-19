@@ -5,6 +5,9 @@ import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { usePlan } from '@/hooks/usePlan';
+import { PageSkeleton } from '@/components/Skeleton';
+import DismissableTip from '@/components/DismissableTip';
 
 type SequenceType = 'welcome' | 'launch' | 'nurture';
 
@@ -41,9 +44,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
   const { id } = use(params);
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [sequenceType, setSequenceType] = useState<SequenceType>('welcome');
   const [emailCount, setEmailCount] = useState(7);
@@ -56,38 +57,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
 
   const storageKey = `emails-${id}`;
 
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-        return;
-      } catch {
-        /* fall through */
-      }
-    }
 
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((p) => {
-        setPlan(p);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(p));
-      })
-      .catch((err) => {
-        setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
-      })
-      .finally(() => setPlanLoading(false));
-  };
-
-  useEffect(() => {
-    loadPlan();
-  }, [id]);
 
   // Restore last generated
   useEffect(() => {
@@ -145,11 +115,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
   };
 
   if (planLoading) {
-    return (
-      <div className="max-w-5xl mx-auto py-20">
-        <div className="text-slate-400">Loading…</div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (planError) {
@@ -175,9 +141,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Generate a welcome email sequence, launch announcement series, or nurture drip campaign — tailored to your app&apos;s tone and audience.
-      </div>
+      <DismissableTip id="emails-tip">Generate a welcome email sequence, launch announcement series, or nurture drip campaign — tailored to your app&apos;s tone and audience.</DismissableTip>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>

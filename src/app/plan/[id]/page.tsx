@@ -40,6 +40,7 @@ function HubCard({
   status,
   cta,
   highlight,
+  preview,
 }: {
   title: string;
   description: string;
@@ -48,6 +49,7 @@ function HubCard({
   status: Status;
   cta?: string;
   highlight?: boolean;
+  preview?: string;
 }) {
   return (
     <Link
@@ -82,6 +84,9 @@ function HubCard({
             <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-300 group-hover:text-indigo-200 transition-colors">
               {cta} <ArrowRight className="w-3.5 h-3.5" />
             </div>
+          )}
+          {preview && status === 'ready' && (
+            <p className="mt-2 text-xs text-slate-500 italic line-clamp-1">{preview}</p>
           )}
         </div>
       </div>
@@ -244,6 +249,11 @@ export default function PlanOverviewPage({
                 {computed.oneLiner}
               </p>
             )}
+            {plan?.createdAt && (
+              <div className="text-xs text-slate-500 mt-2">
+                Created <span suppressHydrationWarning>{new Date(plan.createdAt).toLocaleDateString()}</span>
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center gap-2 mt-4">
               <StatusBadge status={computed.statuses.strategy} />
@@ -285,6 +295,7 @@ export default function PlanOverviewPage({
           icon={FileText}
           status={computed.statuses.strategy}
           cta="Review brief"
+          preview={overview?.sections?.brief?.preview}
         />
         <HubCard
           title="Content"
@@ -293,6 +304,7 @@ export default function PlanOverviewPage({
           icon={PenLine}
           status={computed.statuses.content}
           cta="Generate →"
+          preview={overview?.sections?.templates?.preview}
         />
         <HubCard
           title="Distribution"
