@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
-import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { DraftSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';

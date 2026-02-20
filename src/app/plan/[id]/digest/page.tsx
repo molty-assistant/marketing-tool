@@ -2,7 +2,6 @@
 
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
-import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
 import { usePlan } from '@/hooks/usePlan';
@@ -61,6 +60,11 @@ export default function DigestPage({ params }: { params: Promise<{ id: string }>
       // ignore
     }
   };
+
+  useEffect(() => {
+    void loadSavedDigestFromDb();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
 
   const handleGenerate = async () => {

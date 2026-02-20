@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
 import ErrorRetry from '@/components/ErrorRetry';
 import { DraftSkeleton } from '@/components/Skeleton';
-import type { MarketingPlan } from '@/lib/types';
 import { useToast } from '@/components/Toast';
 import { usePlan } from '@/hooks/usePlan';
 import DismissableTip from '@/components/DismissableTip';

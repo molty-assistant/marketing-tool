@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState, use } from 'react';
+import { useEffect, useMemo, useState, use, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
 import { usePlan } from '@/hooks/usePlan';
@@ -98,7 +97,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
   );
 
 
-  const loadSavedCalendarFromDb = async () => {
+  const loadSavedCalendarFromDb = useCallback(async () => {
     try {
       const res = await fetch(`/api/plans/${id}/content`);
       if (!res.ok) return;
@@ -111,19 +110,24 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
     } catch {
       // ignore
     }
-  };
+  }, [id]);
 
 
   useEffect(() => {
     const stored = sessionStorage.getItem(storageKey);
-    if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored) as { calendar?: CalendarPost[] };
-      if (Array.isArray(parsed?.calendar)) setCalendar(parsed.calendar);
-    } catch {
-      /* ignore */
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as { calendar?: CalendarPost[] };
+        if (Array.isArray(parsed?.calendar)) {
+          setCalendar(parsed.calendar);
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
     }
-  }, [storageKey]);
+    void loadSavedCalendarFromDb();
+  }, [storageKey, loadSavedCalendarFromDb]);
 
   const togglePlatform = (p: string) => {
     setPlatforms((prev) => {

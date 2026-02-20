@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState, use } from 'react';
+import { useMemo, useState, use } from 'react';
 import { PageSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import Link from 'next/link';
-import { MarketingPlan } from '@/lib/types';
 import { usePlan } from '@/hooks/usePlan';
 import DismissableTip from '@/components/DismissableTip';
 

@@ -303,7 +303,9 @@ export default function PlanPreviewPage({
                 aria-label="Description"
               />
               {!expanded && description.length > 520 && (
-                <div className="text-xs text-slate-400 mt-1">{description.length} chars</div>
+                <div className="text-xs text-slate-400 mt-1">
+                  Showing {shownDescription.length} / {description.length} chars
+                </div>
               )}
             </div>
           </div>

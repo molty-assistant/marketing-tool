@@ -5,7 +5,6 @@ import Link from 'next/link';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import type { MarketingPlan } from '@/lib/types';
 import { PlanDetailSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import ExportBundleButton from '@/components/ExportBundleButton';

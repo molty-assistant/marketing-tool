@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, use, useCallback } from 'react';
 import Link from 'next/link';
-import { MarketingPlan, GeneratedAsset, AssetConfig } from '@/lib/types';
+import { GeneratedAsset, AssetConfig } from '@/lib/types';
 import {
   generateSocialTemplates,
   type SocialPlatform,
