@@ -33,7 +33,12 @@ function checkIpNotPrivate(ipRaw: string): void {
 // Prevent SSRF by validating the target IP
 async function validateUrlSafety(urlStr: string): Promise<void> {
   const url = new URL(urlStr);
-  const hostname = url.hostname;
+  let hostname = url.hostname;
+
+  // Strip IPv6 brackets for validation if present
+  if (hostname.startsWith('[') && hostname.endsWith(']')) {
+    hostname = hostname.substring(1, hostname.length - 1);
+  }
 
   if (hostname === 'localhost') throw new Error('Unsafe URL: localhost is not allowed');
 
