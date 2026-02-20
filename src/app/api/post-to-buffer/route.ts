@@ -17,7 +17,11 @@ const ZAPIER_TOKEN = process.env.ZAPIER_MCP_TOKEN || '';
 
 // Public base URL for Buffer to fetch attachments from
 function getPublicBaseUrl(request: NextRequest) {
-  return process.env.PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+  const url = process.env.PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+  if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    throw new Error('Server configured with localhost base URL. Buffer cannot fetch attachments from a local development server.');
+  }
+  return url;
 }
 
 export async function POST(request: NextRequest) {
