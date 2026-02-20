@@ -30,56 +30,61 @@ export default function QuickWinPage() {
         let active = true;
 
         async function generateAll() {
-            // 1. Generate Instagram caption
-            try {
-                const igRes = await fetch('/api/generate-social-post', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ planId, platform: 'instagram' }),
-                });
-                const igJson = await igRes.json();
-                if (active && igRes.ok) setIgData(igJson.post);
-            } catch (err) {
-                console.error('IG generation failed', err);
-            } finally {
-                if (active) setIgGenerating(false);
-            }
+            // 1. Fire IG and TikTok simultaneously
+            const igPromise = fetch('/api/generate-social-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId, platform: 'instagram' }),
+            }).then(res => res.ok ? res.json() : null).catch(() => null);
 
-            // 2. Generate TikTok caption
-            try {
-                const ttRes = await fetch('/api/generate-social-post', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ planId, platform: 'tiktok' }),
-                });
-                const ttJson = await ttRes.json();
-                if (active && ttRes.ok) setTiktokData(ttJson.post);
-            } catch (err) {
-                console.error('TikTok generation failed', err);
-            } finally {
-                if (active) setTiktokGenerating(false);
-            }
+            const ttPromise = fetch('/api/generate-social-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId, platform: 'tiktok' }),
+            }).then(res => res.ok ? res.json() : null).catch(() => null);
 
-            // 3. Generate Image (uses Nano Banana via hero bg)
-            // Note: We need a caption to generate the image brief. We'll wait until IG is done to use it as the hook base, 
-            // or we just fire a hybrid mode image with a blank prompt and let the template engine handle it if quickness is key.
-            try {
-                const imgRes = await fetch('/api/generate-post-image', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        planId,
-                        platform: 'instagram-post',
-                        visualMode: 'hero',
-                        caption: 'Here is why this app is amazing!', // Fast fallback caption to kickstart brief
-                    }),
-                });
-                const imgJson = await imgRes.json();
-                if (active && imgRes.ok && imgJson.publicUrl) setImage(imgJson);
-            } catch (err) {
-                console.error('Image generation failed', err);
-            } finally {
-                if (active) setImageGenerating(false);
+            const [igJson, ttJson] = await Promise.all([igPromise, ttPromise]);
+
+            if (active && igJson?.post) setIgData(igJson.post);
+            if (active) setIgGenerating(false);
+
+            if (active && ttJson?.post) setTiktokData(ttJson.post);
+            if (active) setTiktokGenerating(false);
+
+            // 2. Use IG caption for the Image Brief, then generate Image
+            if (igJson?.post?.caption) {
+                try {
+                    // Get Image Brief
+                    const briefRes = await fetch('/api/caption-to-image-brief', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ caption: igJson.post.caption, platform: 'instagram' }),
+                    });
+
+                    let imageBrief = null;
+                    if (briefRes.ok) imageBrief = await briefRes.json();
+
+                    // Generate Image
+                    const imgRes = await fetch('/api/generate-post-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            planId,
+                            platform: 'instagram-post',
+                            visualMode: 'hero',
+                            caption: igJson.post.caption,
+                            imageBrief
+                        }),
+                    });
+                    const imgJson = await imgRes.json();
+                    if (active && imgRes.ok && imgJson.publicUrl) setImage(imgJson);
+                } catch (err) {
+                    console.error('Image generation failed', err);
+                } finally {
+                    if (active) setImageGenerating(false);
+                }
+            } else {
+                if (active) setImageGenerating(false); // Can't generate without IG caption
             }
         }
 
