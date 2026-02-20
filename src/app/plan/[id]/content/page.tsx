@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { ChevronRight, PenLine, Mail, LayoutTemplate, Languages } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Languages, LayoutTemplate, Mail, PenLine } from 'lucide-react';
+
+import { PlanLinkCard, PlanPageShell } from '@/components/plan/PlanPage';
 
 export default async function ContentHubPage({
   params,
@@ -9,67 +9,38 @@ export default async function ContentHubPage({
 }) {
   const { id } = await params;
 
-  const sections = [
-    {
-      title: 'Copy Draft',
-      description: 'Core marketing copy and listing draft variants',
-      href: `/plan/${id}/draft`,
-      icon: PenLine,
-    },
-    {
-      title: 'Email Seqs',
-      description: 'Welcome, launch, and lifecycle email sequences',
-      href: `/plan/${id}/emails`,
-      icon: Mail,
-    },
-    {
-      title: 'Templates',
-      description: 'Reusable templates for ads, landing pages, and outreach',
-      href: `/plan/${id}/templates`,
-      icon: LayoutTemplate,
-    },
-    {
-      title: 'Translations',
-      description: 'Localised variants for key markets and languages',
-      href: `/plan/${id}/translate`,
-      icon: Languages,
-    },
-  ];
-
   return (
-    <div className="p-6 sm:p-8 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Content</h1>
-        <p className="text-slate-400 mt-1">
-          Generate copy drafts, email sequences, and marketing templates.
-        </p>
-      </div>
-
+    <PlanPageShell
+      title="Content"
+      description="Build reusable copy assets from your strategy so distribution can run with minimal editing."
+      helper="Recommended order: Copy Draft -> Email Sequences -> Templates -> Translations"
+    >
       <div className="space-y-3">
-        {sections.map((section) => {
-          const Icon = section.icon;
-          return (
-            <Link href={section.href} key={section.href}>
-              <Card className="group flex items-center justify-between p-5 bg-slate-800/50 border-white/[0.06] rounded-xl hover:border-indigo-500/30 hover:bg-slate-800/80 transition-all cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-indigo-400" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-white">
-                      {section.title}
-                    </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {section.description}
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" />
-              </Card>
-            </Link>
-          );
-        })}
+        <PlanLinkCard
+          href={`/plan/${id}/draft`}
+          title="Copy Draft"
+          description="Core marketing copy and listing draft variants"
+          icon={PenLine}
+        />
+        <PlanLinkCard
+          href={`/plan/${id}/emails`}
+          title="Email Sequences"
+          description="Welcome, launch, and lifecycle email sequences"
+          icon={Mail}
+        />
+        <PlanLinkCard
+          href={`/plan/${id}/templates`}
+          title="Templates"
+          description="Reusable templates for ads, landing pages, and outreach"
+          icon={LayoutTemplate}
+        />
+        <PlanLinkCard
+          href={`/plan/${id}/translate`}
+          title="Translations"
+          description="Localized variants for key markets and languages"
+          icon={Languages}
+        />
       </div>
-    </div>
+    </PlanPageShell>
   );
 }

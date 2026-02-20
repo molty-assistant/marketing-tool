@@ -223,7 +223,10 @@ export default function VariantsPage({ params }: { params: Promise<{ id: string 
 
       <div className="mb-8">
         <div className="flex items-center gap-4 min-w-0 mb-2">
-          {plan.config.icon && <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />}
+          {plan.config.icon && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
+          )}
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-white break-words">🏆 Variants: {plan.config.app_name}</h1>
             <p className="text-slate-400 break-words">Paste 2–5 copy variants and score them side-by-side.</p>

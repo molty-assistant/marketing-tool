@@ -6,6 +6,8 @@ function getApiKey() {
   return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
 }
 
+type CandidatePart = { text?: unknown };
+
 /**
  * POST /api/caption-to-image-brief
  * Body: { caption: string, platform?: "instagram"|"tiktok" }
@@ -74,21 +76,25 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await res.json();
-    const parts = data?.candidates?.[0]?.content?.parts;
+    const parts = data?.candidates?.[0]?.content?.parts as CandidatePart[] | undefined;
     const text = Array.isArray(parts)
-      ? parts.map((p: any) => (typeof p?.text === 'string' ? p.text : '')).join('\n').trim()
+      ? parts.map((p) => (typeof p?.text === 'string' ? p.text : '')).join('\n').trim()
       : '';
 
     if (!text) {
       return NextResponse.json({ error: 'Empty AI response' }, { status: 502 });
     }
 
-    let parsed: any = null;
+    let parsed: Record<string, unknown> | null = null;
     try {
-      parsed = JSON.parse(text);
+      const maybe = JSON.parse(text) as unknown;
+      parsed = maybe && typeof maybe === 'object' ? (maybe as Record<string, unknown>) : null;
     } catch {
       const match = text.match(/\{[\s\S]*\}/);
-      if (match) parsed = JSON.parse(match[0]);
+      if (match) {
+        const maybe = JSON.parse(match[0]) as unknown;
+        parsed = maybe && typeof maybe === 'object' ? (maybe as Record<string, unknown>) : null;
+      }
     }
 
     if (!parsed || typeof parsed !== 'object') {
@@ -103,7 +109,7 @@ export async function POST(request: NextRequest) {
       palette: typeof parsed.palette === 'string' ? parsed.palette.trim() : '',
       composition: typeof parsed.composition === 'string' ? parsed.composition.trim() : '',
       avoid: Array.isArray(parsed.avoid)
-        ? parsed.avoid.filter((x: any) => typeof x === 'string').map((s: string) => s.trim())
+        ? parsed.avoid.filter((x: unknown): x is string => typeof x === 'string').map((s: string) => s.trim())
         : ['text', 'logos', 'UI', 'watermarks'],
     };
 

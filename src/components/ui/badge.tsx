@@ -9,15 +9,15 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-indigo-500/20 text-indigo-200 border-indigo-500/30 [a&]:hover:bg-indigo-500/25",
+        default: "bg-indigo-500/15 text-indigo-700 border-indigo-500/25 [a&]:hover:bg-indigo-500/20 dark:text-indigo-200 dark:border-indigo-500/30 dark:[a&]:hover:bg-indigo-500/25",
         secondary:
-          "bg-slate-700/60 text-slate-200 border-slate-600/60 [a&]:hover:bg-slate-700/80",
+          "bg-slate-100 text-slate-700 border-slate-300 [a&]:hover:bg-slate-200 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600/60 dark:[a&]:hover:bg-slate-700/80",
         destructive:
-          "bg-red-500/15 text-red-200 border-red-500/30 [a&]:hover:bg-red-500/20",
+          "bg-red-500/10 text-red-700 border-red-500/25 [a&]:hover:bg-red-500/15 dark:text-red-200 dark:border-red-500/30 dark:[a&]:hover:bg-red-500/20",
         outline:
-          "border-slate-700 text-slate-300 [a&]:hover:bg-slate-800/50 [a&]:hover:text-white",
-        ghost: "text-slate-300 [a&]:hover:bg-slate-800/50 [a&]:hover:text-white",
-        link: "text-indigo-300 underline-offset-4 [a&]:hover:text-indigo-200 [a&]:hover:underline",
+          "border-slate-300 text-slate-600 [a&]:hover:bg-slate-100 [a&]:hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:[a&]:hover:bg-slate-800/50 dark:[a&]:hover:text-white",
+        ghost: "text-slate-600 [a&]:hover:bg-slate-100 [a&]:hover:text-slate-900 dark:text-slate-300 dark:[a&]:hover:bg-slate-800/50 dark:[a&]:hover:text-white",
+        link: "text-indigo-600 underline-offset-4 [a&]:hover:text-indigo-500 [a&]:hover:underline dark:text-indigo-300 dark:[a&]:hover:text-indigo-200",
       },
     },
     defaultVariants: {

@@ -79,6 +79,7 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
   const [plan, setPlan] = useState<SharedPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [pdfExporting, setPdfExporting] = useState(false);
 
   useEffect(() => {
     fetch(`/api/shared/${token}`)
@@ -126,8 +127,6 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  const [pdfExporting, setPdfExporting] = useState(false);
 
   const handleExportPdf = async () => {
     if (pdfExporting) return;
@@ -188,6 +187,7 @@ export default function SharedPlanPage({ params }: { params: Promise<{ token: st
         <div>
           <div className="flex items-center gap-4 min-w-0">
             {plan.config.icon && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
             )}
             <div className="min-w-0">

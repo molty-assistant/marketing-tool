@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, use } from 'react';
+import { useCallback, useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import { DraftSkeleton } from '@/components/Skeleton';
@@ -129,7 +129,7 @@ export default function TranslatePage({
   const [copiedAll, setCopiedAll] = useState(false);
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const loadPlan = () => {
+  const loadPlan = useCallback(() => {
     setPlanLoading(true);
     setPlanError('');
     const stored = sessionStorage.getItem(`plan-${id}`);
@@ -153,11 +153,11 @@ export default function TranslatePage({
         setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
       })
       .finally(() => setPlanLoading(false));
-  };
+  }, [id]);
 
   useEffect(() => {
     loadPlan();
-  }, [id]);
+  }, [loadPlan]);
 
   useEffect(() => {
     try {
@@ -173,7 +173,7 @@ export default function TranslatePage({
     } catch {
       /* ignore */
     }
-  }, [id]);
+  }, [storageKey]);
 
   const requestedLanguages = useMemo(() => {
     return LANGUAGE_OPTIONS.map((l) => l.code).filter((c) => selectedLanguages[c]);

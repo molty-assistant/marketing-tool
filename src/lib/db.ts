@@ -96,6 +96,43 @@ CREATE TABLE IF NOT EXISTS approval_queue (
       CREATE INDEX IF NOT EXISTS idx_orch_runs_plan_id ON orchestration_runs(plan_id)
     `);
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS api_rate_limits (
+        endpoint TEXT NOT NULL,
+        actor_type TEXT NOT NULL,
+        actor_key TEXT NOT NULL,
+        window_start_epoch INTEGER NOT NULL,
+        request_count INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (endpoint, actor_type, actor_key, window_start_epoch)
+      )
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_api_rate_limits_updated_at
+      ON api_rate_limits(updated_at)
+    `);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS api_usage_daily (
+        day TEXT NOT NULL,
+        endpoint TEXT NOT NULL,
+        actor_type TEXT NOT NULL,
+        actor_key TEXT NOT NULL,
+        request_count INTEGER NOT NULL DEFAULT 0,
+        blocked_count INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (day, endpoint, actor_type, actor_key)
+      )
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_api_usage_daily_endpoint_day
+      ON api_usage_daily(endpoint, day)
+    `);
+
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some((c) => c.name === 'share_token')) {
@@ -130,6 +167,11 @@ CREATE TABLE IF NOT EXISTS approval_queue (
     }
     if (!runCols.some((c) => c.name === 'last_error')) {
       db.exec('ALTER TABLE orchestration_runs ADD COLUMN last_error TEXT');
+    }
+
+    const usageCols = db.prepare("PRAGMA table_info(api_usage_daily)").all() as { name: string }[];
+    if (!usageCols.some((c) => c.name === 'blocked_count')) {
+      db.exec('ALTER TABLE api_usage_daily ADD COLUMN blocked_count INTEGER NOT NULL DEFAULT 0');
     }
   }
   return db;
@@ -566,4 +608,104 @@ export function getAllContent(planId: string): Array<{ contentType: string; cont
     }
     return { contentType: r.content_type, contentKey: r.content_key, content: parsed };
   });
+}
+
+export type RateLimitActorType = 'ip' | 'api_key' | 'unknown';
+
+export interface ConsumeApiRateLimitInput {
+  endpoint: string;
+  actorType: RateLimitActorType;
+  actorKey: string;
+  windowSeconds: number;
+  maxRequests: number;
+  nowMs?: number;
+}
+
+export interface ConsumeApiRateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  retryAfterSeconds: number;
+  limit: number;
+  resetAtEpochSeconds: number;
+}
+
+export function consumeApiRateLimit(input: ConsumeApiRateLimitInput): ConsumeApiRateLimitResult {
+  const db = getDb();
+
+  const windowSeconds = Math.max(1, Math.floor(input.windowSeconds));
+  const maxRequests = Math.max(1, Math.floor(input.maxRequests));
+  const nowMs = typeof input.nowMs === 'number' ? input.nowMs : Date.now();
+  const nowEpochSeconds = Math.floor(nowMs / 1000);
+  const windowStartEpoch = nowEpochSeconds - (nowEpochSeconds % windowSeconds);
+  const resetAtEpochSeconds = windowStartEpoch + windowSeconds;
+
+  // Keep the working set bounded without requiring external cleanup jobs.
+  db.prepare('DELETE FROM api_rate_limits WHERE window_start_epoch < ?').run(nowEpochSeconds - 172800);
+
+  const nextCount = db.transaction(() => {
+    const row = db
+      .prepare(
+        `SELECT request_count
+         FROM api_rate_limits
+         WHERE endpoint = ? AND actor_type = ? AND actor_key = ? AND window_start_epoch = ?`
+      )
+      .get(input.endpoint, input.actorType, input.actorKey, windowStartEpoch) as
+      | { request_count: number }
+      | undefined;
+
+    if (!row) {
+      db.prepare(
+        `INSERT INTO api_rate_limits
+          (endpoint, actor_type, actor_key, window_start_epoch, request_count, created_at, updated_at)
+         VALUES (?, ?, ?, ?, 1, datetime('now'), datetime('now'))`
+      ).run(input.endpoint, input.actorType, input.actorKey, windowStartEpoch);
+      return 1;
+    }
+
+    const count = row.request_count + 1;
+    db.prepare(
+      `UPDATE api_rate_limits
+       SET request_count = ?, updated_at = datetime('now')
+       WHERE endpoint = ? AND actor_type = ? AND actor_key = ? AND window_start_epoch = ?`
+    ).run(count, input.endpoint, input.actorType, input.actorKey, windowStartEpoch);
+
+    return count;
+  })();
+
+  const remaining = Math.max(0, maxRequests - nextCount);
+  const allowed = nextCount <= maxRequests;
+
+  return {
+    allowed,
+    remaining,
+    retryAfterSeconds: allowed ? 0 : Math.max(1, resetAtEpochSeconds - nowEpochSeconds),
+    limit: maxRequests,
+    resetAtEpochSeconds,
+  };
+}
+
+export interface TrackApiUsageInput {
+  endpoint: string;
+  actorType: RateLimitActorType;
+  actorKey: string;
+  blocked: boolean;
+  nowMs?: number;
+}
+
+export function trackApiUsage(input: TrackApiUsageInput): void {
+  const db = getDb();
+  const now = typeof input.nowMs === 'number' ? new Date(input.nowMs) : new Date();
+  const day = now.toISOString().slice(0, 10);
+  const blockedCount = input.blocked ? 1 : 0;
+
+  db.prepare(
+    `INSERT INTO api_usage_daily
+      (day, endpoint, actor_type, actor_key, request_count, blocked_count, created_at, updated_at)
+     VALUES (?, ?, ?, ?, 1, ?, datetime('now'), datetime('now'))
+     ON CONFLICT(day, endpoint, actor_type, actor_key)
+     DO UPDATE SET
+       request_count = request_count + 1,
+       blocked_count = blocked_count + excluded.blocked_count,
+       updated_at = datetime('now')`
+  ).run(day, input.endpoint, input.actorType, input.actorKey, blockedCount);
 }

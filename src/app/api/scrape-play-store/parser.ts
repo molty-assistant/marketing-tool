@@ -72,30 +72,47 @@ function normalizePricing(price: unknown): string {
   return 'Unknown';
 }
 
-function extractLdJsonBlocks(html: string): any[] {
-  const blocks: any[] = [];
+type LdJson = Record<string, unknown>;
+type SoftwareApplicationLike = {
+  name?: unknown;
+  author?: { name?: unknown } | unknown;
+  publisher?: { name?: unknown } | unknown;
+  brand?: { name?: unknown } | unknown;
+  description?: unknown;
+  aggregateRating?: { ratingValue?: unknown; ratingCount?: unknown; reviewCount?: unknown } | unknown;
+  applicationCategory?: unknown;
+  genre?: unknown;
+  offers?: { price?: unknown; lowPrice?: unknown; highPrice?: unknown } | unknown;
+  image?: unknown;
+  screenshot?: unknown;
+};
+
+function extractLdJsonBlocks(html: string): LdJson[] {
+  const blocks: LdJson[] = [];
   const re = /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html))) {
     const raw = m[1].trim();
     const decoded = decodeHtmlEntities(raw);
-    const parsed = safeJsonParse<any>(decoded);
+    const parsed = safeJsonParse<unknown>(decoded);
     if (!parsed) continue;
-    if (Array.isArray(parsed)) blocks.push(...parsed);
-    else blocks.push(parsed);
+    if (Array.isArray(parsed)) {
+      for (const item of parsed) {
+        if (item && typeof item === 'object') blocks.push(item as LdJson);
+      }
+    } else if (parsed && typeof parsed === 'object') {
+      blocks.push(parsed as LdJson);
+    }
   }
   return blocks;
 }
 
-function pickSoftwareApplication(blocks: any[]): any | undefined {
+function pickSoftwareApplication(blocks: LdJson[]): LdJson | undefined {
   // Prefer SoftwareApplication / MobileApplication blocks.
   const preferred = blocks.find(
-    (b) =>
-      b &&
-      typeof b === 'object' &&
-      (b['@type'] === 'SoftwareApplication' || b['@type'] === 'MobileApplication')
+    (b) => b['@type'] === 'SoftwareApplication' || b['@type'] === 'MobileApplication'
   );
-  return preferred ?? blocks.find((b) => b && typeof b === 'object');
+  return preferred ?? blocks[0];
 }
 
 function extractMetaContent(html: string, attr: string, value: string): string | undefined {
@@ -123,7 +140,27 @@ function deriveOneLiner(description: string): string {
 
 export function parsePlayStoreHtml(url: string, html: string): PlayStoreScrapeResult {
   const ldBlocks = extractLdJsonBlocks(html);
-  const app = pickSoftwareApplication(ldBlocks) ?? {};
+  const app = (pickSoftwareApplication(ldBlocks) ?? {}) as SoftwareApplicationLike;
+  const authorName =
+    app.author && typeof app.author === 'object' && 'name' in app.author && typeof (app.author as { name?: unknown }).name === 'string'
+      ? (app.author as { name: string }).name.trim()
+      : '';
+  const publisherName =
+    app.publisher && typeof app.publisher === 'object' && 'name' in app.publisher && typeof (app.publisher as { name?: unknown }).name === 'string'
+      ? (app.publisher as { name: string }).name.trim()
+      : '';
+  const brandName =
+    app.brand && typeof app.brand === 'object' && 'name' in app.brand && typeof (app.brand as { name?: unknown }).name === 'string'
+      ? (app.brand as { name: string }).name.trim()
+      : '';
+  const aggregate =
+    app.aggregateRating && typeof app.aggregateRating === 'object'
+      ? (app.aggregateRating as { ratingValue?: unknown; ratingCount?: unknown; reviewCount?: unknown })
+      : {};
+  const offersObj =
+    app.offers && typeof app.offers === 'object'
+      ? (app.offers as { price?: unknown; lowPrice?: unknown; highPrice?: unknown })
+      : {};
 
   const name: string =
     (typeof app.name === 'string' && app.name.trim()) ||
@@ -131,9 +168,9 @@ export function parsePlayStoreHtml(url: string, html: string): PlayStoreScrapeRe
     '';
 
   const developer: string | undefined =
-    (typeof app.author?.name === 'string' && app.author.name.trim()) ||
-    (typeof app.publisher?.name === 'string' && app.publisher.name.trim()) ||
-    (typeof app.brand?.name === 'string' && app.brand.name.trim()) ||
+    authorName ||
+    publisherName ||
+    brandName ||
     extractMetaContent(html, 'name', 'author');
 
   const descriptionFromLd = typeof app.description === 'string' ? decodeHtmlEntities(app.description) : undefined;
@@ -141,21 +178,21 @@ export function parsePlayStoreHtml(url: string, html: string): PlayStoreScrapeRe
   const description = stripTags(decodeHtmlEntities(descriptionFromLd ?? descriptionFromMeta ?? '')).trim();
 
   const rating: number | undefined =
-    typeof app.aggregateRating?.ratingValue === 'number'
-      ? app.aggregateRating.ratingValue
-      : typeof app.aggregateRating?.ratingValue === 'string'
-        ? Number(app.aggregateRating.ratingValue)
+    typeof aggregate.ratingValue === 'number'
+      ? aggregate.ratingValue
+      : typeof aggregate.ratingValue === 'string'
+        ? Number(aggregate.ratingValue)
         : undefined;
 
   const ratingCount: number | undefined =
-    typeof app.aggregateRating?.ratingCount === 'number'
-      ? app.aggregateRating.ratingCount
-      : typeof app.aggregateRating?.ratingCount === 'string'
-        ? Number(app.aggregateRating.ratingCount)
-        : typeof app.aggregateRating?.reviewCount === 'number'
-          ? app.aggregateRating.reviewCount
-          : typeof app.aggregateRating?.reviewCount === 'string'
-            ? Number(app.aggregateRating.reviewCount)
+    typeof aggregate.ratingCount === 'number'
+      ? aggregate.ratingCount
+      : typeof aggregate.ratingCount === 'string'
+        ? Number(aggregate.ratingCount)
+        : typeof aggregate.reviewCount === 'number'
+          ? aggregate.reviewCount
+          : typeof aggregate.reviewCount === 'string'
+            ? Number(aggregate.reviewCount)
             : undefined;
 
   const category: string =
@@ -166,11 +203,7 @@ export function parsePlayStoreHtml(url: string, html: string): PlayStoreScrapeRe
     'Unknown';
 
   // Pricing
-  const offers = app.offers;
-  const price =
-    offers && typeof offers === 'object'
-      ? (offers.price ?? offers.lowPrice ?? offers.highPrice)
-      : undefined;
+  const price = offersObj.price ?? offersObj.lowPrice ?? offersObj.highPrice;
   const pricing = normalizePricing(price);
 
   // Icon
@@ -178,14 +211,14 @@ export function parsePlayStoreHtml(url: string, html: string): PlayStoreScrapeRe
     typeof app.image === 'string'
       ? decodeHtmlEntities(app.image)
       : Array.isArray(app.image)
-        ? (app.image.find((x: any) => typeof x === 'string') as string | undefined)
+        ? (app.image.find((x: unknown): x is string => typeof x === 'string') as string | undefined)
         : undefined;
   const iconFromMeta = extractMetaContent(html, 'property', 'og:image') ?? extractMetaContent(html, 'name', 'twitter:image');
   const icon = iconFromMeta ?? iconFromLd;
 
   // Screenshots
   const screenshotsFromLd: string[] = Array.isArray(app.screenshot)
-    ? app.screenshot.filter((x: any) => typeof x === 'string').map((x: string) => decodeHtmlEntities(x))
+    ? app.screenshot.filter((x: unknown): x is string => typeof x === 'string').map((x: string) => decodeHtmlEntities(x))
     : typeof app.screenshot === 'string'
       ? [decodeHtmlEntities(app.screenshot)]
       : [];

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import {
   Collapsible,
   CollapsibleContent,
@@ -33,7 +33,6 @@ type NavGroup = {
   href: string; // group landing route under /plan/[id]
   icon: React.ComponentType<{ className?: string }>; // lucide
   children?: NavChild[];
-  hot?: boolean;
 };
 
 const NAV_GROUPS: NavGroup[] = [
@@ -52,6 +51,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Brief', href: '/strategy/brief' },
       { label: 'Foundation', href: '/foundation' },
       { label: 'Competitors', href: '/competitors' },
+      { label: 'Reviews', href: '/reviews' },
     ],
   },
   {
@@ -64,6 +64,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Email sequences', href: '/emails' },
       { label: 'Templates', href: '/templates' },
       { label: 'Translations', href: '/translate' },
+      { label: 'Approvals', href: '/approvals' },
     ],
   },
   {
@@ -71,11 +72,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Distribution',
     icon: Megaphone,
     href: '/distribution',
-    hot: true,
     children: [
       { label: 'Social Posts', href: '/social' },
       { label: 'Schedule', href: '/schedule' },
       { label: 'Calendar', href: '/calendar' },
+      { label: 'Distribute', href: '/distribute' },
+      { label: 'Performance', href: '/performance' },
     ],
   },
   {
@@ -97,6 +99,7 @@ const NAV_GROUPS: NavGroup[] = [
     children: [
       { label: 'Assets', href: '/assets' },
       { label: 'Preview', href: '/preview' },
+      { label: 'Digest', href: '/digest' },
     ],
   },
 ];
@@ -138,20 +141,26 @@ export function PlanSidebar({
     setOpen((prev) => ({ ...prev, [activeGroupKey]: true }));
   }, [activeGroupKey]);
 
+  const activeGroup = NAV_GROUPS.find((group) => group.key === activeGroupKey);
+  const mobileChildren = activeGroup?.children ?? [];
+
   return (
     <>
       {/* Mobile: compact top icon bar */}
-      <div className="lg:hidden sticky top-0 z-20 bg-slate-900/80 backdrop-blur border-b border-white/[0.06]">
+      <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 backdrop-blur dark:border-white/[0.06] dark:bg-slate-900/80 lg:hidden">
         <div className="px-3 py-2">
           <div className="flex items-center justify-between">
             <Link
               href="/dashboard"
-              className="text-xs text-slate-400 hover:text-slate-200"
+              className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
             >
               ← All Plans
             </Link>
-            <div className="text-xs font-medium text-white truncate max-w-[60%] text-right">
-              {appName}
+            <div className="flex items-center gap-2">
+              <div className="max-w-[60%] truncate text-right text-xs font-medium text-slate-900 dark:text-white">
+                {appName}
+              </div>
+              <ThemeToggle className="hidden min-[420px]:inline-flex" />
             </div>
           </div>
         </div>
@@ -169,31 +178,54 @@ export function PlanSidebar({
                 className={cn(
                   'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
                   isActive
-                    ? 'bg-indigo-500/15 text-indigo-300'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                    ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
                 {group.label}
-                {group.hot && (
-                  <span className="ml-1 inline-flex w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                )}
               </Link>
             );
           })}
         </div>
+
+        {mobileChildren.length > 0 && (
+          <div className="flex gap-1 overflow-x-auto px-2 pb-2 pt-1 border-t border-slate-200/70 dark:border-white/[0.04]">
+            {mobileChildren.map((child) => {
+              const childHref = `${basePath}${child.href}`;
+              const childActive = pathname === childHref;
+              return (
+                <Link
+                  key={child.href}
+                  href={childHref}
+                  className={cn(
+                    'px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap transition-colors',
+                    childActive
+                      ? 'bg-slate-100 text-slate-900 dark:bg-white/[0.08] dark:text-white'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/[0.04]'
+                  )}
+                >
+                  {child.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Desktop: left sidebar */}
-      <aside className="hidden lg:block w-60 shrink-0 border-r border-white/[0.06] bg-slate-900 p-4">
+      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white p-4 dark:border-white/[0.06] dark:bg-slate-900 lg:block">
         <div className="mb-6 px-2">
-          <Link
-            href="/dashboard"
-            className="text-xs text-slate-500 hover:text-slate-300"
-          >
-            ← All Plans
-          </Link>
-          <h3 className="text-sm font-semibold text-white mt-2 truncate">
+          <div className="flex items-center justify-between gap-2">
+            <Link
+              href="/dashboard"
+              className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            >
+              ← All Plans
+            </Link>
+            <ThemeToggle />
+          </div>
+          <h3 className="mt-2 truncate text-sm font-semibold text-slate-900 dark:text-white">
             {appName}
           </h3>
         </div>
@@ -218,8 +250,8 @@ export function PlanSidebar({
                   className={cn(
                     'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     groupIsActive
-                      ? 'bg-indigo-500/15 text-indigo-300'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                      ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -240,21 +272,13 @@ export function PlanSidebar({
                     className={cn(
                       'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                       groupIsActive
-                        ? 'bg-indigo-500/15 text-indigo-300'
-                        : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                        ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
                     )}
                   >
                     <Icon className="w-4 h-4" />
                     <span className="flex-1 text-left flex items-center gap-2">
                       {group.label}
-                      {group.hot && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-indigo-500/15 text-indigo-300 border border-indigo-500/20"
-                        >
-                          Hot
-                        </Badge>
-                      )}
                     </span>
                     <ChevronDown
                       className={cn(
@@ -278,8 +302,8 @@ export function PlanSidebar({
                           className={cn(
                             'group flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors',
                             childActive
-                              ? 'text-white bg-white/[0.06]'
-                              : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03]'
+                              ? 'bg-indigo-500/10 text-slate-900 dark:bg-white/[0.06] dark:text-white'
+                              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/[0.03] dark:hover:text-slate-300'
                           )}
                         >
                           <span>{child.label}</span>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePlanContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 import {
   generateBrandVoice,
   generatePositioningAngles,
@@ -38,6 +39,15 @@ function line(obj: unknown): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/generate-all',
+    maxRequests: 6,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const startedAt = Date.now();
 
   try {

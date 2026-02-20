@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import type { MarketingPlan } from '@/lib/types';
@@ -11,7 +11,7 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
   const created = plan.createdAt ? new Date(plan.createdAt) : null;
 
   return (
-    <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-5 flex flex-col gap-3">
+    <div className="rounded-2xl border border-slate-200 bg-white/90 p-5 flex flex-col gap-3 dark:border-white/[0.06] dark:bg-slate-900/40">
       <div className="flex items-start gap-4">
         {(plan.scraped?.icon || plan.config?.icon) && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -22,19 +22,19 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
           />
         )}
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-white truncate">{appName}</div>
+          <div className="text-sm font-semibold text-slate-900 truncate dark:text-white">{appName}</div>
           {url && (
             <a
               href={url}
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-indigo-400 hover:text-indigo-300 truncate block mt-0.5"
+              className="block mt-0.5 truncate text-xs text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
             >
               {url}
             </a>
           )}
           {created && (
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-500">
               Created {created.toLocaleDateString()}
             </div>
           )}
@@ -42,12 +42,12 @@ function PlanCard({ plan }: { plan: MarketingPlan }) {
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <div className="text-xs text-slate-500 line-clamp-1">
+        <div className="text-xs text-slate-600 line-clamp-1 dark:text-slate-500">
           {plan.config?.one_liner || plan.scraped?.shortDescription || plan.scraped?.description}
         </div>
         <Link
           href={`/plan/${plan.id}`}
-          className="shrink-0 text-xs font-medium bg-indigo-500/15 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 hover:border-indigo-400/30 px-3 py-1.5 rounded-lg transition-colors"
+          className="shrink-0 rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors hover:border-indigo-500/35 hover:text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300 dark:hover:text-indigo-200"
         >
           Open →
         </Link>
@@ -61,7 +61,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  const loadPlans = useCallback(() => {
     setLoading(true);
     setError('');
     fetch('/api/plans')
@@ -76,18 +76,33 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadPlans();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [loadPlans]);
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             All your generated marketing plans in one place.
           </p>
         </div>
-        <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
-          ← Home
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/compare"
+            className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors hover:border-indigo-500/35 hover:text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300 dark:hover:text-indigo-200"
+          >
+            Compare plans
+          </Link>
+          <Link href="/" className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+            ← Home
+          </Link>
+        </div>
       </div>
 
       {loading && (
@@ -95,28 +110,28 @@ export default function DashboardPage() {
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="h-32 bg-slate-900/40 border border-white/[0.06] rounded-2xl"
+              className="h-32 rounded-2xl border border-slate-200 bg-white/90 dark:border-white/[0.06] dark:bg-slate-900/40"
             />
           ))}
         </div>
       )}
 
       {!loading && error && (
-        <div className="bg-red-950/30 border border-red-700/40 rounded-2xl p-5 text-red-200 text-sm">
+        <div className="rounded-2xl border border-red-700/40 bg-red-50 p-5 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-200">
           {error}
         </div>
       )}
 
       {!loading && !error && plans.length === 0 && (
-        <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-8 text-center">
-          <div className="text-slate-200 font-semibold">No plans yet</div>
-          <p className="text-sm text-slate-400 mt-2">
+        <div className="rounded-2xl border border-slate-200 bg-white/90 p-8 text-center dark:border-white/[0.06] dark:bg-slate-900/40">
+          <div className="font-semibold text-slate-900 dark:text-slate-200">No plans yet</div>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             Generate your first marketing plan to see it here.
           </p>
           <div className="mt-5">
             <Link
               href="/"
-              className="inline-flex items-center bg-indigo-500/15 text-indigo-300 hover:text-indigo-200 border border-indigo-500/20 hover:border-indigo-400/30 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+              className="inline-flex items-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-700 transition-colors hover:border-indigo-500/35 hover:text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300 dark:hover:text-indigo-200"
             >
               Generate a plan →
             </Link>

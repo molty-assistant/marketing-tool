@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent, updatePlanContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 interface AtomizeContentRequest {
   planId: string;
@@ -34,6 +35,15 @@ function safeStringArray(value: unknown): string[] {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/atomize-content',
+    maxRequests: 8,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = (await request.json()) as Partial<AtomizeContentRequest>;
 

@@ -767,6 +767,36 @@ export function generateMarketingPlan(config: AppConfig, scraped: ScrapedApp, go
   };
 }
 
+function inferTargetAudience(scraped: ScrapedApp): string {
+  const category = (scraped.category || '').trim();
+  const description = `${scraped.shortDescription || ''} ${scraped.description || ''}`.toLowerCase();
+
+  if (
+    description.includes('developer') ||
+    description.includes('api') ||
+    description.includes('sdk') ||
+    description.includes('cli')
+  ) {
+    return 'Developers and technical teams who need faster workflows';
+  }
+
+  if (
+    description.includes('team') ||
+    description.includes('workspace') ||
+    description.includes('collaboration')
+  ) {
+    return category
+      ? `Teams searching for better ${category.toLowerCase()} workflows`
+      : 'Teams that need faster, simpler workflows';
+  }
+
+  if (category) {
+    return `People searching for ${category.toLowerCase()} tools`;
+  }
+
+  return `People evaluating alternatives to ${scraped.name}`;
+}
+
 // Generate config from scraped data
 export function scrapedToConfig(scraped: ScrapedApp): AppConfig {
   const appType = scraped.source === 'appstore' || scraped.source === 'googleplay' ? 'mobile' : 'web';
@@ -777,7 +807,7 @@ export function scrapedToConfig(scraped: ScrapedApp): AppConfig {
     app_type: appType,
     category: scraped.category || 'tool',
     one_liner: scraped.shortDescription || scraped.description.substring(0, 120),
-    target_audience: `Users of ${scraped.category || 'this type of'} apps`,
+    target_audience: inferTargetAudience(scraped),
     pricing: scraped.pricing,
     differentiators: scraped.features.slice(0, 6),
     competitors: [],

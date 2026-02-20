@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { guardApiRoute } from '@/lib/api-guard';
 
 interface GenerateVariantsRequest {
   text: string;
@@ -38,6 +39,15 @@ function extractJsonArray(text: string): string[] | null {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/generate-variants',
+    maxRequests: 20,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = (await request.json()) as Partial<GenerateVariantsRequest>;
 

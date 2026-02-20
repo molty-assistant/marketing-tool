@@ -2,6 +2,8 @@
 
 import { useState, useEffect, use } from 'react';
 import { MarketingPlan } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 interface KeywordEntry {
   keyword: string;
@@ -54,29 +56,29 @@ function RelevanceBadge({ value }: { value: number }) {
 function KeywordTable({ keywords, title }: { keywords: KeywordEntry[]; title: string }) {
   if (!keywords.length) return null;
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-      <h2 className="text-lg font-semibold text-white mb-4">{title}</h2>
+    <Card className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
+      <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-700">
-              <th className="text-left py-3 px-3 text-slate-400 font-medium">Keyword</th>
-              <th className="text-right py-3 px-3 text-slate-400 font-medium">Volume</th>
-              <th className="text-center py-3 px-3 text-slate-400 font-medium">Difficulty</th>
-              <th className="text-center py-3 px-3 text-slate-400 font-medium">Relevance</th>
+            <tr className="border-b border-slate-200 dark:border-slate-700">
+              <th className="px-3 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Keyword</th>
+              <th className="px-3 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Volume</th>
+              <th className="px-3 py-3 text-center font-medium text-slate-500 dark:text-slate-400">Difficulty</th>
+              <th className="px-3 py-3 text-center font-medium text-slate-500 dark:text-slate-400">Relevance</th>
             </tr>
           </thead>
           <tbody>
             {keywords.map((kw, i) => (
-              <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                <td className="py-3 px-3 text-white">{kw.keyword}</td>
-                <td className="py-3 px-3 text-right text-slate-300">
+              <tr key={i} className="border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-700/50 dark:hover:bg-slate-700/30">
+                <td className="px-3 py-3 text-slate-900 dark:text-white">{kw.keyword}</td>
+                <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-300">
                   {(kw.volume ?? 0).toLocaleString()}
                 </td>
-                <td className="py-3 px-3 text-center">
+                <td className="px-3 py-3 text-center">
                   <DifficultyBadge value={kw.difficulty ?? 0} />
                 </td>
-                <td className="py-3 px-3 text-center">
+                <td className="px-3 py-3 text-center">
                   <RelevanceBadge value={kw.relevance ?? 0} />
                 </td>
               </tr>
@@ -84,24 +86,24 @@ function KeywordTable({ keywords, title }: { keywords: KeywordEntry[]; title: st
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }
 
 function Skeleton() {
   return (
     <div className="space-y-4 animate-pulse">
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-        <div className="h-5 bg-slate-700 rounded w-48 mb-4" />
+      <Card className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
+        <div className="mb-4 h-5 w-48 rounded bg-slate-200 dark:bg-slate-700" />
         {[...Array(6)].map((_, i) => (
           <div key={i} className="flex gap-4 mb-3">
-            <div className="h-4 bg-slate-700 rounded flex-1" />
-            <div className="h-4 bg-slate-700 rounded w-16" />
-            <div className="h-4 bg-slate-700 rounded w-20" />
-            <div className="h-4 bg-slate-700 rounded w-16" />
+            <div className="h-4 flex-1 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-4 w-16 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-4 w-16 rounded bg-slate-200 dark:bg-slate-700" />
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -126,7 +128,7 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
         setIsCached(true);
       }
     } catch {}
-  }, [id]);
+  }, [storageKey]);
 
   useEffect(() => {
     if (plan) {
@@ -178,76 +180,68 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
   const appName = plan?.config?.app_name || '';
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+    <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6">
+      <div className="mb-8 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700/40 dark:bg-slate-800/30 dark:text-slate-300">
           Discover high-value ASO keywords for your app — filter by search volume, difficulty score, and relevance to find the terms that will boost your store ranking.
-        </div>
-
-        <div className="mb-6">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold mb-2">🔑 Keyword Research</h1>
-            {data && isCached && (
-              <span className="text-xs text-slate-500">Cached · Re-run research to refresh</span>
-            )}
-          </div>
-          <p className="text-slate-400">
-            Discover high-value ASO/SEO keywords for{' '}
-            <span className="text-white font-medium">{appName || 'your app'}</span>.
-          </p>
-        </div>
-
-        {planLoading ? (
-          <Skeleton />
-        ) : (
-          <>
-            {!data && !loading && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-8 text-center">
-                <p className="text-slate-400 mb-4">
-                  Click below to research relevant keywords using AI-powered analysis.
-                </p>
-                <button
-                  onClick={runResearch}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors"
-                >
-                  Research Keywords
-                </button>
-              </div>
-            )}
-
-            {loading && <Skeleton />}
-
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 mb-4">
-                {error}
-              </div>
-            )}
-
-            {data && (
-              <div className="space-y-6">
-                <KeywordTable keywords={data.keywords} title="🎯 Primary Keywords" />
-                <KeywordTable keywords={data.longTail} title="🔗 Long-Tail Keywords" />
-
-                {data.suggestions && (
-                  <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-                    <h2 className="text-lg font-semibold text-white mb-3">💡 Strategy Suggestions</h2>
-                    <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">{data.suggestions}</p>
-                  </div>
-                )}
-
-                <div className="text-center">
-                  <button
-                    onClick={runResearch}
-                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
-                  >
-                    Re-run Research
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
       </div>
+
+      <div className="mb-6">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">Keyword Research</h1>
+          {data && isCached && (
+            <span className="text-xs text-slate-500">Cached · Re-run research to refresh</span>
+          )}
+        </div>
+        <p className="text-slate-600 dark:text-slate-400">
+          Discover high-value ASO/SEO keywords for{' '}
+          <span className="font-medium text-slate-900 dark:text-white">{appName || 'your app'}</span>.
+        </p>
+      </div>
+
+      {planLoading ? (
+        <Skeleton />
+      ) : (
+        <>
+          {!data && !loading && (
+            <Card className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800/50">
+              <p className="mb-4 text-slate-600 dark:text-slate-400">
+                Click below to research relevant keywords using AI-powered analysis.
+              </p>
+              <Button onClick={runResearch} className="px-6 py-3">
+                Research Keywords
+              </Button>
+            </Card>
+          )}
+
+          {loading && <Skeleton />}
+
+          {error && (
+            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-500 dark:text-red-400">
+              {error}
+            </div>
+          )}
+
+          {data && (
+            <div className="space-y-6">
+              <KeywordTable keywords={data.keywords} title="Primary Keywords" />
+              <KeywordTable keywords={data.longTail} title="Long-Tail Keywords" />
+
+              {data.suggestions && (
+                <Card className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
+                  <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Strategy Suggestions</h2>
+                  <p className="whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-300">{data.suggestions}</p>
+                </Card>
+              )}
+
+              <div className="text-center">
+                <Button onClick={runResearch} variant="secondary">
+                  Re-run Research
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

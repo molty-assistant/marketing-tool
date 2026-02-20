@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       bgImageUrl,
       // Pass through any hook-based image brief (best-effort). Templates may ignore.
       imageBrief,
-    } as any);
+    });
 
     if (templates.length === 0) {
       return NextResponse.json({ error: 'No template generated' }, { status: 500 });

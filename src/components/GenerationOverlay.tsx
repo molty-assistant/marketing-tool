@@ -26,7 +26,16 @@ type ScrapeResult = {
 
 type PlanResult = {
   id: string
+  error?: string
   [key: string]: unknown
+}
+
+function getErrorMessage(input: unknown, fallback: string): string {
+  if (input && typeof input === 'object' && 'error' in input) {
+    const maybeError = (input as { error?: unknown }).error
+    if (typeof maybeError === 'string' && maybeError.trim()) return maybeError
+  }
+  return fallback
 }
 
 function truncateMiddle(input: string, max = 56) {
@@ -39,7 +48,6 @@ function truncateMiddle(input: string, max = 56) {
 
 export default function GenerationOverlay({ url, onComplete, onError }: GenerationOverlayProps) {
   const abortRef = useRef<AbortController | null>(null)
-  const [cancelled, setCancelled] = useState(false)
 
   const [steps, setSteps] = useState<Step[]>([
     { id: 'scrape', label: 'Scraping website', status: 'active' },
@@ -87,7 +95,6 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
     const run = async () => {
       abortRef.current?.abort()
       abortRef.current = new AbortController()
-      setCancelled(false)
 
       try {
         // 1) Scrape
@@ -100,7 +107,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
         })
 
         const scraped = (await scrapeRes.json()) as ScrapeResult
-        if (!scrapeRes.ok) throw new Error((scraped as any)?.error || 'Scraping failed')
+        if (!scrapeRes.ok) throw new Error(getErrorMessage(scraped, 'Scraping failed'))
 
         if (!isMounted.current) return
 
@@ -110,7 +117,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
         // Save to recent (keeps existing behavior from /analyze)
         try {
           const recentRaw = localStorage.getItem('recent-analyses') || '[]'
-          const recent = JSON.parse(recentRaw) as any[]
+          const recent = JSON.parse(recentRaw) as unknown[]
           const entry = {
             id: `${Date.now()}`,
             url: normalizedUrl,
@@ -119,7 +126,10 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
             source: scraped.source,
             createdAt: new Date().toISOString(),
           }
-          const filtered = recent.filter((r) => r?.url !== normalizedUrl)
+          const filtered = recent.filter((r) => {
+            if (!r || typeof r !== 'object') return false
+            return (r as { url?: unknown }).url !== normalizedUrl
+          })
           filtered.unshift(entry)
           localStorage.setItem('recent-analyses', JSON.stringify(filtered.slice(0, 20)))
         } catch {
@@ -155,7 +165,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
             signal: abortRef.current?.signal,
           })
           const plan = (await planRes.json()) as PlanResult
-          if (!planRes.ok) throw new Error((plan as any)?.error || 'Generation failed')
+          if (!planRes.ok) throw new Error(getErrorMessage(plan, 'Generation failed'))
 
           if (!isMounted.current) return
 
@@ -177,8 +187,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
         }
       } catch (err) {
         // AbortController throws a DOMException named AbortError
-        if ((err as any)?.name === 'AbortError') {
-          setCancelled(true)
+        if (err instanceof DOMException && err.name === 'AbortError') {
           onError('Cancelled')
           return
         }
@@ -211,6 +220,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
             {(appName || appIcon) && (
               <div className="mt-6 flex items-center justify-center gap-3">
                 {appIcon ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={appIcon} alt={appName || 'App icon'} className="h-10 w-10 rounded-xl" />
                 ) : (
                   <div className="h-10 w-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent, updatePlanContent, getPlanContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 type TranslationSection =
   | 'app_store_description'
@@ -78,6 +79,15 @@ function languageLabel(code: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/generate-translations',
+    maxRequests: 10,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = (await request.json()) as Partial<GenerateTranslationsRequest>;
 

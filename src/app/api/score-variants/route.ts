@@ -163,16 +163,17 @@ Rules:
     const obj = parsed as Partial<ScoreVariantsResult>;
     const scoresRaw = Array.isArray(obj?.scores) ? obj.scores : [];
 
-    const scores: VariantScore[] = scoresRaw.slice(0, variants.length).map((s: any, idx: number) => {
-      const safeText = typeof s?.text === 'string' ? s.text : variants[idx];
+    const scores: VariantScore[] = scoresRaw.slice(0, variants.length).map((s, idx: number) => {
+      const row = s as Partial<VariantScore> | undefined;
+      const safeText = typeof row?.text === 'string' ? row.text : variants[idx];
       return {
         text: safeText,
-        clarity: clampScore(s?.clarity),
-        emotion: clampScore(s?.emotion),
-        urgency: clampScore(s?.urgency),
-        uniqueness: clampScore(s?.uniqueness),
-        overall: clampScore(s?.overall),
-        feedback: typeof s?.feedback === 'string' ? s.feedback : '',
+        clarity: clampScore(row?.clarity),
+        emotion: clampScore(row?.emotion),
+        urgency: clampScore(row?.urgency),
+        uniqueness: clampScore(row?.uniqueness),
+        overall: clampScore(row?.overall),
+        feedback: typeof row?.feedback === 'string' ? row.feedback : '',
       };
     });
 

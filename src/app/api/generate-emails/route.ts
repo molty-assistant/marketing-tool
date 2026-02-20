@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent, updatePlanContent, getPlanContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 type SequenceType = 'welcome' | 'launch' | 'nurture';
 
@@ -33,6 +34,15 @@ function cleanAndParseJson(text: string): unknown {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/generate-emails',
+    maxRequests: 10,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = (await request.json()) as Partial<GenerateEmailsRequest>;
 

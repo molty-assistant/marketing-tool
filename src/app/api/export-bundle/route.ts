@@ -4,6 +4,7 @@ import { PassThrough, Readable } from 'stream';
 import { getPlan, getContent, saveContent } from '@/lib/db';
 import { generateAssets } from '@/lib/asset-generator';
 import type { AppConfig, AssetConfig } from '@/lib/types';
+import { guardApiRoute } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 // Generous timeout: this endpoint can make multiple Gemini calls + render PNGs
@@ -409,6 +410,15 @@ let activeExportBundles = 0;
 const MAX_CONCURRENT_EXPORTS = 1;
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/export-bundle',
+    maxRequests: 4,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   if (activeExportBundles >= MAX_CONCURRENT_EXPORTS) {
     return NextResponse.json(
       { error: 'An export is already in progress. Please try again shortly.' },

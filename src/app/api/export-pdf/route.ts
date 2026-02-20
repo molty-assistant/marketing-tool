@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         cache: 'no-store',
       });
       if (res.ok) {
-        const json = (await res.json()) as any;
+        const json = (await res.json()) as { config?: { app_name?: string } };
         planName = json?.config?.app_name;
       }
     } else if (planId) {
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
         headers: cookieHeader ? { cookie: cookieHeader } : undefined,
       });
       if (res.ok) {
-        const json = (await res.json()) as any;
+        const json = (await res.json()) as { config?: { app_name?: string } };
         planName = json?.config?.app_name;
       }
     }
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     ? `${baseUrl}/shared/${encodeURIComponent(token)}?pdf=1`
     : `${baseUrl}/plan/${encodeURIComponent(planId as string)}/strategy/brief?pdf=1`;
 
-  let browser: any;
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
   try {
     browser = await chromium.launch({
       headless: true,
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       preferCSSPageSize: true,
     });
 
-    return new Response(pdfBuffer, {
+    return new Response(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

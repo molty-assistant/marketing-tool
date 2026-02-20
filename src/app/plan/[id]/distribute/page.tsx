@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useCallback, useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
@@ -58,7 +58,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
 
   const storageKey = `distribute-${id}`;
 
-  const loadPlan = () => {
+  const loadPlan = useCallback(() => {
     setPlanLoading(true);
     setPlanError('');
     const stored = sessionStorage.getItem(`plan-${id}`);
@@ -85,11 +85,11 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
         setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
       })
       .finally(() => setPlanLoading(false));
-  };
+  }, [id]);
 
   useEffect(() => {
     loadPlan();
-  }, [id]);
+  }, [loadPlan]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(storageKey);
@@ -100,7 +100,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
     } catch {
       /* ignore */
     }
-  }, [id]);
+  }, [storageKey]);
 
   const togglePlatform = (p: string) => {
     setPlatforms((prev) => {

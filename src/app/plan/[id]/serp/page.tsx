@@ -68,14 +68,17 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
       const stored = sessionStorage.getItem(storageKey);
       if (!stored) return;
       const parsed = JSON.parse(stored) as { title?: string; url?: string; description?: string };
-      if (typeof parsed.title === 'string') setTitle(parsed.title);
-      if (typeof parsed.url === 'string') setUrl(parsed.url);
-      if (typeof parsed.description === 'string') setDescription(parsed.description);
-      setIsCached(true);
+      const timer = window.setTimeout(() => {
+        if (typeof parsed.title === 'string') setTitle(parsed.title);
+        if (typeof parsed.url === 'string') setUrl(parsed.url);
+        if (typeof parsed.description === 'string') setDescription(parsed.description);
+        setIsCached(true);
+      }, 0);
+      return () => window.clearTimeout(timer);
     } catch {
       /* ignore */
     }
-  }, [id]);
+  }, [storageKey]);
 
   useEffect(() => {
     // If we already loaded from sessionStorage, skip
@@ -90,7 +93,7 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
     } catch {
       /* ignore */
     }
-  }, [id, title, url, description]);
+  }, [storageKey, title, url, description]);
 
   if (loading) {
     return <SerpSkeleton />;
@@ -124,7 +127,10 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
 
       <div className="mb-8">
         <div className="flex items-center gap-4 min-w-0 mb-2">
-          {plan.config.icon && <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />}
+          {plan.config.icon && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={plan.config.icon} alt="" className="w-14 h-14 rounded-xl" />
+          )}
           <div className="min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-bold text-white break-words">SERP Preview: {plan.config.app_name}</h1>

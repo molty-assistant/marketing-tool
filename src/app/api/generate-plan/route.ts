@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateMarketingPlan, scrapedToConfig } from '@/lib/plan-generator';
 import { savePlan } from '@/lib/db';
 import { AppConfig, ScrapedApp } from '@/lib/types';
+import { guardApiRoute } from '@/lib/api-guard';
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/generate-plan',
+    maxRequests: 20,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = await request.json();
     const { scraped, config: userConfig, goals, tone } = body as {

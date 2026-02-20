@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ToastProvider } from '@/components/Toast';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { ThemeScript } from '@/components/theme/ThemeScript';
 
 export const metadata: Metadata = {
   title: 'Marketing Tool — Vibe Marketing Brief Generator',
@@ -38,11 +40,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-[#0a0a0f]">
-        <ToastProvider>
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </ToastProvider>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <ThemeProvider>
+          <ToastProvider>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

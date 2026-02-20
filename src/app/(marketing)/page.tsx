@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GenerationOverlay from '@/components/GenerationOverlay';
@@ -9,22 +10,23 @@ import { Label } from '@/components/ui/label';
 
 function Icon({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
       {children}
     </div>
   );
 }
 
-function Check() {
-  return (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-emerald-300">
-      <path
-        fillRule="evenodd"
-        d="M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.42 0l-3.5-3.5a1 1 0 011.42-1.42l2.79 2.79 6.79-6.79a1 1 0 011.42 0z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
+function normalizeUrl(input: string): string {
+  return input.trim().match(/^https?:\/\//i) ? input.trim() : `https://${input.trim()}`;
+}
+
+function isValidUrl(input: string): boolean {
+  try {
+    new URL(normalizeUrl(input));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export default function LandingPage() {
@@ -134,10 +136,8 @@ export default function LandingPage() {
       return;
     }
 
-    const normalizedUrl = url.trim().match(/^https?:\/\//i) ? url.trim() : `https://${url.trim()}`;
-    try {
-      new URL(normalizedUrl);
-    } catch {
+    const normalizedUrl = normalizeUrl(url);
+    if (!isValidUrl(normalizedUrl)) {
       setError('Please enter a valid URL');
       return;
     }
@@ -163,28 +163,28 @@ export default function LandingPage() {
         />
       )}
       {/* HERO */}
-      <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0d1117] p-6 sm:p-10">
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 dark:border-slate-800 dark:bg-[#0d1117]">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
           <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-fuchsia-600/10 blur-3xl" />
         </div>
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-200">
-            <span className="text-slate-300">Generate a brief in minutes, not days</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-700 dark:text-indigo-200">
+            <span className="text-slate-700 dark:text-slate-300">Generate a brief in minutes, not days</span>
           </div>
 
-          <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight text-white">
+          <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
             Turn Any URL Into a Complete Marketing Plan
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-slate-300">
+          <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
             Paste a link. Get a brief, content strategy, social posts, email sequences, SEO keywords, and distribution plan — in under 60 seconds.
           </p>
 
           {/* CTA */}
-          <div className="mt-7 bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5">
+          <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5 dark:border-slate-700/60 dark:bg-slate-900/60">
             <Label htmlFor="landing-url" className="block mb-3 text-left">
-              Paste a URL to generate your brief
+              Product URL (required)
             </Label>
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
@@ -194,24 +194,24 @@ export default function LandingPage() {
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="https://linear.app (or an App Store / Play link)"
-                className="sm:flex-1 h-auto bg-slate-950 rounded-xl px-4 py-3 focus-visible:border-transparent"
+                className="h-auto rounded-xl border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus-visible:border-transparent dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 sm:flex-1"
               />
               <Button
                 onClick={handleStart}
                 className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
               >
-                Generate brief →
+                Generate plan →
               </Button>
             </div>
-            {error && <p className="text-red-400 text-sm mt-2 text-left">{error}</p>}
+            {error && <p className="mt-2 text-left text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-            <p className="text-xs text-slate-500 mt-3 text-left">
+            <p className="mt-3 text-left text-xs text-slate-500 dark:text-slate-500">
               No signup required · Works with any website, App Store, or Play Store link
             </p>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400">
-              <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">Export to Markdown/PDF</span>
-              <span className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1">Built for founders & marketers</span>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Export to Markdown/PDF</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Built for founders & marketers</span>
             </div>
           </div>
         </div>
@@ -220,8 +220,8 @@ export default function LandingPage() {
       {/* HOW IT WORKS */}
       <section id="how" className="mt-12 scroll-mt-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">How it works</h2>
-          <p className="mt-2 text-sm sm:text-base text-slate-400">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">How it works</h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
             From link → brief → asset pack, in three simple steps.
           </p>
         </div>
@@ -246,14 +246,14 @@ export default function LandingPage() {
           ].map((s) => (
             <div
               key={s.step}
-              className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
+              className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900/40"
             >
               <div className="flex items-center justify-between">
-                <div className="text-xs font-semibold tracking-wider text-indigo-300">STEP {s.step}</div>
+                <div className="text-xs font-semibold tracking-wider text-indigo-600 dark:text-indigo-300">STEP {s.step}</div>
                 <div className="h-2 w-2 rounded-full bg-indigo-400/70" />
               </div>
-              <div className="mt-3 text-lg font-semibold text-white">{s.title}</div>
-              <div className="mt-2 text-sm text-slate-400">{s.desc}</div>
+              <div className="mt-3 text-lg font-semibold text-slate-900 dark:text-white">{s.title}</div>
+              <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.desc}</div>
             </div>
           ))}
         </div>
@@ -262,20 +262,20 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section id="features" className="mt-12 scroll-mt-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">Everything you need to ship marketing faster</h2>
-          <p className="mt-2 text-sm sm:text-base text-slate-400">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Everything you need to ship marketing faster</h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
             Practical outputs — not generic advice — designed to drop straight into your workflow.
           </p>
         </div>
 
         <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-slate-800 bg-slate-900/30 p-5">
+            <div key={f.title} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/30">
               <div className="flex items-start gap-3">
                 <Icon>{f.icon}</Icon>
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-white">{f.title}</div>
-                  <div className="mt-1 text-sm text-slate-400">{f.desc}</div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">{f.title}</div>
+                  <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">{f.desc}</div>
                 </div>
               </div>
             </div>
@@ -284,18 +284,18 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="mt-14 border-t border-slate-800 pt-8 pb-10">
+      <footer className="mt-14 border-t border-slate-200 pt-8 pb-10 dark:border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <div className="text-sm font-semibold text-white">Marketing Tool</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-white">Marketing Tool</div>
             <div className="mt-1 text-sm text-slate-500">Turn any URL into a complete marketing brief.</div>
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">
-            <a href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
-              Dashboard
-            </a>
-            <a href="#features" className="text-slate-400 hover:text-white transition-colors">
+            <Link href="/dashboard" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+              Plans
+            </Link>
+            <a href="#features" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
               Features
             </a>
             {/* Pricing removed */}

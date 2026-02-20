@@ -90,7 +90,12 @@ export default function SchedulePage() {
     setLoading(false);
   }, [planId, from, to]);
 
-  useEffect(() => { fetchSchedules(); }, [fetchSchedules]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fetchSchedules();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchSchedules]);
 
   const handleAutoGenerate = async () => {
     setGenerating(true);
@@ -139,19 +144,18 @@ export default function SchedulePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+    <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6">
+      <div className="mb-8 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700/40 dark:bg-slate-800/30 dark:text-slate-300">
           Schedule posts for auto-publishing across your connected platforms — set a date and time, then let the system handle generation and posting.
-        </div>
+      </div>
 
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">📅 Content Schedule</h1>
+      <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Content Schedule</h1>
           <div className="flex gap-2">
             <Select
               value={platform}
               onChange={e => setPlatform(e.target.value as 'instagram' | 'tiktok')}
-              className="w-auto h-auto bg-slate-800 border-slate-700 rounded-lg px-3 py-2 text-sm"
+              className="h-auto w-auto rounded-lg border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
             >
               <option value="instagram">📸 Instagram</option>
               <option value="tiktok">🎵 TikTok</option>
@@ -179,18 +183,18 @@ export default function SchedulePage() {
             onClick={() => setWeekOffset(w => w - 1)}
             variant="ghost"
             size="sm"
-            className="h-auto text-slate-400 hover:text-white px-3 py-1"
+            className="h-auto px-3 py-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           >
             ← Prev
           </Button>
-          <span className="text-slate-300 font-medium">
+          <span className="font-medium text-slate-700 dark:text-slate-300">
             {dayLabel(weekDates[0])} — {dayLabel(weekDates[6])}
           </span>
           <Button
             onClick={() => setWeekOffset(w => w + 1)}
             variant="ghost"
             size="sm"
-            className="h-auto text-slate-400 hover:text-white px-3 py-1"
+            className="h-auto px-3 py-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           >
             Next →
           </Button>
@@ -198,7 +202,7 @@ export default function SchedulePage() {
 
         {/* Calendar grid */}
         {loading ? (
-          <div className="text-center text-slate-400 py-20">Loading…</div>
+          <div className="py-20 text-center text-slate-500 dark:text-slate-400">Loading…</div>
         ) : (
           <div className="grid grid-cols-7 gap-2">
             {weekDates.map(date => {
@@ -207,11 +211,13 @@ export default function SchedulePage() {
               return (
                 <div
                   key={formatDate(date)}
-                  className={`bg-slate-900 border rounded-xl p-3 min-h-[160px] ${
-                    isToday ? 'border-indigo-500' : 'border-slate-800'
+                  className={`min-h-[160px] rounded-xl border p-3 ${
+                    isToday
+                      ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20'
+                      : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
                   }`}
                 >
-                  <div className={`text-xs font-medium mb-2 ${isToday ? 'text-indigo-400' : 'text-slate-500'}`}>
+                  <div className={`mb-2 text-xs font-medium ${isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
                     {dayLabel(date)}
                   </div>
                   <div className="space-y-1.5">
@@ -242,15 +248,15 @@ export default function SchedulePage() {
         {/* Detail modal */}
         {selectedItem && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setSelectedItem(null)}>
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold mb-4">Scheduled Post</h3>
+            <div className="mx-4 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+              <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Scheduled Post</h3>
               <div className="space-y-4 text-sm">
-                <div><span className="text-slate-400">Platform:</span> {PLATFORM_EMOJI[selectedItem.platform]} {selectedItem.platform}</div>
-                <div><span className="text-slate-400">Type:</span> {selectedItem.content_type}</div>
-                <div><span className="text-slate-400">Scheduled:</span> {selectedItem.scheduled_at}</div>
-                <div><span className="text-slate-400">Topic:</span> {selectedItem.topic || '—'}</div>
+                <div className="text-slate-700 dark:text-slate-200"><span className="text-slate-500 dark:text-slate-400">Platform:</span> {PLATFORM_EMOJI[selectedItem.platform]} {selectedItem.platform}</div>
+                <div className="text-slate-700 dark:text-slate-200"><span className="text-slate-500 dark:text-slate-400">Type:</span> {selectedItem.content_type}</div>
+                <div className="text-slate-700 dark:text-slate-200"><span className="text-slate-500 dark:text-slate-400">Scheduled:</span> {selectedItem.scheduled_at}</div>
+                <div className="text-slate-700 dark:text-slate-200"><span className="text-slate-500 dark:text-slate-400">Topic:</span> {selectedItem.topic || '—'}</div>
                 <div>
-                  <span className="text-slate-400">Status:</span>{' '}
+                  <span className="text-slate-500 dark:text-slate-400">Status:</span>{' '}
                   <span className={`inline-block px-2 py-0.5 rounded-full text-xs border ${STATUS_COLORS[selectedItem.status]}`}>
                     {selectedItem.status}
                   </span>
@@ -286,44 +292,44 @@ export default function SchedulePage() {
         {/* Add modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold mb-4">Add Scheduled Post</h3>
+            <div className="mx-4 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+              <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Add Scheduled Post</h3>
               <div className="space-y-4">
                 <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Date</Label>
+                  <Label className="mb-1 block text-sm text-slate-500 dark:text-slate-400">Date</Label>
                   <Input
                     type="date"
                     value={addDate}
                     onChange={e => setAddDate(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                    className="rounded-lg border-slate-300 bg-white text-sm dark:border-slate-700 dark:bg-slate-800"
                   />
                 </div>
                 <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Time</Label>
+                  <Label className="mb-1 block text-sm text-slate-500 dark:text-slate-400">Time</Label>
                   <Input
                     type="time"
                     value={addTime}
                     onChange={e => setAddTime(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                    className="rounded-lg border-slate-300 bg-white text-sm dark:border-slate-700 dark:bg-slate-800"
                   />
                 </div>
                 <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Platform</Label>
+                  <Label className="mb-1 block text-sm text-slate-500 dark:text-slate-400">Platform</Label>
                   <Select
                     value={addPlatform}
                     onChange={e => setAddPlatform(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                    className="rounded-lg border-slate-300 bg-white text-sm dark:border-slate-700 dark:bg-slate-800"
                   >
                     <option value="instagram">📸 Instagram</option>
                     <option value="tiktok">🎵 TikTok</option>
                   </Select>
                 </div>
                 <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Content Type</Label>
+                  <Label className="mb-1 block text-sm text-slate-500 dark:text-slate-400">Content Type</Label>
                   <Select
                     value={addType}
                     onChange={e => setAddType(e.target.value)}
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm"
+                    className="rounded-lg border-slate-300 bg-white text-sm dark:border-slate-700 dark:bg-slate-800"
                   >
                     <option value="post">Post</option>
                     <option value="reel">Reel</option>
@@ -332,10 +338,10 @@ export default function SchedulePage() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="block text-sm text-slate-400 mb-1">Topic (optional)</Label>
+                  <Label className="mb-1 block text-sm text-slate-500 dark:text-slate-400">Topic (optional)</Label>
                   <Input type="text" value={addTopic} onChange={e => setAddTopic(e.target.value)}
                     placeholder="e.g. 5 tips for better productivity"
-                    className="bg-slate-800 border-slate-700 rounded-lg text-sm" />
+                    className="rounded-lg border-slate-300 bg-white text-sm dark:border-slate-700 dark:bg-slate-800" />
                 </div>
               </div>
               <div className="flex gap-2 mt-6">
@@ -352,7 +358,6 @@ export default function SchedulePage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

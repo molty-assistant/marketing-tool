@@ -75,7 +75,7 @@ export default function EnhanceButton({ text, appContext, onTextChange }: Enhanc
       setCooldown(true);
       setTimeout(() => setCooldown(false), 2000);
     }
-  }, [loading, cooldown, tone, appContext, onTextChange]);
+  }, [loading, cooldown, tone, appContext, onTextChange, toastError, toastSuccess]);
 
   const handleRevert = useCallback(() => {
     onTextChange(originalRef.current);

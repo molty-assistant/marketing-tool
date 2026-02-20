@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useCallback, useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
@@ -56,7 +56,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
 
   const storageKey = `emails-${id}`;
 
-  const loadPlan = () => {
+  const loadPlan = useCallback(() => {
     setPlanLoading(true);
     setPlanError('');
     const stored = sessionStorage.getItem(`plan-${id}`);
@@ -83,11 +83,11 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
         setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
       })
       .finally(() => setPlanLoading(false));
-  };
+  }, [id]);
 
   useEffect(() => {
     loadPlan();
-  }, [id]);
+  }, [loadPlan]);
 
   // Restore last generated
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
     } catch {
       /* ignore */
     }
-  }, [id]);
+  }, [storageKey]);
 
   const handleGenerate = async () => {
     setLoading(true);

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
+function isAuthEnabled(raw: string | undefined): boolean {
+  if (!raw) return false;
+  const value = raw.trim().toLowerCase();
+  return value === '1' || value === 'true' || value === 'yes' || value === 'on';
+}
+
+export function proxy(request: NextRequest) {
   // Skip auth for shared plan routes and healthcheck
   if (
     request.nextUrl.pathname.startsWith('/shared/') ||
@@ -22,14 +28,14 @@ export function middleware(request: NextRequest) {
 
   const user = process.env.BASIC_AUTH_USER;
   const pass = process.env.BASIC_AUTH_PASS;
+  const authEnabled = isAuthEnabled(process.env.BASIC_AUTH_ENABLED);
 
-  // If env vars not set, skip auth (local dev mode)
-  if (!user || !pass) {
+  // Basic auth is opt-in. Keep app public by default unless explicitly enabled.
+  if (!authEnabled || !user || !pass) {
     return NextResponse.next();
   }
 
   const authHeader = request.headers.get('authorization');
-
   if (authHeader) {
     const [scheme, encoded] = authHeader.split(' ');
     if (scheme === 'Basic' && encoded) {

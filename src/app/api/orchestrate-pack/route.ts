@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRun, getPlan, updateRun } from '@/lib/db';
 import { requireOrchestratorAuth } from '@/lib/auth-guard';
+import { guardApiRoute } from '@/lib/api-guard';
 import {
   buildInitialSteps,
   executeOrchestrationRun,
@@ -17,6 +18,15 @@ export async function POST(request: NextRequest) {
   const unauthorizedResponse = requireOrchestratorAuth(request);
   if (unauthorizedResponse) {
     return unauthorizedResponse;
+  }
+
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/orchestrate-pack',
+    maxRequests: 6,
+    windowSeconds: 60,
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
   }
 
   let runId: string | null = null;

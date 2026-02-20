@@ -59,15 +59,20 @@ function buildImagenPrompt(brief: ImageBrief) {
   return lines.join('\n');
 }
 
-function extractBase64Png(payload: any): string | null {
+function extractBase64Png(payload: unknown): string | null {
+  const data = payload as {
+    predictions?: Array<{ bytesBase64Encoded?: string; image?: { bytesBase64Encoded?: string }; imageBytes?: string }>;
+    candidates?: Array<{ content?: { parts?: Array<{ inlineData?: { data?: string } }> } }>;
+    output?: Array<{ data?: string }>;
+  };
   // Imagen predict responses have varied shapes across versions; handle common cases.
-  const p0 = payload?.predictions?.[0];
+  const p0 = data?.predictions?.[0];
   const candidates = [
     p0?.bytesBase64Encoded,
     p0?.image?.bytesBase64Encoded,
     p0?.imageBytes,
-    payload?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data,
-    payload?.output?.[0]?.data,
+    data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data,
+    data?.output?.[0]?.data,
   ];
   for (const c of candidates) {
     if (typeof c === 'string' && c.length > 100) return c;

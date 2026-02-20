@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, use } from 'react';
+import { useCallback, useEffect, useMemo, useState, use } from 'react';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { PageSkeleton } from '@/components/Skeleton';
@@ -161,7 +161,7 @@ export default function TemplatesPage({
   const [edited, setEdited] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  const loadPlan = () => {
+  const loadPlan = useCallback(() => {
     setPlanLoading(true);
     setPlanError('');
 
@@ -189,11 +189,11 @@ export default function TemplatesPage({
         setPlanError(err instanceof Error ? err.message : 'Failed to load plan');
       })
       .finally(() => setPlanLoading(false));
-  };
+  }, [id]);
 
   useEffect(() => {
     loadPlan();
-  }, [id]);
+  }, [loadPlan]);
 
   useEffect(() => {
     // Load persisted template edits (if any)
@@ -220,9 +220,7 @@ export default function TemplatesPage({
     } catch {
       /* ignore */
     }
-  }, [id]);
-
-  const appName = plan?.config?.app_name;
+  }, [storageKey]);
 
   const populatedTemplates = useMemo(() => {
     return TEMPLATES.map((t) => ({
@@ -334,7 +332,7 @@ export default function TemplatesPage({
             </button>
           </div>
           <p className="text-slate-400">
-            Browse ready-to-use marketing copy templates. We\'ll auto-fill placeholders
+            Browse ready-to-use marketing copy templates. We&apos;ll auto-fill placeholders
             from your plan.
           </p>
         </div>

@@ -271,20 +271,16 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6">
           <PageSkeleton />
-        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6">
           <ErrorRetry error={error} onRetry={fetchData} />
-        </div>
       </div>
     );
   }
@@ -292,24 +288,23 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   const summaryVisible = !!summary && items.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">📊 Performance Tracker</h1>
-          <p className="text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Performance Tracker</h1>
+          <p className="mt-1 text-slate-600 dark:text-slate-400">
             See which posts worked — rate your content to learn what resonates.
           </p>
         </div>
 
         {items.length === 0 ? (
-          <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 text-slate-200">
-            <div className="text-lg font-semibold mb-2">No scheduled posts yet.</div>
-            <div className="text-slate-400 mb-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/30 dark:text-slate-200">
+            <div className="mb-2 text-lg font-semibold">No scheduled posts yet.</div>
+            <div className="mb-4 text-slate-500 dark:text-slate-400">
               Generate a content schedule first, then come back here to track what worked.
             </div>
             <Link
               href={`/plan/${id}/schedule`}
-              className="inline-flex items-center bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
             >
               Go to Schedule
             </Link>
@@ -380,7 +375,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                 <select
                   value={platformFilter}
                   onChange={(e) => setPlatformFilter(e.target.value)}
-                  className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
                 >
                   <option value="all">All</option>
                   {platforms.map((p) => (
@@ -548,7 +543,6 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
             </div>
           </>
         )}
-      </div>
     </div>
   );
 }

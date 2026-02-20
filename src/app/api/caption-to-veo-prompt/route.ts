@@ -6,6 +6,8 @@ function getApiKey() {
   return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
 }
 
+type CandidatePart = { text?: unknown };
+
 /**
  * POST /api/caption-to-veo-prompt
  * Body: { caption: string }
@@ -57,9 +59,9 @@ export async function POST(request: NextRequest) {
 
     const data = await res.json();
 
-    const parts = data?.candidates?.[0]?.content?.parts;
+    const parts = data?.candidates?.[0]?.content?.parts as CandidatePart[] | undefined;
     const text = Array.isArray(parts)
-      ? parts.map((p: any) => (typeof p?.text === 'string' ? p.text : '')).join('\n').trim()
+      ? parts.map((p) => (typeof p?.text === 'string' ? p.text : '')).join('\n').trim()
       : '';
 
     if (!text) {
@@ -82,10 +84,12 @@ export async function POST(request: NextRequest) {
     }
 
     const obj = (parsed && typeof parsed === 'object') ? (parsed as Record<string, unknown>) : null;
+    const videoPrompt = obj?.videoPrompt;
+    const veoPrompt = obj?.veoPrompt;
     const promptCandidate =
       (obj && typeof obj.prompt === 'string' && obj.prompt) ||
-      (obj && typeof (obj as any).videoPrompt === 'string' && (obj as any).videoPrompt) ||
-      (obj && typeof (obj as any).veoPrompt === 'string' && (obj as any).veoPrompt) ||
+      (typeof videoPrompt === 'string' && videoPrompt) ||
+      (typeof veoPrompt === 'string' && veoPrompt) ||
       (typeof parsed === 'string' ? parsed : '') ||
       '';
 
