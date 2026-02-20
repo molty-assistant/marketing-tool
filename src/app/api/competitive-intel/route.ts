@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent, getContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 type PerplexityResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
@@ -156,6 +157,9 @@ Constraints:
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/competitive-intel', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as {
       planId?: unknown;
@@ -207,6 +211,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, {
+    endpoint: '/api/competitive-intel',
+    bucket: 'public',
+    maxRequests: 20,
+    windowSec: 60,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const planId = request.nextUrl.searchParams.get('planId') || '';
     if (!planId) {

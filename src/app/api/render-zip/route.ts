@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import archiver from 'archiver';
 import { Readable, PassThrough } from 'stream';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 interface AssetInput {
   html: string;
@@ -14,6 +15,9 @@ let activeZipRenders = 0;
 const MAX_CONCURRENT_ZIP = 1; // Only 1 zip job at a time
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/render-zip', bucket: 'heavy', maxRequests: 15, windowSec: 60 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (activeZipRenders >= MAX_CONCURRENT_ZIP) {
     return NextResponse.json(
       { error: 'A ZIP render is already in progress. Please try again shortly.' },

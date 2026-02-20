@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export type CalendarContentType = 'post' | 'reel' | 'story' | 'thread' | 'article';
 
@@ -57,6 +58,9 @@ function isCalendarPost(x: unknown): x is CalendarPost {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/content-calendar', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<ContentCalendarRequest>;
 

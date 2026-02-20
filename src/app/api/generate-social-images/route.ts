@@ -3,6 +3,7 @@ import archiver from 'archiver';
 import { Readable, PassThrough } from 'stream';
 import { getPlan, updatePlanContent } from '@/lib/db';
 import type { MarketingPlan } from '@/lib/types';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import {
   generateSocialTemplates,
   type SocialPlatform,
@@ -27,6 +28,9 @@ function isStyle(x: unknown): x is SocialStyle {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-social-images', bucket: 'heavy', maxRequests: 4, windowSec: 60 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (activeJobs >= MAX_CONCURRENT) {
     return NextResponse.json(
       { error: 'A social pack is already generating. Please try again shortly.' },

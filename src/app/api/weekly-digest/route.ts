@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, getPlan, saveContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +51,9 @@ function asStringOrEmpty(x: unknown): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/weekly-digest', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<WeeklyDigestRequest>;
     const planId = typeof body.planId === 'string' ? body.planId : '';

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parsePlayStoreHtml } from './parser';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 function isValidPlayStoreUrl(input: string): boolean {
   try {
@@ -14,6 +15,9 @@ function isValidPlayStoreUrl(input: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/scrape-play-store', bucket: 'public', maxRequests: 20, windowSec: 60 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { url } = (await request.json()) as { url?: unknown };
 

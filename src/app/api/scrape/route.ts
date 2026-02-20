@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { scrapeUrl } from '@/lib/scraper';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/scrape', bucket: 'public', maxRequests: 20, windowSec: 60 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { url } = await request.json();
 
