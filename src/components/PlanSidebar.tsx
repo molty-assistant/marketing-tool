@@ -141,16 +141,16 @@ export function PlanSidebar({
   return (
     <>
       {/* Mobile: compact top icon bar */}
-      <div className="lg:hidden sticky top-0 z-20 bg-slate-900/80 backdrop-blur border-b border-white/[0.06]">
+      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-white/[0.06] dark:bg-slate-900/80 lg:hidden">
         <div className="px-3 py-2">
           <div className="flex items-center justify-between">
             <Link
               href="/dashboard"
-              className="text-xs text-slate-400 hover:text-slate-200"
+              className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
             >
               ← All Plans
             </Link>
-            <div className="text-xs font-medium text-white truncate max-w-[60%] text-right">
+            <div className="max-w-[60%] truncate text-right text-xs font-medium text-slate-900 dark:text-white">
               {appName}
             </div>
           </div>
@@ -169,8 +169,8 @@ export function PlanSidebar({
                 className={cn(
                   'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
                   isActive
-                    ? 'bg-indigo-500/15 text-indigo-300'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                    ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                    : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -185,15 +185,15 @@ export function PlanSidebar({
       </div>
 
       {/* Desktop: left sidebar */}
-      <aside className="hidden lg:block w-60 shrink-0 border-r border-white/[0.06] bg-slate-900 p-4">
+      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-slate-50 p-4 dark:border-white/[0.06] dark:bg-slate-900 lg:block">
         <div className="mb-6 px-2">
           <Link
             href="/dashboard"
-            className="text-xs text-slate-500 hover:text-slate-300"
+            className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
           >
             ← All Plans
           </Link>
-          <h3 className="text-sm font-semibold text-white mt-2 truncate">
+          <h3 className="mt-2 truncate text-sm font-semibold text-slate-900 dark:text-white">
             {appName}
           </h3>
         </div>
@@ -218,8 +218,8 @@ export function PlanSidebar({
                   className={cn(
                     'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     groupIsActive
-                      ? 'bg-indigo-500/15 text-indigo-300'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                      ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                      : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -240,8 +240,8 @@ export function PlanSidebar({
                     className={cn(
                       'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                       groupIsActive
-                        ? 'bg-indigo-500/15 text-indigo-300'
-                        : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                        ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                        : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
                     )}
                   >
                     <Icon className="w-4 h-4" />
@@ -250,7 +250,7 @@ export function PlanSidebar({
                       {group.hot && (
                         <Badge
                           variant="secondary"
-                          className="bg-indigo-500/15 text-indigo-300 border border-indigo-500/20"
+                          className="border border-indigo-500/20 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
                         >
                           Hot
                         </Badge>
@@ -258,7 +258,7 @@ export function PlanSidebar({
                     </span>
                     <ChevronDown
                       className={cn(
-                        'w-4 h-4 transition-transform text-slate-500',
+                        'h-4 w-4 text-slate-500 transition-transform',
                         open[group.key] && 'rotate-180'
                       )}
                     />
@@ -278,8 +278,8 @@ export function PlanSidebar({
                           className={cn(
                             'group flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors',
                             childActive
-                              ? 'text-white bg-white/[0.06]'
-                              : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03]'
+                              ? 'bg-slate-200/70 text-slate-900 dark:bg-white/[0.06] dark:text-white'
+                              : 'text-slate-500 hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-white/[0.03] dark:hover:text-slate-300'
                           )}
                         >
                           <span>{child.label}</span>

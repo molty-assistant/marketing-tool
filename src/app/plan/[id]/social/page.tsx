@@ -300,22 +300,22 @@ export default function SocialPage() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Page description */}
-        <div className="mb-8 text-sm text-slate-300 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        <div className="mb-8 rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-700 dark:border-slate-700/40 dark:bg-slate-800/30 dark:text-slate-300">
           Generate platform-native captions and hashtags for Instagram and TikTok, optionally create
           media, then queue directly via Buffer.
         </div>
 
-        <h1 className="text-3xl font-bold mb-2">Social Publishing</h1>
-        <p className="text-slate-400 mb-8">A simple 4-step flow to generate, create, and queue posts.</p>
+        <h1 className="mb-2 text-3xl font-bold text-slate-900 dark:text-white">Social Publishing</h1>
+        <p className="mb-8 text-slate-600 dark:text-slate-400">A simple 4-step flow to generate, create, and queue posts.</p>
 
         {/* ── Step 1 ─ Choose channel ─────────────────────────────────────── */}
-        <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-          <h2 className="text-xl font-semibold mb-1">Step 1 · Choose channel</h2>
-          <p className="text-sm text-slate-400 mb-5">Pick the platform you want to post to.</p>
+        <section className="rounded-2xl border border-slate-200 bg-white/80 p-6 dark:border-slate-700 dark:bg-slate-800/50">
+          <h2 className="mb-1 text-xl font-semibold text-slate-900 dark:text-white">Step 1 · Choose channel</h2>
+          <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">Pick the platform you want to post to.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
@@ -324,12 +324,12 @@ export default function SocialPage() {
               className={`text-left rounded-2xl border p-5 transition-all ${
                 selectedPlatform === 'instagram'
                   ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                  : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                  : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600 dark:hover:bg-slate-900/70'
               }`}
             >
               <div className="text-3xl mb-3">📸</div>
               <div className="text-lg font-semibold mb-1">Instagram</div>
-              <div className="text-sm text-slate-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Square-first content, rich captions and up to 30 hashtags.
               </div>
               {selectedPlatform === 'instagram' && (
@@ -343,12 +343,12 @@ export default function SocialPage() {
               className={`text-left rounded-2xl border p-5 transition-all ${
                 selectedPlatform === 'tiktok'
                   ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                  : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                  : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600 dark:hover:bg-slate-900/70'
               }`}
             >
               <div className="text-3xl mb-3">🎵</div>
               <div className="text-lg font-semibold mb-1">TikTok</div>
-              <div className="text-sm text-slate-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Vertical-first, punchy copy and trending hashtags (3–5 max).
               </div>
               {selectedPlatform === 'tiktok' && (
@@ -361,11 +361,11 @@ export default function SocialPage() {
         {/* ── Step 2 ─ Generate post idea ─────────────────────────────────── */}
         {canShowStep2 && (
           <>
-            <div className="h-px bg-slate-800 my-8" />
+            <div className="my-8 h-px bg-slate-200 dark:bg-slate-800" />
 
-            <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-              <h2 className="text-xl font-semibold mb-1">Step 2 · Generate post idea</h2>
-              <p className="text-sm text-slate-400 mb-5">
+            <section className="rounded-2xl border border-slate-200 bg-white/80 p-6 dark:border-slate-700 dark:bg-slate-800/50">
+              <h2 className="mb-1 text-xl font-semibold text-slate-900 dark:text-white">Step 2 · Generate post idea</h2>
+              <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
                 AI will write a{' '}
                 <span className="capitalize">{selectedPlatform}</span>-optimised caption and hashtags.
               </p>
@@ -388,40 +388,40 @@ export default function SocialPage() {
               )}
 
               {idea && (
-                <div className="rounded-2xl border border-slate-700 bg-slate-900/40 p-5">
+                <div className="rounded-2xl border border-slate-200 bg-white/85 p-5 dark:border-slate-700 dark:bg-slate-900/40">
                   <div className="grid grid-cols-1 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                      <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Caption
                       </label>
                       <textarea
                         value={caption}
                         onChange={(e) => setCaption(e.target.value)}
                         rows={6}
-                        className="w-full bg-slate-950/40 border border-slate-700 rounded-xl px-3 py-2.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 resize-none"
+                        className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                      <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Hashtags{' '}
                         <span className="text-slate-500 font-normal">(comma-separated)</span>
                       </label>
                       <input
                         value={hashtagsInput}
                         onChange={(e) => setHashtagsInput(e.target.value)}
-                        className="w-full bg-slate-950/40 border border-slate-700 rounded-xl px-3 py-2.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                         placeholder="e.g. appmarketing, saas, creator"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-slate-700/60">
+                  <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700/60">
                     <button
                       type="button"
                       onClick={generateIdea}
                       disabled={ideaGenerating}
-                      className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition"
+                      className="rounded-lg border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
                     >
                       {ideaGenerating ? '✨ Regenerating…' : '↺ Regenerate'}
                     </button>
@@ -436,14 +436,14 @@ export default function SocialPage() {
         {canShowStep3AndStep4 && (
           <>
             {/* ── Step 3 ─ Create media (optional) ──────────────────────── */}
-            <div className="h-px bg-slate-800 my-8" />
+            <div className="my-8 h-px bg-slate-200 dark:bg-slate-800" />
 
-            <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-              <h2 className="text-xl font-semibold mb-1">
+            <section className="rounded-2xl border border-slate-200 bg-white/80 p-6 dark:border-slate-700 dark:bg-slate-800/50">
+              <h2 className="mb-1 text-xl font-semibold text-slate-900 dark:text-white">
                 Step 3 · Create media{' '}
                 <span className="text-slate-500 font-normal text-base">(optional)</span>
               </h2>
-              <p className="text-sm text-slate-400 mb-5">
+              <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
                 Generate an image or video tailored to your post idea.
               </p>
 
@@ -454,11 +454,11 @@ export default function SocialPage() {
                   className={`text-left rounded-xl border px-4 py-3 transition-all ${
                     imageMode === 'screenshot'
                       ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600 dark:hover:bg-slate-900/70'
                   }`}
                 >
                   <div className="text-sm font-semibold">Screenshot</div>
-                  <div className="text-xs text-slate-400 mt-0.5">Real UI. Safe and accurate.</div>
+                  <div className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Real UI. Safe and accurate.</div>
                 </button>
                 <button
                   type="button"
@@ -466,11 +466,11 @@ export default function SocialPage() {
                   className={`text-left rounded-xl border px-4 py-3 transition-all ${
                     imageMode === 'hero'
                       ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600 dark:hover:bg-slate-900/70'
                   }`}
                 >
                   <div className="text-sm font-semibold">Hero image</div>
-                  <div className="text-xs text-slate-400 mt-0.5">Inspiring visual. No screenshot.</div>
+                  <div className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Inspiring visual. No screenshot.</div>
                 </button>
                 <button
                   type="button"
@@ -478,11 +478,11 @@ export default function SocialPage() {
                   className={`text-left rounded-xl border px-4 py-3 transition-all ${
                     imageMode === 'hybrid'
                       ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-700 bg-slate-900/40 hover:bg-slate-900/70 hover:border-slate-600'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-slate-600 dark:hover:bg-slate-900/70'
                   }`}
                 >
                   <div className="text-sm font-semibold">Hybrid</div>
-                  <div className="text-xs text-slate-400 mt-0.5">Hero + small UI card.</div>
+                  <div className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Hero + small UI card.</div>
                 </button>
               </div>
 
@@ -534,13 +534,13 @@ export default function SocialPage() {
 
               {/* Image preview */}
               {image && (
-                <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/40 p-5">
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-white/85 p-5 dark:border-slate-700 dark:bg-slate-900/40">
                   <div className="text-sm font-medium text-emerald-400 mb-3">✅ Image ready</div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={image.publicUrl}
                     alt="Generated post image"
-                    className="w-full max-w-sm rounded-xl border border-slate-700"
+                    className="w-full max-w-sm rounded-xl border border-slate-300 dark:border-slate-700"
                   />
                   <div className="text-xs text-slate-500 mt-2 break-all">{image.filename}</div>
                 </div>
@@ -554,26 +554,26 @@ export default function SocialPage() {
                 const remainingLabel = remaining > 0 ? `~${remaining}s remaining` : 'Almost done…';
 
                 return (
-                  <div className="mt-6 bg-slate-900/40 border border-slate-700 rounded-xl p-4">
+                  <div className="mt-6 rounded-xl border border-slate-200 bg-white/85 p-4 dark:border-slate-700 dark:bg-slate-900/40">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-xl animate-pulse">🎬</span>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-slate-200">Generating video…</div>
+                        <div className="font-medium text-slate-700 dark:text-slate-200">Generating video…</div>
                         <div className="text-xs text-slate-500 mt-0.5">
                           Veo 2 typically takes ~90 seconds
                         </div>
                       </div>
-                      <div className="text-xs text-slate-400 whitespace-nowrap">
+                      <div className="whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">
                         {remainingLabel}
                       </div>
                     </div>
-                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-300 dark:bg-slate-700">
                       <div
                         className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
                         style={{ width: `${progress * 100}%` }}
                       />
                     </div>
-                    <div className="mt-1.5 text-xs text-slate-600 text-right">
+                    <div className="mt-1.5 text-right text-xs text-slate-500 dark:text-slate-600">
                       {videoElapsed}s elapsed
                     </div>
                   </div>
@@ -582,7 +582,7 @@ export default function SocialPage() {
 
               {/* Video download */}
               {videoUrl && (
-                <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/40 p-5">
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-white/85 p-5 dark:border-slate-700 dark:bg-slate-900/40">
                   <div className="text-sm font-medium text-emerald-400 mb-3">✅ Video ready</div>
                   <a
                     href={`/api/download-video?uri=${encodeURIComponent(videoUrl)}`}
@@ -596,11 +596,11 @@ export default function SocialPage() {
             </section>
 
             {/* ── Step 4 ─ Queue to Buffer ───────────────────────────────── */}
-            <div className="h-px bg-slate-800 my-8" />
+            <div className="my-8 h-px bg-slate-200 dark:bg-slate-800" />
 
-            <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-              <h2 className="text-xl font-semibold mb-1">Step 4 · Queue to Buffer</h2>
-              <p className="text-sm text-slate-400 mb-5">
+            <section className="rounded-2xl border border-slate-200 bg-white/80 p-6 dark:border-slate-700 dark:bg-slate-800/50">
+              <h2 className="mb-1 text-xl font-semibold text-slate-900 dark:text-white">Step 4 · Queue to Buffer</h2>
+              <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
                 {image
                   ? 'Your post will be queued with the generated image attached.'
                   : 'Your post will be queued as text + hashtags (no media).'}
@@ -631,8 +631,8 @@ export default function SocialPage() {
         )}
 
         {/* ── Posting History ─────────────────────────────────────────────── */}
-        <div className="mt-10 bg-slate-800/30 border border-slate-700 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Posting History</h2>
+        <div className="mt-10 rounded-2xl border border-slate-200 bg-white/80 p-6 dark:border-slate-700 dark:bg-slate-800/30">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Posting History</h2>
           {history.length === 0 ? (
             <p className="text-slate-500 text-sm">No posts yet.</p>
           ) : (
@@ -640,7 +640,7 @@ export default function SocialPage() {
               {history.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-slate-900/40 border border-slate-700 rounded-xl p-4"
+                  className="rounded-xl border border-slate-200 bg-white/90 p-4 dark:border-slate-700 dark:bg-slate-900/40"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-medium capitalize">{post.platform}</span>
@@ -650,14 +650,14 @@ export default function SocialPage() {
                           ? 'bg-emerald-950/40 text-emerald-200 border border-emerald-800/50'
                           : post.status === 'failed'
                             ? 'bg-red-950/40 text-red-200 border border-red-800/50'
-                            : 'bg-slate-800 text-slate-200 border border-slate-700'
+                            : 'border border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
                       }`}
                     >
                       {post.status}
                     </span>
                     <span className="text-xs text-slate-500 ml-auto">{post.created_at}</span>
                   </div>
-                  <div className="text-sm text-slate-200 whitespace-pre-wrap line-clamp-3">
+                  <div className="line-clamp-3 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-200">
                     {post.caption}
                   </div>
                 </div>

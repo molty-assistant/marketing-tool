@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ToastProvider } from '@/components/Toast';
+import { ThemeProvider } from '@/components/theme/theme-provider';
+import { THEME_STORAGE_KEY } from '@/components/theme/constants';
 
 export const metadata: Metadata = {
   title: 'Marketing Tool — Vibe Marketing Brief Generator',
@@ -37,12 +39,33 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const themeInitScript = `
+  (() => {
+    try {
+      const storageKey = '${THEME_STORAGE_KEY}';
+      const stored = localStorage.getItem(storageKey);
+      const theme = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      const isDark = theme === 'dark' || (theme === 'system' && media.matches);
+      const root = document.documentElement;
+      root.classList.toggle('dark', isDark);
+      root.style.colorScheme = isDark ? 'dark' : 'light';
+      root.setAttribute('data-theme', theme);
+    } catch {}
+  })();
+  `;
+
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-[#0a0a0f]">
-        <ToastProvider>
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </ToastProvider>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <ThemeProvider>
+          <ToastProvider>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

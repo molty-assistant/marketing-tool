@@ -68,9 +68,9 @@ function AnalyzeContent() {
         />
       )}
 
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 sm:p-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">Generate a marketing plan</h1>
-        <p className="mt-2 text-sm text-slate-400">
+      <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900/40">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Generate a marketing plan</h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Paste a URL and we&apos;ll generate a complete plan.
         </p>
 
@@ -86,7 +86,7 @@ function AnalyzeContent() {
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && start()}
               placeholder="https://linear.app (or App Store / Play Store link)"
-              className="sm:flex-1 h-auto bg-slate-950 px-4 py-3 focus-visible:border-transparent"
+              className="h-auto px-4 py-3 focus-visible:border-transparent sm:flex-1"
             />
             <Button
               onClick={start}
@@ -107,7 +107,7 @@ export default function AnalyzePage() {
     <Suspense
       fallback={
         <div className="max-w-3xl mx-auto text-center py-20">
-          <div className="text-lg text-slate-300">Loading...</div>
+          <div className="text-lg text-slate-600 dark:text-slate-300">Loading...</div>
         </div>
       }
     >
