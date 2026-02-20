@@ -16,7 +16,7 @@ import crypto from 'crypto';
  * Generates a background image (PNG) using Imagen 3 and saves it to /app/data/images.
  */
 
-const IMAGES_DIR = '/app/data/images';
+const IMAGES_DIR = process.env.IMAGE_DIR || '/app/data/images';
 
 type ImageBrief = {
   hook?: string;
@@ -25,6 +25,7 @@ type ImageBrief = {
   mood?: string;
   palette?: string;
   composition?: string;
+  textOverlay?: string;
   avoid?: string[];
 };
 
@@ -39,18 +40,18 @@ function buildImagenPrompt(brief: ImageBrief) {
     : [];
 
   const lines = [
-    'Create a high-quality background image for a social post (no foreground UI).',
+    'Create a high-quality image for a social post. Nano Banana will render text perfectly.',
     safeLine('Scene', brief.scene),
     safeLine('Subject', brief.subject),
     safeLine('Mood', brief.mood),
     safeLine('Color palette', brief.palette),
     safeLine('Composition', brief.composition),
-    brief.hook ? `Creative intent: evoke the hook "${brief.hook.trim()}" without using any text.` : '',
+    brief.hook ? `Creative intent: evoke the hook "${brief.hook.trim()}"` : '',
+    brief.textOverlay ? `Include the exact text overlay: "${brief.textOverlay}" prominently in the design.` : '',
     avoid.length ? `Avoid: ${avoid.join('; ')}.` : '',
     // Hard constraints
     'Hard constraints:',
-    '- No text, typography, captions, subtitles, words, letters, numbers.',
-    '- No logos, watermarks, signatures, UI elements, app screens, frames, phone mockups.',
+    '- No UI elements, app screens, frames, phone mockups.',
     '- Do not include people or faces.',
     '- Background should have clear negative space for overlaid text.',
     'Style: modern, cinematic, tasteful, realistic lighting, high detail, sharp, 4k.',
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     const prompt = buildImagenPrompt(imageBrief);
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana:predict?key=${apiKey}`;
 
     const res = await fetch(url, {
       method: 'POST',

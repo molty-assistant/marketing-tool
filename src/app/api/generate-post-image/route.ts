@@ -27,7 +27,7 @@ import crypto from 'crypto';
  * }
  */
 
-const IMAGES_DIR = '/app/data/images';
+const IMAGES_DIR = process.env.IMAGE_DIR || '/app/data/images';
 
 export async function POST(request: NextRequest) {
   try {

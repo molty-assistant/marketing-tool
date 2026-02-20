@@ -304,14 +304,14 @@ The following bugs and security issues were identified in a code audit. They are
 ### Phase 2: Quick Win page (Week 2)
 
 **New feature:**
-1. Build `/plan/[id]/quickwin` page — auto-fires Instagram caption + TikTok caption + image generation on load, renders 3 output cards (pattern: existing `social/page.tsx` 4-step flow, simplified to auto-run)
-2. Update `GenerationOverlay.tsx` to redirect new users to Quick Win instead of plan overview
+1. [x] Build `/plan/[id]/quickwin` page — auto-fires Instagram caption + TikTok caption + image generation on load, renders 3 output cards (pattern: existing `social/page.tsx` 4-step flow, simplified to auto-run)
+2. [x] Update `GenerationOverlay.tsx` to redirect new users to Quick Win instead of plan overview
 
 **Model upgrade:**
-3. Integrate Nano Banana for image generation (replace Imagen 3.0 in `generate-hero-bg`)
+3. [x] Integrate Nano Banana for image generation (replace Imagen 3.0 in `generate-hero-bg`)
 
 **Staff fix:**
-4. **[Staff #7]** Make image storage path configurable via env var (`IMAGE_DIR` defaulting to `/app/data/images`) — affects `generate-post-image`, `generate-hero-bg`, `images/[filename]` routes
+4. [x] **[Staff #7]** Make image storage path configurable via env var (`IMAGE_DIR` defaulting to `/app/data/images`) — affects `generate-post-image`, `generate-hero-bg`, `images/[filename]` routes
 
 ### Phase 3: Carousel + Video polish (Week 3-4)
 
