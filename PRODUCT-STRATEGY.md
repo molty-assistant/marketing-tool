@@ -293,9 +293,9 @@ The following bugs and security issues were identified in a code audit. They are
 **Infrastructure fixes:**
 1. Fix 502 production error — check `GEMINI_API_KEY` env var on Railway
 2. Verify SQLite persistence — ensure Railway volume mapped to `/app/data`
-3. **[Staff #1]** Add `social_posts` table to schema init in `db.ts` — blocks Buffer integration on fresh DBs
-4. **[Staff #9]** Make `PUBLIC_BASE_URL` configurable via env var (fall back to `process.env.NEXT_PUBLIC_BASE_URL` or request origin) — `post-to-buffer/route.ts:19`
-5. **[Staff #5]** Add private IP / metadata host blocklist to scraper — reject `127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.169.254`, `fd00::/8` before fetching
+3. ~~**[Staff #1]** Add `social_posts` table to schema init in `db.ts` — blocks Buffer integration on fresh DBs~~ **[DONE]**
+4. ~~**[Staff #9]** Make `PUBLIC_BASE_URL` configurable via env var (fall back to `process.env.NEXT_PUBLIC_BASE_URL` or request origin) — `post-to-buffer/route.ts:19`~~ **[DONE]**
+5. ~~**[Staff #5]** Add private IP / metadata host blocklist to scraper — reject `127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.169.254`, `fd00::/8` before fetching~~ **[DONE]**
 
 **Validation:**
 6. Dog-food test: generate content for LightScout end-to-end, queue to Buffer, verify it arrives

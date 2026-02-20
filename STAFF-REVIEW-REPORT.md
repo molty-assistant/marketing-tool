@@ -6,7 +6,11 @@ Mode: Review-only (no code changes applied in this audit)
 
 ## Findings (Ordered by Severity)
 
+<<<<<<< HEAD
 ### 1. [P1] `post-to-buffer` is broken on fresh DBs (`social_posts` table missing)
+=======
+### 1. [FIXED] [P1] `post-to-buffer` is broken on fresh DBs (`social_posts` table missing)
+>>>>>>> origin/main
 - File refs:
   - `/Users/moltbot/Projects/marketing-tool/src/app/api/post-to-buffer/route.ts:107`
   - `/Users/moltbot/Projects/marketing-tool/src/app/api/post-to-buffer/route.ts:141`
@@ -46,7 +50,11 @@ Mode: Review-only (no code changes applied in this audit)
   - Endpoint derives callback base URL from request origin and forwards `x-api-key` on internal callback.
   - If host/proxy headers are spoofable, internal auth header can be leaked externally.
 
+<<<<<<< HEAD
 ### 5. [P1] SSRF risk in generic scraper endpoint
+=======
+### 5. [FIXED] [P1] SSRF risk in generic scraper endpoint
+>>>>>>> origin/main
 - File refs:
   - `/Users/moltbot/Projects/marketing-tool/src/app/api/scrape/route.ts:20`
   - `/Users/moltbot/Projects/marketing-tool/src/lib/scraper.ts:157`
@@ -76,7 +84,7 @@ Mode: Review-only (no code changes applied in this audit)
 - Detail:
   - Handler always returns success; DB helper does not return change count for validation.
 
-### 9. [P2] Media attachment base URL is deployment-coupled
+### 9. [FIXED] [P2] Media attachment base URL is deployment-coupled
 - File ref:
   - `/Users/moltbot/Projects/marketing-tool/src/app/api/post-to-buffer/route.ts:19`
 - Detail:

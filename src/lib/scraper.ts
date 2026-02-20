@@ -1,4 +1,61 @@
 import { ScrapedApp } from './types';
+import dns from 'dns/promises';
+import { isIPv4, isIPv6 } from 'net';
+
+// Helper to normalize IPv4-mapped IPv6 addresses (e.g. ::ffff:127.0.0.1 -> 127.0.0.1)
+function normalizeIp(ip: string): string {
+  const lower = ip.toLowerCase();
+  if (lower.startsWith('::ffff:')) {
+    const v4Part = lower.substring(7);
+    if (isIPv4(v4Part)) return v4Part;
+  }
+  return lower;
+}
+
+function checkIpNotPrivate(ipRaw: string): void {
+  const ip = normalizeIp(ipRaw);
+
+  const isIpv4 = isIPv4(ip) || ip.includes('.');
+  if (isIpv4) {
+    if (ip.startsWith('127.')) throw new Error('Unsafe URL: loopback IP not allowed');
+    if (ip.startsWith('10.')) throw new Error('Unsafe URL: private network (10.x) not allowed');
+    if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip)) throw new Error('Unsafe URL: private network (172.16-31.x) not allowed');
+    if (ip.startsWith('192.168.')) throw new Error('Unsafe URL: private network (192.168.x) not allowed');
+    if (ip.startsWith('169.254.')) throw new Error('Unsafe URL: metadata IP not allowed');
+    if (ip.startsWith('0.')) throw new Error('Unsafe URL: 0.0.x.x not allowed');
+  } else if (isIPv6(ip) || ip.includes(':')) {
+    if (ip === '::1') throw new Error('Unsafe URL: loopback IPv6 not allowed');
+    if (ip.startsWith('fd') || ip.startsWith('fc')) throw new Error('Unsafe URL: unique local address (IPv6) not allowed');
+    if (ip.startsWith('fe80')) throw new Error('Unsafe URL: link-local address (IPv6) not allowed');
+  }
+}
+
+// Prevent SSRF by validating the target IP
+async function validateUrlSafety(urlStr: string): Promise<void> {
+  const url = new URL(urlStr);
+  let hostname = url.hostname;
+
+  // Strip IPv6 brackets for validation if present
+  if (hostname.startsWith('[') && hostname.endsWith(']')) {
+    hostname = hostname.substring(1, hostname.length - 1);
+  }
+
+  if (hostname === 'localhost') throw new Error('Unsafe URL: localhost is not allowed');
+
+  if (isIPv4(hostname) || isIPv6(hostname)) {
+    checkIpNotPrivate(hostname);
+    return;
+  }
+
+  try {
+    const lookups = await dns.lookup(hostname, { all: true, verbatim: true });
+    for (const lookup of lookups) {
+      checkIpNotPrivate(lookup.address);
+    }
+  } catch {
+    // let fetch handle DNS errors if they occur later
+  }
+}
 
 // Detect URL type
 export function detectUrlType(url: string): 'appstore' | 'googleplay' | 'website' {
@@ -250,6 +307,8 @@ function decodeHtmlEntities(str: string): string {
 
 // Main scrape function
 export async function scrapeUrl(url: string): Promise<ScrapedApp> {
+  await validateUrlSafety(url);
+
   const type = detectUrlType(url);
 
   switch (type) {
