@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const result = await executeOrchestrationRun({
       runId,
       input: normalizedInput,
-      baseUrl,
+      internalBaseUrl: baseUrl,
       internalAuthHeaders,
     });
 
