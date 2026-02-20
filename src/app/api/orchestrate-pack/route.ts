@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRun, getPlan, updateRun } from '@/lib/db';
+import { requireOrchestratorAuth } from '@/lib/auth-guard';
 import {
   buildInitialSteps,
   executeOrchestrationRun,
@@ -13,6 +14,11 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
+  const unauthorizedResponse = requireOrchestratorAuth(request);
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
   let runId: string | null = null;
 
   try {

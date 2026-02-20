@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getRun } from '@/lib/db';
+import { requireOrchestratorAuth } from '@/lib/auth-guard';
 import {
   normalizeOrchestratePackInput,
   parseRunInputJson,
@@ -26,9 +27,14 @@ function stepsIncludeVideo(stepsJson: string): boolean {
 }
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
 ) {
+  const unauthorizedResponse = requireOrchestratorAuth(request);
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
   const { runId } = await params;
   const run = getRun(runId);
 

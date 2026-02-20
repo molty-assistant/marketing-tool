@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, getPlan, getRun, updateRun } from '@/lib/db';
+import { requireOrchestratorAuth } from '@/lib/auth-guard';
 import {
   executeOrchestrationRun,
   internalBaseUrl,
@@ -15,6 +16,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
 ) {
+  const unauthorizedResponse = requireOrchestratorAuth(request);
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
   const { runId } = await params;
   const run = getRun(runId);
 
