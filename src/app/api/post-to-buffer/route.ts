@@ -15,8 +15,14 @@ interface PostToBufferRequest {
 const ZAPIER_MCP_URL = 'https://mcp.zapier.com/api/v1/connect';
 const ZAPIER_TOKEN = process.env.ZAPIER_MCP_TOKEN || '';
 
-// Public base URL for Buffer to fetch attachments from (Railway production)
-const PUBLIC_BASE_URL = 'https://marketing-tool-production.up.railway.app';
+// Public base URL for Buffer to fetch attachments from
+function getPublicBaseUrl(request: NextRequest) {
+  const url = process.env.PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+  if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    throw new Error('Server configured with localhost base URL. Buffer cannot fetch attachments from a local development server.');
+  }
+  return url;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,9 +44,11 @@ export async function POST(request: NextRequest) {
 
     const method = body.publishNow ? 'now' : 'queue';
 
+    const publicBaseUrl = getPublicBaseUrl(request);
+
     // Prefer imageFilename (served via our /api/images route) over raw mediaUrl
     const attachmentUrl = body.imageFilename
-      ? `${PUBLIC_BASE_URL}/api/images/${encodeURIComponent(body.imageFilename)}`
+      ? `${publicBaseUrl}/api/images/${encodeURIComponent(body.imageFilename)}`
       : (body.mediaUrl || null);
 
     // Build instructions for Buffer via Zapier
