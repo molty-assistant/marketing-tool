@@ -1,4 +1,36 @@
 import { ScrapedApp } from './types';
+import dns from 'dns/promises';
+
+// Prevent SSRF by validating the target IP
+async function validateUrlSafety(urlStr: string): Promise<void> {
+  const url = new URL(urlStr);
+  const hostname = url.hostname;
+
+  if (hostname === 'localhost') throw new Error('Unsafe URL: localhost is not allowed');
+
+  let ip = hostname;
+  try {
+    const lookup = await dns.lookup(hostname);
+    ip = lookup.address;
+  } catch {
+    // let fetch handle DNS errors if they occur later
+  }
+
+  const isIpv4 = ip.includes('.');
+  if (isIpv4) {
+    if (ip.startsWith('127.')) throw new Error('Unsafe URL: loopback IP not allowed');
+    if (ip.startsWith('10.')) throw new Error('Unsafe URL: private network (10.x) not allowed');
+    if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip)) throw new Error('Unsafe URL: private network (172.16-31.x) not allowed');
+    if (ip.startsWith('192.168.')) throw new Error('Unsafe URL: private network (192.168.x) not allowed');
+    if (ip.startsWith('169.254.')) throw new Error('Unsafe URL: metadata IP not allowed');
+    if (ip.startsWith('0.')) throw new Error('Unsafe URL: 0.0.x.x not allowed');
+  } else {
+    const lower = ip.toLowerCase();
+    if (lower === '::1') throw new Error('Unsafe URL: loopback IPv6 not allowed');
+    if (lower.startsWith('fd') || lower.startsWith('fc')) throw new Error('Unsafe URL: unique local address (IPv6) not allowed');
+    if (lower.startsWith('fe80')) throw new Error('Unsafe URL: link-local address (IPv6) not allowed');
+  }
+}
 
 // Detect URL type
 export function detectUrlType(url: string): 'appstore' | 'googleplay' | 'website' {
@@ -250,6 +282,8 @@ function decodeHtmlEntities(str: string): string {
 
 // Main scrape function
 export async function scrapeUrl(url: string): Promise<ScrapedApp> {
+  await validateUrlSafety(url);
+
   const type = detectUrlType(url);
 
   switch (type) {

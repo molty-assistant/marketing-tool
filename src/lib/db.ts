@@ -77,6 +77,22 @@ CREATE TABLE IF NOT EXISTS approval_queue (
     `);
 
     db.exec(`
+      CREATE TABLE IF NOT EXISTS social_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plan_id TEXT,
+        platform TEXT NOT NULL,
+        caption TEXT,
+        hashtags TEXT,
+        media_url TEXT,
+        method TEXT,
+        buffer_response TEXT,
+        status TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+
+    db.exec(`
       CREATE TABLE IF NOT EXISTS orchestration_runs (
         id TEXT PRIMARY KEY,
         plan_id TEXT NOT NULL,

@@ -15,8 +15,10 @@ interface PostToBufferRequest {
 const ZAPIER_MCP_URL = 'https://mcp.zapier.com/api/v1/connect';
 const ZAPIER_TOKEN = process.env.ZAPIER_MCP_TOKEN || '';
 
-// Public base URL for Buffer to fetch attachments from (Railway production)
-const PUBLIC_BASE_URL = 'https://marketing-tool-production.up.railway.app';
+// Public base URL for Buffer to fetch attachments from
+function getPublicBaseUrl(request: NextRequest) {
+  return process.env.PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,9 +40,11 @@ export async function POST(request: NextRequest) {
 
     const method = body.publishNow ? 'now' : 'queue';
 
+    const publicBaseUrl = getPublicBaseUrl(request);
+
     // Prefer imageFilename (served via our /api/images route) over raw mediaUrl
     const attachmentUrl = body.imageFilename
-      ? `${PUBLIC_BASE_URL}/api/images/${encodeURIComponent(body.imageFilename)}`
+      ? `${publicBaseUrl}/api/images/${encodeURIComponent(body.imageFilename)}`
       : (body.mediaUrl || null);
 
     // Build instructions for Buffer via Zapier
