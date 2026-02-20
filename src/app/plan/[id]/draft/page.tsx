@@ -24,7 +24,7 @@ const SECTION_OPTIONS: {
 }[] = [
   {
     key: 'app_store_description',
-    label: 'App Store description',
+    label: 'App Store / Play Store description',
     help: 'Full description for the store listing.',
   },
   {

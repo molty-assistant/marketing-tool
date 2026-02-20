@@ -75,7 +75,7 @@ function parseGeminiJson(text: string): unknown {
 function draftSectionLabel(section: DraftSection): string {
   switch (section) {
     case 'app_store_description':
-      return 'App Store description';
+      return 'App Store / Play Store description';
     case 'short_description':
       return 'Short description';
     case 'keywords':
@@ -88,7 +88,7 @@ function draftSectionLabel(section: DraftSection): string {
 function translationSectionLabel(section: TranslationSection): string {
   switch (section) {
     case 'app_store_description':
-      return 'App Store description';
+      return 'App Store / Play Store description';
     case 'short_description':
       return 'Short description';
     case 'keywords':

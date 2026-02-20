@@ -39,7 +39,7 @@ const SUPPORTED_LANGUAGES = [
 function sectionLabel(section: TranslationSection): string {
   switch (section) {
     case 'app_store_description':
-      return 'App Store description';
+      return 'App Store / Play Store description';
     case 'short_description':
       return 'Short description';
     case 'keywords':

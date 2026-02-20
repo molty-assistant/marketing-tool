@@ -15,6 +15,9 @@ export interface ScrapedApp {
   developer?: string;
   features: string[];
   keywords?: string[];
+
+  // Extra optional metadata (used when available; safe for existing pipeline)
+  lastUpdated?: string;
 }
 
 export interface AppConfig {

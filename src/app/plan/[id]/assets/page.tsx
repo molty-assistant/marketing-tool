@@ -346,7 +346,7 @@ function ScreenshotCompositorSection({
         <div>
           <h2 className="text-lg font-semibold text-white">📱 Screenshot Compositor</h2>
           <p className="text-sm text-slate-400 mt-1">
-            Wrap raw app screenshots in a device frame + headline (App Store size: 1290×2796)
+            Wrap raw app screenshots in a device frame + headline (App Store / Play Store size: 1290×2796)
           </p>
         </div>
         <button
