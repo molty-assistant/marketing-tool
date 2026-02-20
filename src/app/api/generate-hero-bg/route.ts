@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/generate-hero-bg
@@ -76,6 +77,9 @@ function extractBase64Png(payload: any): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-hero-bg', bucket: 'ai', maxRequests: 8, windowSec: 60 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 interface GenerateSocialPostRequest {
   planId: string;
@@ -9,6 +10,9 @@ interface GenerateSocialPostRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-social-post', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<GenerateSocialPostRequest>;
 

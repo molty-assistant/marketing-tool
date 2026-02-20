@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePlanContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import {
   generateBrandVoice,
   generatePositioningAngles,
@@ -38,6 +39,9 @@ function line(obj: unknown): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-all', bucket: 'ai', maxRequests: 4, windowSec: 60 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   const startedAt = Date.now();
 
   try {

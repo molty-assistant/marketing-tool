@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent, updatePlanContent, getPlanContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 type SequenceType = 'welcome' | 'launch' | 'nurture';
 
@@ -33,6 +34,9 @@ function cleanAndParseJson(text: string): unknown {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-emails', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<GenerateEmailsRequest>;
 

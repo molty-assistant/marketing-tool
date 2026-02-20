@@ -49,6 +49,44 @@ npm run dev
 | `GEMINI_API_KEY` | Yes | Google Gemini API key (for AI features) |
 | `NEXT_PUBLIC_CONVEX_URL` | No | Convex backend URL (for Mission Control integration) |
 
+### Rate Limiting + Usage Tracking
+
+The API now includes lightweight SQLite-backed per-actor rate limiting and daily usage tracking.
+
+- Actor resolution order: `x-api-key` header, then client IP, then `unknown`.
+- Raw API keys are never stored in SQLite. Actor IDs are stored as hashes.
+- Blocked requests return `429` with `Retry-After`.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RATE_LIMIT_ENABLED` | `true` | Enable/disable enforcement (usage still tracked when disabled). |
+| `RATE_LIMIT_MAX_REQUESTS` | `60` | Global fallback max requests per window. |
+| `RATE_LIMIT_WINDOW_SEC` | `60` | Global fallback window size in seconds. |
+| `RATE_LIMIT_AI_MAX_REQUESTS` | `12` | Bucket default for AI-heavy endpoints. |
+| `RATE_LIMIT_PUBLIC_MAX_REQUESTS` | `45` | Bucket default for public endpoints. |
+| `RATE_LIMIT_HEAVY_MAX_REQUESTS` | `8` | Bucket default for expensive render/media endpoints. |
+| `RATE_LIMIT_HASH_SALT` | empty | Optional salt used when hashing actor identifiers. |
+| `RATE_LIMIT_RETENTION_DAYS` | `14` | How long to keep per-request events used for sliding-window checks. |
+
+Per-endpoint env override format:
+
+- `RATE_LIMIT_<ENDPOINT_KEY>_MAX_REQUESTS`
+- `RATE_LIMIT_<ENDPOINT_KEY>_WINDOW_SEC`
+
+Example: `/api/generate-draft` maps to `RATE_LIMIT_GENERATE_DRAFT_MAX_REQUESTS`.
+
+Inspect usage from SQLite:
+
+```bash
+sqlite3 data/marketing-tool.db \\
+  "SELECT usage_date, endpoint, total_requests, blocked_requests FROM api_usage_daily ORDER BY usage_date DESC, endpoint;"
+```
+
+```bash
+sqlite3 data/marketing-tool.db \\
+  "SELECT endpoint, SUM(total_requests) AS total, SUM(blocked_requests) AS blocked FROM api_usage_daily GROUP BY endpoint ORDER BY blocked DESC, total DESC;"
+```
+
 ## Pages
 
 | Route | Description |

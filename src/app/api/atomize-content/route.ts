@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent, updatePlanContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 interface AtomizeContentRequest {
   planId: string;
@@ -34,6 +35,9 @@ function safeStringArray(value: unknown): string[] {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/atomize-content', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<AtomizeContentRequest>;
 

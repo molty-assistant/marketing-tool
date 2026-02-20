@@ -76,6 +76,38 @@ CREATE TABLE IF NOT EXISTS approval_queue (
       )
     `);
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS api_request_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        endpoint TEXT NOT NULL,
+        actor_hash TEXT NOT NULL,
+        actor_type TEXT NOT NULL CHECK(actor_type IN ('api_key', 'ip', 'unknown')),
+        blocked INTEGER NOT NULL DEFAULT 0 CHECK(blocked IN (0, 1)),
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS api_usage_daily (
+        usage_date TEXT NOT NULL,
+        endpoint TEXT NOT NULL,
+        total_requests INTEGER NOT NULL DEFAULT 0,
+        blocked_requests INTEGER NOT NULL DEFAULT 0,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (usage_date, endpoint)
+      )
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_api_request_events_lookup
+      ON api_request_events (endpoint, actor_hash, created_at)
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_api_request_events_created_at
+      ON api_request_events (created_at)
+    `);
+
     // Migration: add share_token if missing
     const cols = db.prepare("PRAGMA table_info(plans)").all() as { name: string }[];
     if (!cols.some((c) => c.name === 'share_token')) {

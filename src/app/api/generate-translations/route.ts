@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent, updatePlanContent, getPlanContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 type TranslationSection =
   | 'app_store_description'
@@ -78,6 +79,9 @@ function languageLabel(code: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-translations', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<GenerateTranslationsRequest>;
 

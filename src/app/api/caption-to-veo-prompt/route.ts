@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -12,6 +13,9 @@ function getApiKey() {
  * Returns: { prompt: string }
  */
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/caption-to-veo-prompt', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json().catch(() => ({}))) as { caption?: string };
     const caption = typeof body.caption === 'string' ? body.caption.trim() : '';

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 type PerplexityResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
@@ -70,6 +71,9 @@ Prefer JSON array: [{"name":"...","url":"...","positioning":"...","pricing":"...
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/competitive-analysis', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
     const planId = typeof body.planId === 'string' ? body.planId : '';

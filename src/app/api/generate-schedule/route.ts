@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, getPlan } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * Auto-generate a week of scheduled content using AI.
@@ -8,6 +9,9 @@ import { getDb, getPlan } from '@/lib/db';
  * { planId, platform?, startDate?, days? }
  */
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-schedule', bucket: 'ai' });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
     const { planId, platform = 'instagram', startDate, days = 7 } = body;
