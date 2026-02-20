@@ -3,9 +3,7 @@
 import { useEffect, useMemo, useState, use } from 'react';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import DismissableTip from '@/components/DismissableTip';
 
 function clampText(text: string, maxChars: number) {
   if (text.length <= maxChars) return text;
@@ -111,12 +109,12 @@ export default function PlanPreviewPage({
       setAppName(data.config?.app_name || 'Your App');
       setSubtitle(
         data.config?.one_liner ||
-          data.scraped?.shortDescription ||
-          'A short, store-friendly one-liner that sells the value.'
+        data.scraped?.shortDescription ||
+        'A short, store-friendly one-liner that sells the value.'
       );
       setDescription(
         data.scraped?.description ||
-          'Write a clear, benefit-led description. Focus on outcomes, not features — then back it up with proof.'
+        'Write a clear, benefit-led description. Focus on outcomes, not features — then back it up with proof.'
       );
       setWhatsNew(
         '• Improvements & bug fixes\n• Faster onboarding\n• Updated screenshots and copy'
@@ -156,9 +154,7 @@ export default function PlanPreviewPage({
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        See exactly how your app looks in the App Store and Google Play — with your real listing data, so you can spot issues before they go live.
-      </div>
+      <DismissableTip id="preview-tip">See exactly how your app looks in the App Store and Google Play — with your real listing data, so you can spot issues before they go live.</DismissableTip>
 
       <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
@@ -172,207 +168,167 @@ export default function PlanPreviewPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Preview */}
-        <div className="lg:col-span-3">
-          <div className="rounded-3xl border border-slate-700 bg-white overflow-hidden shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)]">
-            {/* Header */}
-            <div className="p-6 sm:p-8">
-              <div className="flex items-start gap-5">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-200 shrink-0 border border-slate-200">
-                  {plan.config.icon ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={plan.config.icon}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full grid place-items-center text-slate-600 font-semibold">
-                      {appName.slice(0, 1).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <input
-                    value={appName}
-                    onChange={(e) => setAppName(e.target.value)}
-                    className="w-full text-xl font-bold text-slate-900 bg-transparent focus:outline-none"
-                    aria-label="App name"
+      <div className="max-w-4xl mx-auto">
+        <div className="rounded-3xl border border-slate-700 bg-white overflow-hidden shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)]">
+          {/* Header */}
+          <div className="p-6 sm:p-8">
+            <div className="flex items-start gap-5">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-200 shrink-0 border border-slate-200">
+                {plan.config.icon ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={plan.config.icon}
+                    alt=""
+                    className="w-full h-full object-cover"
                   />
-                  <input
-                    value={subtitle}
-                    onChange={(e) => setSubtitle(e.target.value)}
-                    className="w-full mt-1 text-sm text-slate-600 bg-transparent focus:outline-none"
-                    aria-label="Subtitle"
-                  />
-
-                  <div className="mt-4 flex items-center gap-3">
-                    <button className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-5 py-2 rounded-full transition-colors">
-                      Get
-                    </button>
-                    <div className="text-xs text-slate-500">In-App Purchases</div>
+                ) : (
+                  <div className="w-full h-full grid place-items-center text-slate-600 font-semibold">
+                    {appName.slice(0, 1).toUpperCase()}
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Rating row */}
-              <div className="mt-5 flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl font-bold text-slate-900 tabular-nums">
-                    {rating.toFixed(1)}
-                  </div>
-                  <div>
-                    <Stars value={rating} />
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {ratingCount.toLocaleString()} Ratings
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-500">Edit rating</div>
-                  <input
-                    type="number"
-                    min={0}
-                    max={5}
-                    step={0.1}
-                    value={rating}
-                    onChange={(e) => setRating(Number(e.target.value))}
-                    className="w-20 text-sm border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Rating"
-                  />
-                  <input
-                    type="number"
-                    min={0}
-                    step={100}
-                    value={ratingCount}
-                    onChange={(e) => setRatingCount(Number(e.target.value))}
-                    className="w-28 text-sm border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Rating count"
-                  />
-                </div>
-              </div>
-            </div>
+              <div className="flex-1 min-w-0">
+                <input
+                  value={appName}
+                  onChange={(e) => setAppName(e.target.value)}
+                  className="w-full text-xl font-bold text-slate-900 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/30 rounded px-1 -mx-1"
+                  aria-label="App name"
+                />
+                <input
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  className="w-full mt-1 text-sm text-slate-600 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/30 rounded px-1 -mx-1"
+                  aria-label="Subtitle"
+                />
 
-            {/* Screenshots */}
-            <div className="px-6 sm:px-8 pb-6 sm:pb-8">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-sm font-semibold text-slate-900">Preview</div>
-                <div className="text-xs text-slate-500">iPhone</div>
-              </div>
-
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {screenshots.map((s) => (
-                  <div
-                    key={s}
-                    className="w-[160px] sm:w-[180px] aspect-[9/19.5] rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-slate-100 overflow-hidden shrink-0"
-                  >
-                    {typeof s === 'string' && s.startsWith('http') ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={s}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full p-4 flex flex-col justify-end">
-                        <div className="text-[11px] text-slate-500">Screenshot {String(s).split('-').pop()}</div>
-                        <div className="mt-2 h-2 w-20 bg-slate-200 rounded" />
-                        <div className="mt-2 h-2 w-28 bg-slate-200 rounded" />
-                        <div className="mt-2 h-2 w-16 bg-slate-200 rounded" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="border-t border-slate-100">
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="text-sm font-semibold text-slate-900">Description</div>
-                  <button
-                    onClick={() => setExpanded((v) => !v)}
-                    className="text-blue-600 hover:text-blue-500 text-sm font-semibold"
-                  >
-                    {expanded ? 'Less' : 'More'}
+                <div className="mt-4 flex items-center gap-3">
+                  <button className="bg-blue-600 text-white text-sm font-semibold px-5 py-2 rounded-full pointer-events-none cursor-default opacity-75" title="Preview only — not a real button">
+                    Get
                   </button>
-                </div>
-
-                <div className="mt-3 text-sm text-slate-700 whitespace-pre-wrap leading-6">
-                  {shownDescription}
+                  <div className="text-xs text-slate-500">In-App Purchases</div>
                 </div>
               </div>
             </div>
 
-            {/* What's New */}
-            <div className="border-t border-slate-100">
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="text-sm font-semibold text-slate-900">What’s New</div>
-                  <div className="text-xs text-slate-500">Version 1.4.0</div>
+            {/* Rating row */}
+            <div className="mt-5 flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl font-bold text-slate-900 tabular-nums">
+                  {rating.toFixed(1)}
                 </div>
-
-                <textarea
-                  value={whatsNew}
-                  onChange={(e) => setWhatsNew(e.target.value)}
-                  rows={4}
-                  className="mt-3 w-full text-sm text-slate-700 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"
-                  aria-label="What's new"
+                <div>
+                  <Stars value={rating} />
+                  <div className="text-xs text-slate-500 mt-0.5">
+                    {ratingCount.toLocaleString()} Ratings
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-slate-500">Edit rating</div>
+                <input
+                  type="number"
+                  min={0}
+                  max={5}
+                  step={0.1}
+                  value={rating}
+                  onChange={(e) => setRating(Number(e.target.value))}
+                  className="w-20 text-sm border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Rating"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  step={100}
+                  value={ratingCount}
+                  onChange={(e) => setRatingCount(Number(e.target.value))}
+                  className="w-28 text-sm border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Rating count"
                 />
               </div>
             </div>
           </div>
+
+          {/* Screenshots */}
+          <div className="px-6 sm:px-8 pb-6 sm:pb-8">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-semibold text-slate-900">Preview</div>
+              <div className="text-xs text-slate-500">iPhone</div>
+            </div>
+
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {screenshots.map((s) => (
+                <div
+                  key={s}
+                  className="w-[160px] sm:w-[180px] aspect-[9/19.5] rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-slate-100 overflow-hidden shrink-0"
+                >
+                  {typeof s === 'string' && s.startsWith('http') ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={s}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full p-4 flex flex-col justify-end">
+                      <div className="text-[11px] text-slate-500">Screenshot {String(s).split('-').pop()}</div>
+                      <div className="mt-2 h-2 w-20 bg-slate-200 rounded" />
+                      <div className="mt-2 h-2 w-28 bg-slate-200 rounded" />
+                      <div className="mt-2 h-2 w-16 bg-slate-200 rounded" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="border-t border-slate-100">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center justify-between gap-4">
+                <div className="text-sm font-semibold text-slate-900">Description</div>
+                <button
+                  onClick={() => setExpanded((v) => !v)}
+                  className="text-blue-600 hover:text-blue-500 text-sm font-semibold"
+                >
+                  {expanded ? 'Less' : 'More'}
+                </button>
+              </div>
+
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={6}
+                className="mt-3 w-full text-sm text-slate-700 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap leading-6"
+                aria-label="Description"
+              />
+              {!expanded && description.length > 520 && (
+                <div className="text-xs text-slate-400 mt-1">{description.length} chars</div>
+              )}
+            </div>
+          </div>
+
+          {/* What's New */}
+          <div className="border-t border-slate-100">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center justify-between gap-4">
+                <div className="text-sm font-semibold text-slate-900">What’s New</div>
+                <div className="text-xs text-slate-500">Version 1.4.0</div>
+              </div>
+
+              <textarea
+                value={whatsNew}
+                onChange={(e) => setWhatsNew(e.target.value)}
+                rows={4}
+                className="mt-3 w-full text-sm text-slate-700 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"
+                aria-label="What's new"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Editor */}
-        <div className="lg:col-span-2">
-          <div className="bg-slate-800/40 border border-slate-700 rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-white mb-4">Inline editor</h2>
-
-            <Label className="block text-xs text-slate-400 mb-1">App name</Label>
-            <Input
-              value={appName}
-              onChange={(e) => setAppName(e.target.value)}
-              className="bg-slate-900/40 border-slate-700 text-white"
-            />
-
-            <Label className="block text-xs text-slate-400 mb-1 mt-4">Subtitle</Label>
-            <Input
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              className="bg-slate-900/40 border-slate-700 text-white"
-            />
-
-            <Label className="block text-xs text-slate-400 mb-1 mt-4">Description</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={10}
-              className="bg-slate-900/40 border-slate-700 text-white whitespace-pre-wrap"
-            />
-
-            <div className="mt-4 text-xs text-slate-500">
-              This preview is visual-only (doesn’t save back to the plan yet).
-            </div>
-          </div>
-
-          <div className="mt-4 bg-slate-800/40 border border-slate-700 rounded-2xl p-6">
-            <h3 className="text-sm font-semibold text-white mb-2">Using your plan data</h3>
-            <div className="text-xs text-slate-400 leading-5">
-              <div>
-                <span className="text-slate-300">Source:</span> {plan.scraped?.source}
-              </div>
-              <div className="mt-1">
-                <span className="text-slate-300">Category:</span> {plan.config?.category}
-              </div>
-              <div className="mt-1">
-                <span className="text-slate-300">Pricing:</span> {plan.config?.pricing}
-              </div>
-            </div>
-          </div>
+        <div className="mt-4 text-center text-xs text-slate-500">
+          Click any field on the card above to edit inline. This preview is visual-only — changes aren&apos;t saved back to the plan.
         </div>
       </div>
     </div>

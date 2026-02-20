@@ -46,44 +46,174 @@ body {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--background); }
-::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+  border-radius: 4px;
+}
 
 /* Markdown content styling */
-.markdown-content h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; color: var(--foreground); }
-.markdown-content h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--foreground); }
-.markdown-content h4 { font-size: 1.1rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--accent); }
-.markdown-content p { margin-bottom: 0.75rem; color: var(--muted); line-height: 1.7; }
-.markdown-content ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
-.markdown-content li { color: var(--muted); margin-bottom: 0.25rem; line-height: 1.6; }
-.markdown-content blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; margin: 1rem 0; font-style: italic; color: var(--foreground); }
-.markdown-content strong { color: var(--foreground); font-weight: 600; }
-.markdown-content code { background: rgba(99, 102, 241, 0.15); padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875em; }
-.markdown-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.875rem; }
-.markdown-content th, .markdown-content td { border: 1px solid var(--card-border); padding: 0.5rem 0.75rem; text-align: left; }
-.markdown-content th { background: var(--card); font-weight: 600; color: var(--foreground); }
-.markdown-content td { color: var(--muted); }
-.markdown-content hr { border: none; border-top: 1px solid var(--card-border); margin: 2rem 0; }
-.markdown-content input[type="checkbox"] { margin-right: 0.5rem; accent-color: var(--accent); }
+.markdown-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+}
+
+.markdown-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.markdown-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent);
+}
+
+.markdown-content p {
+  margin-bottom: 0.75rem;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+
+.markdown-content ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-content li {
+  color: var(--muted-foreground);
+  margin-bottom: 0.25rem;
+  line-height: 1.6;
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: var(--foreground);
+}
+
+.markdown-content strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.markdown-content code {
+  background: rgba(99, 102, 241, 0.15);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid var(--card-border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.markdown-content th {
+  background: var(--card);
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.markdown-content td {
+  color: var(--muted-foreground);
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid var(--card-border);
+  margin: 2rem 0;
+}
+
+.markdown-content input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: var(--accent);
+}
 
 /* Print / PDF export styles */
 @media print {
-  body { background: white; color: black; }
-  nav, button, a[href*="/assets"], .no-print { display: none !important; }
-  .markdown-content h2, .markdown-content h3, .markdown-content h4,
-  .markdown-content strong, .markdown-content p, .markdown-content li,
-  .markdown-content td, .markdown-content th, .markdown-content blockquote {
+  body {
+    background: white;
+    color: black;
+  }
+
+  nav,
+  button,
+  a[href*="/assets"],
+  .no-print {
+    display: none !important;
+  }
+
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content strong,
+  .markdown-content p,
+  .markdown-content li,
+  .markdown-content td,
+  .markdown-content th,
+  .markdown-content blockquote {
     color: black !important;
   }
-  .markdown-content table { border-color: #ccc; }
-  .markdown-content th { background: #f3f4f6; }
-  .markdown-content code { background: #f3f4f6; color: #333; }
-  .markdown-content blockquote { border-left-color: #666; }
+
+  .markdown-content table {
+    border-color: #ccc;
+  }
+
+  .markdown-content th {
+    background: #f3f4f6;
+  }
+
+  .markdown-content code {
+    background: #f3f4f6;
+    color: #333;
+  }
+
+  .markdown-content blockquote {
+    border-left-color: #666;
+  }
+
   /* Expand all collapsible sections */
-  [class*="rounded-2xl"] { border-color: #ddd !important; background: white !important; }
-  [class*="border-slate"] { border-color: #ddd !important; }
-  * { color-adjust: exact; -webkit-print-color-adjust: exact; }
+  [class*="rounded-2xl"] {
+    border-color: #ddd !important;
+    background: white !important;
+  }
+
+  [class*="border-slate"] {
+    border-color: #ddd !important;
+  }
+
+  * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
 
 @theme inline {
@@ -165,7 +295,25 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* P3-5: Page transition animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeIn 200ms ease-out both;
 }

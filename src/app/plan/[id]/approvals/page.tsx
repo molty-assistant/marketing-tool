@@ -9,6 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { usePlan } from '@/hooks/usePlan';
+import { PageSkeleton } from '@/components/Skeleton';
+import DismissableTip from '@/components/DismissableTip';
 
 type ApprovalQueueStatus = 'pending' | 'approved' | 'rejected';
 
@@ -47,9 +50,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
   const { id } = use(params);
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
-  const [planError, setPlanError] = useState('');
+  const { plan, loading: planLoading, error: planError, reload: loadPlan } = usePlan(id);
 
   const [items, setItems] = useState<ApprovalItem[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, pending: 0, approved: 0, rejected: 0 });
@@ -66,34 +67,6 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
   const [editing, setEditing] = useState<Record<string, boolean>>({});
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
-
-  const loadPlan = () => {
-    setPlanLoading(true);
-    setPlanError('');
-
-    const stored = sessionStorage.getItem(`plan-${id}`);
-    if (stored) {
-      try {
-        setPlan(JSON.parse(stored));
-        setPlanLoading(false);
-        return;
-      } catch {
-        // fall through
-      }
-    }
-
-    fetch(`/api/plans/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load plan');
-        return res.json();
-      })
-      .then((data) => {
-        setPlan(data);
-        sessionStorage.setItem(`plan-${id}`, JSON.stringify(data));
-      })
-      .catch((err) => setPlanError(err instanceof Error ? err.message : 'Failed to load plan'))
-      .finally(() => setPlanLoading(false));
-  };
 
   const loadQueue = () => {
     setLoadingQueue(true);
@@ -112,7 +85,6 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
   };
 
   useEffect(() => {
-    loadPlan();
     loadQueue();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -205,11 +177,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
   };
 
   if (planLoading) {
-    return (
-      <div className="max-w-5xl mx-auto py-20">
-        <div className="text-slate-400">Loading…</div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (planError) {
@@ -233,9 +201,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Review and approve AI-generated content before it goes live — edit any section inline or regenerate it before adding to your posting queue.
-      </div>
+      <DismissableTip id="approvals-tip">Review and approve AI-generated content before it goes live — edit any section inline or regenerate it before adding to your posting queue.</DismissableTip>
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap mb-6">

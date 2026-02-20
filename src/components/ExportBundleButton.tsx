@@ -2,6 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 const TONES = ['professional', 'casual', 'bold', 'minimal'] as const;
 const LANGUAGES = [
@@ -95,163 +104,143 @@ export default function ExportBundleButton({
   };
 
   return (
-    <>
-      <Button
-        onClick={() => setOpen(true)}
-        className="w-full sm:w-auto h-auto text-sm px-4 py-2.5 sm:py-2 rounded-lg"
-      >
-        ⬇️ Download Full Pack
-      </Button>
+    <Dialog open={open} onOpenChange={(v) => !exporting && setOpen(v)}>
+      <DialogTrigger asChild>
+        <Button
+          className="w-full sm:w-auto h-auto text-sm px-4 py-2.5 sm:py-2 rounded-lg"
+        >
+          ⬇️ Download Full Pack
+        </Button>
+      </DialogTrigger>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button
-            className="absolute inset-0 bg-black/70"
-            onClick={() => (!exporting ? setOpen(false) : null)}
-            aria-label="Close"
-          />
+      <DialogContent className="bg-slate-900 border-slate-700 sm:max-w-2xl" showCloseButton={!exporting}>
+        <DialogHeader>
+          <DialogTitle className="text-white">Download Full Pack</DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Includes your brief, tone variants, translations, and assets (PNG).
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="relative w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl">
-            <div className="p-5 border-b border-slate-700 flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-white">Download Full Pack</h3>
-                <p className="text-sm text-slate-400 mt-1 break-words">
-                  Includes your brief, tone variants, translations, and assets (PNG).
-                </p>
+        <div className="space-y-6">
+          {/* Tones */}
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <div className="text-sm font-semibold text-white">Tones</div>
+                <div className="text-xs text-slate-400">Default: all</div>
               </div>
               <Button
-                onClick={() => setOpen(false)}
-                disabled={exporting}
+                type="button"
                 variant="ghost"
-                size="icon-sm"
-                className="text-slate-400 hover:text-slate-200 disabled:opacity-50"
+                size="sm"
+                className="h-auto text-xs text-indigo-400 hover:text-indigo-300 px-0"
+                onClick={() =>
+                  setSelectedTones(tonesAllChecked ? [] : [...TONES])
+                }
+                disabled={exporting}
               >
-                ✕
+                {tonesAllChecked ? 'Clear' : 'Select all'}
               </Button>
             </div>
 
-            <div className="p-5 space-y-6">
-              {/* Tones */}
-              <div>
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div>
-                    <div className="text-sm font-semibold text-white">Tones</div>
-                    <div className="text-xs text-slate-400">Default: all</div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto text-xs text-indigo-400 hover:text-indigo-300 px-0"
-                    onClick={() =>
-                      setSelectedTones(tonesAllChecked ? [] : [...TONES])
-                    }
-                    disabled={exporting}
-                  >
-                    {tonesAllChecked ? 'Clear' : 'Select all'}
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {TONES.map((tone) => (
-                    <label
-                      key={tone}
-                      className="flex items-center gap-2 bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/60 rounded-lg px-3 py-2 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedTones.includes(tone)}
-                        onChange={() => toggleTone(tone)}
-                        disabled={exporting}
-                      />
-                      <span className="text-sm text-slate-200 capitalize">{tone}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Languages */}
-              <div>
-                <div className="mb-3">
-                  <div className="text-sm font-semibold text-white">Translations</div>
-                  <div className="text-xs text-slate-400">Default: none</div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {LANGUAGES.map((lang) => (
-                    <label
-                      key={lang.code}
-                      className="flex items-center gap-2 bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/60 rounded-lg px-3 py-2 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedLanguages.includes(lang.code)}
-                        onChange={() => toggleLanguage(lang.code)}
-                        disabled={exporting}
-                      />
-                      <span className="text-sm text-slate-200">{lang.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Assets */}
-              <div className="flex items-center justify-between gap-3 bg-slate-800/30 border border-slate-700/60 rounded-xl px-4 py-3">
-                <div>
-                  <div className="text-sm font-semibold text-white">Include assets</div>
-                  <div className="text-xs text-slate-400">Generates PNG social images</div>
-                </div>
-                <label className="inline-flex items-center gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {TONES.map((tone) => (
+                <label
+                  key={tone}
+                  className="flex items-center gap-2 bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/60 rounded-lg px-3 py-2 cursor-pointer"
+                >
                   <input
                     type="checkbox"
-                    checked={includeAssets}
-                    onChange={() => setIncludeAssets((v) => !v)}
+                    checked={selectedTones.includes(tone)}
+                    onChange={() => toggleTone(tone)}
                     disabled={exporting}
                   />
-                  <span className="text-sm text-slate-200">Yes</span>
+                  <span className="text-sm text-slate-200 capitalize">{tone}</span>
                 </label>
-              </div>
-
-              {error && (
-                <div className="text-sm text-red-300 bg-red-950/30 border border-red-900/40 rounded-xl p-3 whitespace-pre-wrap">
-                  {error}
-                </div>
-              )}
-            </div>
-
-            <div className="p-5 border-t border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="text-xs text-slate-400">
-                {exporting ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="inline-block h-4 w-4 rounded-full border-2 border-indigo-500/40 border-t-indigo-400 animate-spin" />
-                    Generating pack… this may take a minute.
-                  </span>
-                ) : (
-                  'This runs multiple AI calls if tones/translations are selected.'
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setOpen(false)}
-                  disabled={exporting}
-                  variant="secondary"
-                  className="h-auto text-sm px-4 py-2 rounded-lg disabled:opacity-50"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={download}
-                  disabled={exporting}
-                  className="h-auto text-sm px-4 py-2 rounded-lg disabled:opacity-50"
-                >
-                  {exporting ? 'Working…' : 'Download ZIP'}
-                </Button>
-              </div>
+              ))}
             </div>
           </div>
+
+          {/* Languages */}
+          <div>
+            <div className="mb-3">
+              <div className="text-sm font-semibold text-white">Translations</div>
+              <div className="text-xs text-slate-400">Default: none</div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {LANGUAGES.map((lang) => (
+                <label
+                  key={lang.code}
+                  className="flex items-center gap-2 bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/60 rounded-lg px-3 py-2 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedLanguages.includes(lang.code)}
+                    onChange={() => toggleLanguage(lang.code)}
+                    disabled={exporting}
+                  />
+                  <span className="text-sm text-slate-200">{lang.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Assets */}
+          <div className="flex items-center justify-between gap-3 bg-slate-800/30 border border-slate-700/60 rounded-xl px-4 py-3">
+            <div>
+              <div className="text-sm font-semibold text-white">Include assets</div>
+              <div className="text-xs text-slate-400">Generates PNG social images</div>
+            </div>
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={includeAssets}
+                onChange={() => setIncludeAssets((v) => !v)}
+                disabled={exporting}
+              />
+              <span className="text-sm text-slate-200">Yes</span>
+            </label>
+          </div>
+
+          {error && (
+            <div className="text-sm text-red-300 bg-red-950/30 border border-red-900/40 rounded-xl p-3 whitespace-pre-wrap">
+              {error}
+            </div>
+          )}
         </div>
-      )}
-    </>
+
+        <DialogFooter className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="text-xs text-slate-400">
+            {exporting ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-4 w-4 rounded-full border-2 border-indigo-500/40 border-t-indigo-400 animate-spin" />
+                Generating pack… this may take a minute.
+              </span>
+            ) : (
+              'This runs multiple AI calls if tones/translations are selected.'
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setOpen(false)}
+              disabled={exporting}
+              variant="secondary"
+              className="h-auto text-sm px-4 py-2 rounded-lg disabled:opacity-50"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={download}
+              disabled={exporting}
+              className="h-auto text-sm px-4 py-2 rounded-lg disabled:opacity-50"
+            >
+              {exporting ? 'Working…' : 'Download ZIP'}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

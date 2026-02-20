@@ -34,7 +34,7 @@ export default async function PlanLayout({
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 lg:flex-row dark:bg-slate-900">
       <PlanSidebar planId={id} appName={appName} />
-      <main className="flex-1 overflow-auto min-w-0 pt-6">{children}</main>
+      <main className="flex-1 overflow-auto min-w-0 pt-6 page-enter">{children}</main>
     </div>
   );
 }
