@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import GenerationOverlay from '@/components/GenerationOverlay'
 import { Button } from '@/components/ui/button'
@@ -12,9 +12,7 @@ function normalizeUrl(input: string): string {
 }
 
 function isValidUrl(input: string) {
-  try {
-    // eslint-disable-next-line no-new
-    new URL(normalizeUrl(input))
+  try {    void new URL(normalizeUrl(input))
     return true
   } catch {
     return false
@@ -32,11 +30,6 @@ function AnalyzeContent() {
   const [generating, setGenerating] = useState(!!initialUrl)
   const [generatingUrl, setGeneratingUrl] = useState(initialUrl)
 
-  useEffect(() => {
-    if (!initialUrl) return
-    setGenerating(true)
-    setGeneratingUrl(initialUrl)
-  }, [initialUrl])
 
   const start = () => {
     setError('')
