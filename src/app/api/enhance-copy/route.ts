@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
@@ -23,9 +22,6 @@ const TONE_DESCRIPTIONS: Record<Tone, string> = {
 };
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/enhance-copy', bucket: 'ai' });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const body = (await request.json()) as Partial<EnhanceRequest>;
 

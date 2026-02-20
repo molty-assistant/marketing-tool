@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildCompositeHtml, type CompositeScreenshotInput } from '@/lib/screenshot-compositor';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 let activeRenders = 0;
 const MAX_CONCURRENT = 3;
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/composite-screenshot', bucket: 'heavy', maxRequests: 20, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   if (activeRenders >= MAX_CONCURRENT) {
     return NextResponse.json({ error: 'Too many concurrent renders. Please try again shortly.' }, { status: 429 });
   }

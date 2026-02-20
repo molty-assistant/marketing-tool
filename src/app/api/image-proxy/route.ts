@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dns from 'node:dns/promises';
 import net from 'node:net';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -90,9 +89,6 @@ function transparentPngResponse(status = 502) {
 }
 
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/image-proxy', bucket: 'public', maxRequests: 40, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   const urlParam = request.nextUrl.searchParams.get('url');
   if (!urlParam) {
     return NextResponse.json({ error: 'Missing url param' }, { status: 400 });

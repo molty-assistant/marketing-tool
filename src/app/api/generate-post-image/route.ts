@@ -5,7 +5,6 @@ import type { MarketingPlan } from '@/lib/types';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * Generate a single social post image and save it to /app/data/images/
@@ -31,9 +30,6 @@ import { enforceRateLimit } from '@/lib/rate-limit';
 const IMAGES_DIR = '/app/data/images';
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-post-image', bucket: 'heavy', maxRequests: 5, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const body = await request.json();
     const planId = body.planId;

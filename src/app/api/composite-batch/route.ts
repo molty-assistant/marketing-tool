@@ -3,7 +3,6 @@ import archiver from 'archiver';
 import { PassThrough, Readable } from 'stream';
 import { getPlan } from '@/lib/db';
 import { buildCompositeHtml, type CompositeDevice } from '@/lib/screenshot-compositor';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 interface BatchInput {
   planId: string;
@@ -22,9 +21,6 @@ interface BatchInput {
 let active = 0;
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/composite-batch', bucket: 'heavy', maxRequests: 8, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   if (active >= 1) {
     return NextResponse.json({ error: 'A ZIP render is already in progress.' }, { status: 429 });
   }

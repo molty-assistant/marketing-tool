@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent } from '@/lib/db';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 type VariantScore = {
   text: string;
@@ -38,9 +37,6 @@ function computeWinner(scores: VariantScore[]): number {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/score-variants', bucket: 'ai' });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const body = await request.json();
 

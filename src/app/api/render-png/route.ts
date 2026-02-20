@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 // Concurrency limiter: max 3 concurrent renders
 let activeRenders = 0;
 const MAX_CONCURRENT = 3;
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/render-png', bucket: 'heavy', maxRequests: 25, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   if (activeRenders >= MAX_CONCURRENT) {
     return NextResponse.json(
       { error: 'Too many concurrent renders. Please try again shortly.' },

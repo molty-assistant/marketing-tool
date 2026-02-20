@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 
 interface DismissableTipProps {
@@ -15,16 +15,14 @@ const STORAGE_PREFIX = 'dismissed-tip-';
  * Dismissal is persisted to localStorage by `id`.
  */
 export default function DismissableTip({ id, children }: DismissableTipProps) {
-    const [dismissed, setDismissed] = useState(true); // start hidden to avoid flash
-
-    useEffect(() => {
+    const [dismissed, setDismissed] = useState(() => {
+        if (typeof window === 'undefined') return true;
         try {
-            const stored = localStorage.getItem(`${STORAGE_PREFIX}${id}`);
-            setDismissed(stored === '1');
+            return localStorage.getItem(`${STORAGE_PREFIX}${id}`) === '1';
         } catch {
-            setDismissed(false);
+            return false;
         }
-    }, [id]);
+    });
 
     if (dismissed) return null;
 

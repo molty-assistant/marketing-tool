@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -17,9 +16,6 @@ function getApiKey() {
  * Returns: { done: false } | { done: true, videoUrl }
  */
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-video/status', bucket: 'public', maxRequests: 30, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const { searchParams } = new URL(request.url);
     const operationName = searchParams.get('operation') || '';

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan } from '@/lib/db';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * Auto-publish: Generate a social post + image and queue it to Buffer in one step.
@@ -25,9 +24,6 @@ interface AutoPublishRequest {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/auto-publish', bucket: 'heavy', maxRequests: 4, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const body = (await request.json()) as Partial<AutoPublishRequest>;
 

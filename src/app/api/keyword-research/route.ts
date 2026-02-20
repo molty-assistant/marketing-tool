@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { saveContent } from '@/lib/db';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 
 export async function POST(req: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(req, { endpoint: '/api/keyword-research', bucket: 'ai' });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const { planId, appName, category } = await req.json();
 

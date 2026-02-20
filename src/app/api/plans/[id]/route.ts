@@ -17,7 +17,6 @@ export async function GET(
       scraped: JSON.parse(row.scraped),
       generated: row.generated,
       stages: JSON.parse(row.stages),
-      content: (() => { try { return row.content ? JSON.parse(row.content) : {}; } catch { return {}; } })(),
       createdAt: row.created_at,
       shareToken: row.share_token || null,
     };

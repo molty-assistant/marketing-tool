@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '');
 
 // Proxy Veo 2 video downloads — the raw URI requires an API key header
 // which browsers can't send via a plain <a href> link.
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/download-video', bucket: 'public', maxRequests: 20, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   const { searchParams } = new URL(request.url);
   const uri = searchParams.get('uri');
 

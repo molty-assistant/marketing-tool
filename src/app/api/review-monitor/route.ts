@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, getDb } from '@/lib/db';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * Review Monitor — automated review checking + sentiment + response suggestions
@@ -17,9 +16,6 @@ import { enforceRateLimit } from '@/lib/rate-limit';
  */
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/review-monitor', bucket: 'ai' });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const body = await request.json();
     const planId = body.planId;
@@ -203,14 +199,6 @@ ${negativeReviews.map((r: { title: string; body: string; rating: number }) =>
 
 // GET: review monitoring history
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, {
-    endpoint: '/api/review-monitor',
-    bucket: 'public',
-    maxRequests: 20,
-    windowSec: 60,
-  });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const planId = request.nextUrl.searchParams.get('planId');
     if (!planId) {

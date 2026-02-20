@@ -1,6 +1,5 @@
 import { headers } from 'next/headers';
 import { chromium } from 'playwright';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,9 +40,6 @@ function getFilenameFromPlanName(planName: string | undefined | null) {
 }
 
 export async function POST(req: Request) {
-  const rateLimitResponse = enforceRateLimit(req, { endpoint: '/api/export-pdf', bucket: 'heavy', maxRequests: 12, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   const baseUrl = await getBaseUrl();
   if (!baseUrl) {
     return Response.json({ error: 'Missing host' }, { status: 400 });

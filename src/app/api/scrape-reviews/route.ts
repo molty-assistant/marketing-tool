@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan } from '@/lib/db';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 type Review = {
   author: string;
@@ -194,9 +193,6 @@ Rules:
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/scrape-reviews', bucket: 'public', maxRequests: 12, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const body = await request.json();
     const planId = typeof body.planId === 'string' ? body.planId : '';

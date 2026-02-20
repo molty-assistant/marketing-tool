@@ -452,7 +452,6 @@ export function generateSocialTemplates(opts: {
       const width = 1080;
       const height = 1080;
 
-<<<<<<< HEAD
       const category = safeText(plan?.config?.category, safeText(plan?.scraped?.category, '')).toLowerCase();
       const vibeIcon = category.includes('photo')
         ? '📍'

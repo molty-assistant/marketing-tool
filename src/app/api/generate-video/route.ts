@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'node:fs';
 import path from 'node:path';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -41,9 +40,6 @@ function loadTemplates(): VeoTemplateConfig {
  * Returns immediately: { success: true, operationName }
  */
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(request, { endpoint: '/api/generate-video', bucket: 'heavy', maxRequests: 3, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   try {
     const body = await request.json().catch(() => ({}));
     const planId = body?.planId ? String(body.planId) : '';

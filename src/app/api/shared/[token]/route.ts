@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlanByShareToken } from '@/lib/db';
-import { enforceRateLimit } from '@/lib/rate-limit';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
-  const rateLimitResponse = enforceRateLimit(_request, { endpoint: '/api/shared/[token]', bucket: 'public', maxRequests: 60, windowSec: 60 });
-  if (rateLimitResponse) return rateLimitResponse;
-
   const { token } = await params;
   const row = getPlanByShareToken(token);
   if (!row) {

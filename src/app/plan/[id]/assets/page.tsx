@@ -346,7 +346,7 @@ function ScreenshotCompositorSection({
         <div>
           <h2 className="text-lg font-semibold text-white">📱 Screenshot Compositor</h2>
           <p className="text-sm text-slate-400 mt-1">
-            Wrap raw app screenshots in a device frame + headline (App Store / Play Store size: 1290×2796)
+            Wrap raw app screenshots in a device frame + headline (App Store size: 1290×2796)
           </p>
         </div>
         <button
@@ -643,7 +643,7 @@ export default function AssetsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { plan } = usePlan(id);
+  const { plan, loading: planLoading } = usePlan(id);
   const [assets, setAssets] = useState<GeneratedAsset[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

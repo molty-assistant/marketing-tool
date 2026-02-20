@@ -15,7 +15,10 @@ type Shortcut = {
  */
 export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
     const shortcutsRef = useRef(shortcuts);
-    shortcutsRef.current = shortcuts;
+
+    useEffect(() => {
+        shortcutsRef.current = shortcuts;
+    }, [shortcuts]);
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {

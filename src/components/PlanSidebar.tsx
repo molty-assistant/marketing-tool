@@ -60,7 +60,6 @@ const NAV_GROUPS: NavGroup[] = [
     icon: PenLine,
     href: '/content',
     children: [
-      { label: 'Pack', href: '/pack' },
       { label: 'Copy Draft', href: '/draft' },
       { label: 'Email sequences', href: '/emails' },
       { label: 'Templates', href: '/templates' },
