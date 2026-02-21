@@ -6,6 +6,7 @@ import type { MarketingPlan } from '@/lib/types';
 import { DraftSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { Button } from '@/components/ui/button';
 
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
@@ -251,10 +252,10 @@ export default function ToneComparePage({
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link
           href="/"
-          className="text-indigo-400 hover:text-indigo-300 transition-colors"
+          className="text-primary hover:text-primary/80 transition-colors"
         >
           ← Start a new analysis
         </Link>
@@ -264,46 +265,45 @@ export default function ToneComparePage({
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
-        Generate the <span className="text-slate-200 font-medium">same section</span> in two tones side-by-side. Useful for quick tone checks before you commit.
+      <div className="mb-8 text-sm text-muted-foreground bg-muted/50 border border-border rounded-xl px-4 py-3">
+        Generate the <span className="text-foreground font-medium">same section</span> in two tones side-by-side. Useful for quick tone checks before you commit.
       </div>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">🌓 Tone Compare</h1>
-          <p className="text-slate-400">{plan.config.app_name} — Compare tone A vs tone B</p>
+          <h1 className="text-2xl font-bold text-foreground">Tone Compare</h1>
+          <p className="text-muted-foreground">{plan.config.app_name} — Compare tone A vs tone B</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={handleGenerate}
-            disabled={loadingA || loadingB}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
-          >
-            {loadingA || loadingB ? 'Generating…' : '✨ Generate'}
-          </button>
-        </div>
+        <Button
+          onClick={handleGenerate}
+          disabled={loadingA || loadingB}
+          size="lg"
+        >
+          {loadingA || loadingB ? 'Generating...' : 'Generate'}
+        </Button>
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div>
-            <h2 className="text-sm font-semibold text-white mb-3">Section</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Section</h2>
             <div className="space-y-2">
               {SECTION_OPTIONS.map((s) => {
                 const active = s.key === section;
                 return (
                   <button
                     key={s.key}
+                    type="button"
                     onClick={() => setSection(s.key)}
                     className={`w-full text-left border rounded-xl px-4 py-3 transition-colors ${
                       active
-                        ? 'bg-indigo-600/20 border-indigo-500/50'
-                        : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40'
+                        ? 'bg-primary/10 border-primary/40'
+                        : 'bg-muted/30 hover:bg-muted/60 border-border'
                     }`}
                   >
-                    <div className="text-sm text-white">{s.label}</div>
-                    <div className="text-xs text-slate-500">{s.help}</div>
+                    <div className="text-sm text-foreground">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">{s.help}</div>
                   </button>
                 );
               })}
@@ -311,42 +311,44 @@ export default function ToneComparePage({
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-white mb-3">Tone A</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Tone A</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
               {TONE_OPTIONS.map((t) => (
                 <button
                   key={t.value}
+                  type="button"
                   onClick={() => setToneA(t.value)}
                   className={`text-left border rounded-xl px-4 py-3 transition-colors ${
                     toneA === t.value
-                      ? 'bg-indigo-600/20 border-indigo-500/50'
-                      : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40'
+                      ? 'bg-primary/10 border-primary/40'
+                      : 'bg-muted/30 hover:bg-muted/60 border-border'
                   }`}
                 >
-                  <div className="text-sm text-white">{t.label}</div>
-                  <div className="text-xs text-slate-500">{t.help}</div>
-                  <div className="text-xs italic text-slate-400 mt-0.5">{t.sample}</div>
+                  <div className="text-sm text-foreground">{t.label}</div>
+                  <div className="text-xs text-muted-foreground">{t.help}</div>
+                  <div className="text-xs italic text-muted-foreground/70 mt-0.5">{t.sample}</div>
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-white mb-3">Tone B</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Tone B</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
               {TONE_OPTIONS.map((t) => (
                 <button
                   key={t.value}
+                  type="button"
                   onClick={() => setToneB(t.value)}
                   className={`text-left border rounded-xl px-4 py-3 transition-colors ${
                     toneB === t.value
-                      ? 'bg-indigo-600/20 border-indigo-500/50'
-                      : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40'
+                      ? 'bg-primary/10 border-primary/40'
+                      : 'bg-muted/30 hover:bg-muted/60 border-border'
                   }`}
                 >
-                  <div className="text-sm text-white">{t.label}</div>
-                  <div className="text-xs text-slate-500">{t.help}</div>
-                  <div className="text-xs italic text-slate-400 mt-0.5">{t.sample}</div>
+                  <div className="text-sm text-foreground">{t.label}</div>
+                  <div className="text-xs text-muted-foreground">{t.help}</div>
+                  <div className="text-xs italic text-muted-foreground/70 mt-0.5">{t.sample}</div>
                 </button>
               ))}
             </div>
@@ -354,92 +356,90 @@ export default function ToneComparePage({
         </div>
 
         {sectionMeta && (
-          <div className="mt-4 text-xs text-slate-500">
-            Comparing: <span className="text-slate-300">{sectionMeta.label}</span>
+          <div className="mt-4 text-xs text-muted-foreground">
+            Comparing: <span className="text-foreground">{sectionMeta.label}</span>
           </div>
         )}
       </div>
 
       {/* Results */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-2xl overflow-hidden border bg-slate-800/30 border-slate-700/60">
-          <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-700/40">
+        <div className="rounded-2xl overflow-hidden border bg-card border-border">
+          <div className="flex items-center justify-between gap-3 p-4 border-b border-border">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-white">
+              <div className="text-sm font-semibold text-foreground">
                 Tone A: {toneToMeta(toneA)?.label || toneA}
               </div>
-              <div className="text-xs text-slate-500">{toneToMeta(toneA)?.help}</div>
+              <div className="text-xs text-muted-foreground">{toneToMeta(toneA)?.help}</div>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={async () => {
-                  if (!resultA.trim()) return;
-                  await navigator.clipboard.writeText(resultA);
-                }}
-                disabled={!resultA.trim() || loadingA}
-                className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                📋 Copy
-              </button>
-            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={async () => {
+                if (!resultA.trim()) return;
+                await navigator.clipboard.writeText(resultA);
+              }}
+              disabled={!resultA.trim() || loadingA}
+            >
+              Copy
+            </Button>
           </div>
 
           {errorA && (
-            <div className="bg-red-500/10 border-b border-red-500/30 px-4 py-3 text-red-400 text-sm">
+            <div className="bg-destructive/10 border-b border-destructive/30 px-4 py-3 text-destructive text-sm">
               {errorA}
             </div>
           )}
 
           <div className="p-4">
             <textarea
-              value={loadingA ? 'Generating…' : resultA}
+              value={loadingA ? 'Generating...' : resultA}
               onChange={(e) => setResultA(e.target.value)}
-              placeholder="Not generated yet…"
-              className="w-full min-h-[220px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              placeholder="Not generated yet..."
+              className="w-full min-h-[220px] bg-muted/30 border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
 
-        <div className="rounded-2xl overflow-hidden border bg-slate-800/30 border-slate-700/60">
-          <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-700/40">
+        <div className="rounded-2xl overflow-hidden border bg-card border-border">
+          <div className="flex items-center justify-between gap-3 p-4 border-b border-border">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-white">
+              <div className="text-sm font-semibold text-foreground">
                 Tone B: {toneToMeta(toneB)?.label || toneB}
               </div>
-              <div className="text-xs text-slate-500">{toneToMeta(toneB)?.help}</div>
+              <div className="text-xs text-muted-foreground">{toneToMeta(toneB)?.help}</div>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={async () => {
-                  if (!resultB.trim()) return;
-                  await navigator.clipboard.writeText(resultB);
-                }}
-                disabled={!resultB.trim() || loadingB}
-                className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                📋 Copy
-              </button>
-            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={async () => {
+                if (!resultB.trim()) return;
+                await navigator.clipboard.writeText(resultB);
+              }}
+              disabled={!resultB.trim() || loadingB}
+            >
+              Copy
+            </Button>
           </div>
 
           {errorB && (
-            <div className="bg-red-500/10 border-b border-red-500/30 px-4 py-3 text-red-400 text-sm">
+            <div className="bg-destructive/10 border-b border-destructive/30 px-4 py-3 text-destructive text-sm">
               {errorB}
             </div>
           )}
 
           <div className="p-4">
             <textarea
-              value={loadingB ? 'Generating…' : resultB}
+              value={loadingB ? 'Generating...' : resultB}
               onChange={(e) => setResultB(e.target.value)}
-              placeholder="Not generated yet…"
-              className="w-full min-h-[220px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              placeholder="Not generated yet..."
+              className="w-full min-h-[220px] bg-muted/30 border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
       </div>
 
-      <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+      <div className="text-center text-sm text-muted-foreground mt-10 mb-6">
         Tip: Keep the section fixed, then swap tones to quickly judge voice.
       </div>
     </div>

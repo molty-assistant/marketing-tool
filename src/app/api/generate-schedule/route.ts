@@ -86,7 +86,7 @@ TARGET AUDIENCE: ${config.target_audience || ''}
 PLATFORM: ${platform}
 DAYS: ${days}`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const geminiResp = await fetch(geminiUrl, {
       method: 'POST',

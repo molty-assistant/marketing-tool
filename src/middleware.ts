@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { secureCompare } from '@/lib/auth-guard';
 
 function isAuthEnabled(raw: string | undefined): boolean {
   if (!raw) return false;
@@ -6,7 +7,7 @@ function isAuthEnabled(raw: string | undefined): boolean {
   return value === '1' || value === 'true' || value === 'yes' || value === 'on';
 }
 
-export function proxy(request: NextRequest) {
+export default function middleware(request: NextRequest) {
   // Skip auth for shared plan routes and healthcheck
   if (
     request.nextUrl.pathname.startsWith('/shared/') ||
@@ -21,7 +22,10 @@ export function proxy(request: NextRequest) {
   if (apiKey) {
     const headerKey = request.headers.get('x-api-key');
     const queryKey = request.nextUrl.searchParams.get('api_key');
-    if (headerKey === apiKey || queryKey === apiKey) {
+    if (
+      (headerKey && secureCompare(headerKey, apiKey)) ||
+      (queryKey && secureCompare(queryKey, apiKey))
+    ) {
       return NextResponse.next();
     }
   }
@@ -41,7 +45,7 @@ export function proxy(request: NextRequest) {
     if (scheme === 'Basic' && encoded) {
       const decoded = atob(encoded);
       const [authUser, authPass] = decoded.split(':');
-      if (authUser === user && authPass === pass) {
+      if (secureCompare(authUser, user) && secureCompare(authPass, pass)) {
         return NextResponse.next();
       }
     }

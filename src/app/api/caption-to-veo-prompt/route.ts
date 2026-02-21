@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const system =
       'You are an expert at writing Kling 3.0 video generation prompts. Given a social media post caption, write a single cinematic video prompt. Rules: one focused scene, specify shot type (close-up/wide/medium), specify camera movement (dolly in/pan/crane), specify lighting and mood, be descriptive (up to 200 words — Kling supports detailed prompts), no quotation marks. Return ONLY valid JSON with exactly this schema: {"prompt":"..."}.';
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const res = await fetch(url, {
       method: 'POST',

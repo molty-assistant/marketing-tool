@@ -1,8 +1,8 @@
 # Product Strategy: Marketing Tool
 
 **Date:** 2026-02-20
-**Updated:** 2026-02-21 (Kie.ai migration complete, Phase 2 done)
-**Status:** Pre-launch — built but not battle-tested
+**Updated:** 2026-02-21 (Phase 3 complete + post-review Phase 1+2+3 + P2 hardening; full 5-area code review verified — middleware, SSRF, Gemini model split, env var audit, dark mode/button audit)
+**Status:** Pre-launch — Phase 3.5 (pre-deploy fixes) next, then dog-food test
 
 ---
 
@@ -31,7 +31,9 @@ Your immediate need is simple: paste a URL, get great social content you'd actua
 | Framework | Next.js 16.1.6, React 19.2.3, TypeScript 5.9.3 (strict) |
 | Styling | Tailwind CSS 4.1.18, shadcn/ui (new-york), lucide-react |
 | Database | SQLite via better-sqlite3 12.6.2 (WAL mode) |
-| AI (text only) | **Gemini 2.5 Flash** via Google AI Studio raw fetch — `GEMINI_API_KEY` |
+| AI (text — creative) | **Gemini 2.5 Pro** via Google AI Studio raw fetch — `GEMINI_API_KEY` |
+| AI (text — structured) | **Gemini 2.5 Flash** via Google AI Studio raw fetch — `GEMINI_API_KEY` |
+| AI (research) | **Perplexity** (sonar) via `api.perplexity.ai` — `PERPLEXITY_API_KEY` (optional) |
 | AI (images) | **Nano Banana Pro** via Kie.ai (`nano-banana-pro`) — `KIE_API_KEY` |
 | AI (video) | **Kling 3.0** via Kie.ai (`kling-3.0/video`) — `KIE_API_KEY` |
 | Rendering | Playwright 1.58.2 (HTML → PNG) |
@@ -42,11 +44,17 @@ Your immediate need is simple: paste a URL, get great social content you'd actua
 
 | Variable | Required | Used by |
 |----------|----------|---------|
-| `GEMINI_API_KEY` | Yes | All text generation (copy, briefs, prompts) via Google AI Studio |
+| `GEMINI_API_KEY` | Yes | All text generation (Pro + Flash routes) via Google AI Studio. Single key, model selected per route. |
 | `KIE_API_KEY` | Yes | Image generation (Nano Banana Pro) + video generation (Kling 3.0) via Kie.ai |
+| `PERPLEXITY_API_KEY` | No | Competitive analysis, keyword research, review scraping fallback. Routes return 500 if called without it. |
 | `ZAPIER_MCP_TOKEN` | For Buffer | Social publishing via Zapier MCP (JSON-RPC 2.0 + SSE) |
+| `BASIC_AUTH_ENABLED` | No | Set `true` to enable basic auth on all routes via middleware |
+| `BASIC_AUTH_USER` | If auth on | Basic auth username |
+| `BASIC_AUTH_PASS` | If auth on | Basic auth password |
+| `API_KEY` | No | Alternative auth via `x-api-key` header or `?api_key=` query param |
 | `IMAGE_DIR` | No | Image storage path, defaults to `/app/data/images` |
 | `PUBLIC_BASE_URL` or `NEXT_PUBLIC_BASE_URL` | No | Media attachment URLs in Buffer posts, falls back to request origin |
+| `GOOGLE_API_KEY` | No | Legacy fallback alias for `GEMINI_API_KEY` in 2 routes (caption-to-image-brief, caption-to-veo-prompt) |
 
 **Git workflow:** Single `main` branch. No feature branches — this is a solo pre-launch project. Commit directly to main.
 
@@ -54,38 +62,71 @@ Your immediate need is simple: paste a URL, get great social content you'd actua
 
 ## AI Models — Current
 
-| Purpose | Model | Provider | Status |
-|---------|-------|----------|--------|
-| Copy/prompts | Gemini 2.5 Flash + Gemini 2.0 Flash (6 routes) | Google AI Studio | Active — 6 routes still on 2.0, to be standardised |
-| Image generation | **Nano Banana Pro** (`nano-banana-pro`) | Kie.ai | Done |
-| Video generation | **Kling 3.0** (`kling-3.0/video`) | Kie.ai | Done — needs e2e testing |
-| Image briefs | Gemini 2.5 Flash → Nano Banana Pro prompt | Google AI Studio → Kie.ai | Done |
-| Video prompts | Gemini 2.0 Flash → Kling 3.0 prompt | Google AI Studio → Kie.ai | Done |
+All text generation uses a single `GEMINI_API_KEY` (Google AI Studio free tier). The model string in the URL selects Pro vs Flash per route. Image and video generation use `KIE_API_KEY` (Kie.ai). Competitive research uses `PERPLEXITY_API_KEY` (optional).
 
-**Nano Banana Pro capabilities:**
+| Purpose | Model | Provider | Free tier limits | Status |
+|---------|-------|----------|-----------------|--------|
+| Creative text (captions, briefs, concepts) | **Gemini 2.5 Pro** | Google AI Studio | 5 RPM / 100 RPD | **To do** — currently 2.0/2.5 Flash |
+| Structured text (schedules, translations, bulk) | **Gemini 2.5 Flash** | Google AI Studio | 10 RPM / 250 RPD | Active |
+| Image generation | **Nano Banana Pro** (`nano-banana-pro`) | Kie.ai | Paid per image | Done |
+| Video generation | **Kling 3.0** (`kling-3.0/video`) | Kie.ai | Paid per second | Done — needs e2e testing |
+| Competitive research | **Perplexity** (sonar) | Perplexity AI | Free tier | Active (optional) |
+
+### Gemini Pro/Flash Split
+
+**Use Pro** (better creative output, 5 RPM / 100 RPD) — user-facing content you'd actually post:
+
+| Route | What it generates |
+|-------|-------------------|
+| `generate-social-post` | Instagram/TikTok captions — THE core output (called 2x per Quick Win) |
+| `caption-to-image-brief` | Visual scene description for Nano Banana Pro |
+| `generate-carousel` | Carousel concept + slide copy |
+| `brand-voice` | Brand tone analysis from scraped data |
+| `generate-draft` | Marketing copy drafts |
+
+**Use Flash** (faster, 10 RPM / 250 RPD) — structured/mechanical/bulk tasks:
+
+| Route | What it generates |
+|-------|-------------------|
+| `pipeline.ts` (shared helper) | Pipeline steps: translations, atomize, emails, competitive analysis, positioning |
+| `caption-to-veo-prompt` | Video prompt formatting for Kling 3.0 |
+| `generate-schedule` | Posting schedule (structured dates) |
+| `content-calendar` | Calendar grid data |
+| `auto-publish` | Publishing logic |
+| `review-monitor` | Review analysis |
+| `generate-translations` | Multi-language output |
+| `generate-variants` / `score-variants` | A/B variant generation + scoring |
+| `generate-emails` | Email sequences |
+| `enhance-copy` | Copy refinement |
+| `positioning-angles` | Marketing angles |
+| `atomize-content` | Content repurposing |
+| `weekly-digest` | Weekly summary |
+| `review-sentiment` | Sentiment classification |
+| `export-bundle` | Export formatting |
+| `competitive-analysis` | Gemini step (Perplexity does the research) |
+
+**Daily budget (1 internal user):** ~6 Pro + ~4 Flash per Quick Win session. Allows ~16 full sessions/day on Pro's 100 RPD limit, with Flash barely touched at 250 RPD.
+
+### Nano Banana Pro capabilities (Kie.ai)
 - Native text rendering in images (logos, CTAs, slide text)
 - Up to 4K resolution (1K/2K at ~$0.09/image, 4K at ~$0.12/image via Kie.ai)
 - Up to 8 reference images for brand consistency
 - Aspect ratios: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
 
-**Kling 3.0 capabilities:**
+### Kling 3.0 capabilities (Kie.ai)
 - Text-to-video and image-to-video generation
 - 3-15 second clips with native audio
 - Multi-shot storytelling mode
 - Element references (@element_name) for character consistency
 - Standard ($0.10/s no-audio) and Pro ($0.135/s no-audio) modes
 
-**The 6 routes still on Gemini 2.0 Flash** (to be standardised to 2.5 later):
-- `caption-to-veo-prompt` (note: route path still says "veo" but generates Kling 3.0 prompts)
-- `generate-social-post`
-- `generate-schedule`
-- `content-calendar`
-- `auto-publish`
-- `review-monitor`
+### Perplexity capabilities (optional)
+- Competitive intelligence gathering (used by `competitive-analysis`, `competitive-intel`)
+- Keyword research (`keyword-research`)
+- App review scraping fallback (`scrape-reviews`)
+- Requires `PERPLEXITY_API_KEY` — routes return 500 if called without it, but all are non-core
 
-All other text generation uses Gemini 2.5 Flash. Image and video generation use Kie.ai.
-
-**Kie.ai API pattern** (shared by both Nano Banana Pro and Kling 3.0):
+### Kie.ai API pattern (shared by Nano Banana Pro and Kling 3.0)
 ```
 Auth:     Authorization: Bearer $KIE_API_KEY
 Create:   POST https://api.kie.ai/api/v1/jobs/createTask
@@ -308,22 +349,42 @@ Images: Nano Banana Pro (`nano-banana-pro`) via Kie.ai. Video: Kling 3.0 (`kling
 
 ---
 
-## Staff Review Findings (from STAFF-REVIEW-REPORT.md)
+## Review Findings (Staff Review + Feb 21 Verified Review)
 
-The following bugs and security issues were identified in a code audit. They are integrated into the build phases below at the appropriate point.
+The following bugs and security issues were identified across two code audits. The Feb 21 review verified all claims against actual code — false positives removed, new verified issues added.
+
+**Original Staff Review:**
 
 | # | Severity | Issue | Status | Phase |
 |---|----------|-------|--------|-------|
 | 1 | **P1** | `post-to-buffer` crashes on fresh DB | **FIXED** | 1 |
-| 2 | **P1** | `review-monitor` POST flow broken | Open | 4 |
-| 3 | **P1** | Security posture public-by-default | Open | 5 |
-| 4 | **P1** | SSRF / API-key exfiltration in scheduler | Open | 5 |
+| 2 | **P1** | `review-monitor` POST flow broken | **FIXED** | Post-review 3.5 |
+| 3 | **P1** | Middleware dead code — auth never activates | Open | 3.5 |
+| 4 | **P1** | SSRF / API-key exfiltration in scheduler | **FIXED** | Post-review 1.2 |
 | 5 | **P1** | SSRF risk in scraper | **FIXED** | 1 |
-| 6 | **P2** | Scheduler double-processing race | Open | 4 |
+| 6 | **P2** | Scheduler double-processing race | **FIXED** | Post-review 1.3 |
 | 7 | **P2** | Image storage coupled to Railway path | **FIXED** | 2 |
 | 8 | **P2** | Performance update false success | Open | 4 |
 | 9 | **P2** | Media attachment base URL hardcoded | **FIXED** | 1 |
 | 10 | **P3** | No test suite | Open | 5 |
+
+**Feb 21 Verified Review — new findings:**
+
+| # | Severity | Issue | Status | Phase |
+|---|----------|-------|--------|-------|
+| 11 | **P1** | `proxy.ts` is dead code — file named `proxy.ts` not `middleware.ts`, Next.js never discovers it. Middleware manifest is empty `{}`. Auth (basic auth + API key) is silently not running. | Open | 3.5 |
+| 12 | **P2** | `export-pdf` SSRF — uses `x-forwarded-host` header to build fetch URLs. Same pattern fixed in process-schedule but missed here. | Open | 3.5 |
+| 13 | **P2** | `.env.example` documents 4 of 13 env vars. Missing `KIE_API_KEY` (critical), `PERPLEXITY_API_KEY`, all auth vars, `PUBLIC_BASE_URL`. | Open | 3.5 |
+| 14 | **P2** | `railway.toml` and `railway.json` conflict — toml says Dockerfile, json says Nixpacks. json wins, so toml is misleading. | Open | 3.5 |
+| 15 | **P2** | 6 routes still on `gemini-2.0-flash` (including core `generate-social-post`) | Open | 3.5 |
+| 16 | **P3** | 107 raw `<button>` elements across 25 files (only tone-compare migrated to shadcn Button) | Open | 4+ |
+| 17 | **P3** | 1,238 bare hardcoded dark-mode color lines across 52 files (only 3 components fixed) | Open | 4+ |
+| 18 | **P3** | `social_posts.plan_id` and `content_schedule.plan_id` missing FK constraints | Open | 4+ |
+
+**Note on false positives from earlier Opus reviews:**
+- "proxy.ts is active middleware" — **WRONG**. The build manifest is empty. Next.js only discovers `middleware.ts`, not `proxy.ts`.
+- "3 additional SSRF vectors" — **OVERBLOWN**. Only `export-pdf` is a real SSRF (#12). The `request.nextUrl.origin` usages in `generate-post-image` and `generate-hero-bg` only build response URLs, not fetch targets.
+- Staff #3 originally said "public-by-default design choice" — it's actually a **bug** (#11): the auth code exists but is never executed.
 
 ---
 
@@ -349,15 +410,76 @@ The following bugs and security issues were identified in a code audit. They are
 3. [x] Migrate image generation to Nano Banana Pro via Kie.ai + video to Kling 3.0 via Kie.ai
 4. [x] **[Staff #7]** Make image storage path configurable via env var (`IMAGE_DIR` defaulting to `/app/data/images`)
 
-### Phase 3: Carousel + Video polish (Week 3-4)
+### Phase 3: Carousel + Video polish — **COMPLETE**
 
 **New features:**
-1. Build carousel generation flow — new `POST /api/generate-carousel` endpoint + slide editor UI (drag-to-reorder, edit text, swap screenshots, upload images)
-2. Add mobile download/share for images and video (native Web Share API on mobile)
+1. [x] Build carousel generation flow — new `POST /api/generate-carousel` endpoint + slide editor UI at `/plan/[id]/carousel` (drag-to-reorder via HTML5 DnD, edit slide text inline, upload screenshots for guided/manual modes, 3 generation modes: auto/guided/manual)
+2. [x] Add mobile download/share for images and video (native Web Share API with fallback to download — added to Quick Win, Social, and Carousel pages)
 
 **Testing + integration:**
-3. End-to-end test Kling 3.0 video in production (download proxy, aspect ratios, expiry handling)
-4. Wire "Queue to Buffer" through the Quick Win → Buffer flow for both images and video
+3. [x] Polish Kling 3.0 video pipeline — download proxy now handles URL expiry (410 response with clear message), aspect ratio passed to filename (vertical/square suffix), fixed "Veo 2" labels to "Kling 3.0"
+4. [x] Wire "Queue to Buffer" through Quick Win → Buffer flow for both Instagram (with image attachment) and TikTok (text-only), plus carousel → Buffer (cover image attached)
+
+**Additional improvements:**
+5. [x] Added Quick Win and Carousel links to sidebar navigation under Distribution (later moved to "Create" section in post-review Phase 2)
+6. [x] Quick Win page now includes: Copy/Buffer buttons per card, Share buttons (Web Share API), video generation section with progress bar, and "next steps" links to Carousel and Social flow
+7. [x] Carousel page: mode selector (auto/guided/manual), slide count slider (3-10), concept display, slide grid with drag-to-reorder, inline text editing, individual + bulk download, Buffer queue integration
+
+### Post-Review Fixes (Phase 1+2 of REVIEW-AND-FIX-PLAN.md) — **COMPLETE**
+
+A 5-part review (code quality, UX/UI, product fit, deploy readiness, MVP assessment) identified critical issues. See `REVIEW-AND-FIX-PLAN.md` for full details. Summary of fixes applied:
+
+**Security & stability (Phase 1):**
+1. [x] **usePlan hook memory leak** — useEffect now properly captures and returns abort cleanup
+2. [x] **SSRF in process-schedule** — replaced spoofable `request.nextUrl.origin` with `internalBaseUrl()` from orchestrator
+3. [x] **Scheduler race condition** — atomic `UPDATE...RETURNING` in `db.transaction()` prevents double-processing
+4. [x] **Proxy timing attack** — all auth comparisons (API key + basic auth) now use `secureCompare()` with `timingSafeEqual`
+5. [x] **Dark mode breakage** — Tone Compare, ErrorBoundary, and Skeleton components fully migrated from hardcoded dark colors to CSS theme tokens (`bg-card`, `text-foreground`, `bg-muted`, `border-border`)
+
+**Navigation redesign (Phase 2):**
+6. [x] **Sidebar restructure** — 7 sections with always-open "Create" group (Quick Win, Social, Carousel), localStorage persistence, mobile "More" button
+7. [x] **Plan overview hub** — 3 large gradient ActionCards (Quick Win, Carousel, Social Posts) + 12 smaller SuiteCards grid replacing old 5 equal hub cards
+
+**Post-review Phase 3 (UX Polish) — COMPLETE:**
+8. [x] **Quick Win sessionStorage caching** — cache results, hydrate on revisit, Regenerate button
+9. [x] **Quick Win field surfacing** — hook callout, CTA badge, posting time, collapsible engagement tips
+10. [x] **Carousel progress indicator** — step-based labels with progress bar (concept → hero → slides → finalize)
+11. [x] **Social page state persistence** — debounced sessionStorage save, hydrate on mount, Start Over button, clear on queue
+12. [x] **review-monitor fixes** — SSRF fix (internalBaseUrl), pass appStoreUrl to scrape, pass reviews to sentiment, log failures
+13. [x] **P2 hardening pass** — extracted shared `runGeneration` in quickwin (eliminated ~60 lines duplication), unmount guard on regen, clipboard `.catch()`, Firefox drag-and-drop fix in carousel, social hydrate/save race guard, hashtags null safety
+
+### Phase 3.5: Pre-Deploy Fixes (do before dog-food test)
+
+These are verified blocking/important issues that must be done before the first real use.
+
+**[#11] Activate middleware (P1 — 30 min):**
+1. Rename `src/proxy.ts` → `src/middleware.ts`
+2. Change `export function proxy` → `export default function middleware` (or `export { proxy as default }`)
+3. Verify build: `middleware-manifest.json` should now have entries (not empty `{}`)
+4. Set `BASIC_AUTH_ENABLED=true` + `BASIC_AUTH_USER` + `BASIC_AUTH_PASS` in Railway env vars
+
+**[#15] Gemini Pro/Flash split (P2 — 1 hour):**
+Single `GEMINI_API_KEY` (free tier), different model strings per route:
+5. Change 5 routes to `gemini-2.5-pro`: `generate-social-post`, `caption-to-image-brief`, `generate-carousel`, `brand-voice`, `generate-draft`
+6. Change remaining 2.0-flash routes to `gemini-2.5-flash`: `caption-to-veo-prompt`, `generate-schedule`, `content-calendar`, `auto-publish`, `review-monitor`
+7. Update `pipeline.ts` `geminiUrl()` helper to use `gemini-2.5-flash` (already correct, just verify)
+8. Update metadata labels in all routes to match actual model used
+
+**[#12] Fix export-pdf SSRF (P2 — 15 min):**
+9. In `src/app/api/export-pdf/route.ts`, replace `getBaseUrl()` (uses `x-forwarded-host`) with `internalBaseUrl()` from orchestrator
+
+**[#14] Fix Railway config conflict (P2 — 10 min):**
+10. Delete `railway.json` (it conflicts with `railway.toml`) OR align both files. Pick one builder strategy.
+
+**[#13] Update env var documentation (P2 — 15 min):**
+11. Update `.env.example` to include all 13 env vars (currently only documents 4)
+12. Update `CLAUDE.md` env var section to add `PERPLEXITY_API_KEY`, `BASIC_AUTH_ENABLED`, `PUBLIC_BASE_URL`, `GOOGLE_API_KEY`
+
+**Deploy verification (manual — after code changes):**
+13. Deploy to Railway, verify `GEMINI_API_KEY` + `KIE_API_KEY` + `PERPLEXITY_API_KEY` + auth env vars set
+14. Verify SQLite volume mounted at `/app/data`
+15. Dog-food test: paste LightScout URL → Quick Win → would you post this? → queue to Buffer → verify it arrives
+16. Fix whatever breaks
 
 ### Phase 4: Guided workflows (Month 2)
 
@@ -367,10 +489,13 @@ The following bugs and security issues were identified in a code audit. They are
 3. Add content pillars configuration per plan (DB column + UI picker)
 4. Add brand consistency — colour extraction from app icon, tone persistence per plan, hashtag set management
 
-**Staff fixes (needed for scheduling/review features):**
-5. **[Staff #2]** Fix `review-monitor` POST flow — pass `appStoreUrl` from plan's scraped data to `scrape-reviews`, pass actual `reviews` array to `review-sentiment`
-6. **[Staff #6]** Fix scheduler race condition — use `UPDATE ... WHERE status = 'pending' RETURNING *` (single atomic operation) instead of separate SELECT + UPDATE in `process-schedule`
-7. **[Staff #8]** Fix performance update false success — return `changes` count from DB helper, return 404 if no row was updated in `content-schedule/[id]/performance`
+**Fixes:**
+5. **[#8]** Fix performance update false success — return `changes` count from DB helper, return 404 if no row was updated in `content-schedule/[id]/performance`
+
+**Technical debt (acceptable for MVP, do when touching these files):**
+6. **[#16]** Migrate raw `<button>` → shadcn Button (107 across 25 files — do incrementally per page)
+7. **[#17]** Fix remaining dark mode hardcoded colors (1,238 bare lines across 52 files — do incrementally per page)
+8. **[#18]** Add FK constraints on `social_posts.plan_id` and `content_schedule.plan_id`
 
 ### Phase 5: SME-ready (Month 3+)
 
@@ -381,9 +506,8 @@ The following bugs and security issues were identified in a code audit. They are
 4. Product Hunt launch
 
 **Security hardening (required before multi-user):**
-5. **[Staff #3]** Enforce auth on all mutable routes — add route-level auth guards to `plans/[id]`, `auto-publish`, `content-schedule`, `process-schedule`, and other POST/PUT/DELETE endpoints
-6. **[Staff #4]** Fix SSRF in scheduler — don't derive callback URL from request origin; use configured `PUBLIC_BASE_URL` env var instead; strip `x-api-key` from external-facing requests
-7. **[Staff #10]** Add test suite — at minimum: smoke tests for critical API routes (scrape, generate-social-post, generate-post-image, post-to-buffer), `usePlan` hook cleanup fix
+5. Enforce auth on all mutable routes — route-level guards (middleware covers basic auth, but individual routes need user-scoped access control after Supabase migration)
+6. **[#10]** Add test suite — at minimum: smoke tests for critical API routes (scrape, generate-social-post, generate-post-image, post-to-buffer)
 
 ---
 
@@ -391,9 +515,11 @@ The following bugs and security issues were identified in a code audit. They are
 
 | File | Relevance | Staff fixes |
 |------|-----------|-------------|
-| `src/app/plan/[id]/quickwin/page.tsx` | **Quick Win page** — auto-generates Instagram + TikTok + image on load | — |
+| `src/app/plan/[id]/quickwin/page.tsx` | **Quick Win page** — auto-generates IG + TikTok + image, Buffer queue, video gen, mobile share, sessionStorage cache, hook/cta/time/tips display, shared `runGeneration` with cancellation | — |
+| `src/app/plan/[id]/carousel/page.tsx` | **Carousel builder** — 3 modes, drag-to-reorder slides (Firefox-compatible), edit text, download, Buffer queue, step-based progress indicator | — |
 | `src/app/plan/[id]/tone-compare/page.tsx` | Side-by-side draft generation in two tones, uses `/api/generate-draft` | — |
-| `src/app/plan/[id]/social/page.tsx` | Full social flow — 4-step with video polling, image display, Buffer queue | — |
+| `src/app/plan/[id]/social/page.tsx` | Full social flow — 4-step with video polling, image display, Buffer queue, mobile share, sessionStorage persistence (hydrate/save race-safe), Start Over | — |
+| `src/app/api/generate-carousel/route.ts` | **Carousel generation** — Gemini concept + Nano Banana Pro hero + Playwright slides | — |
 | `src/app/api/generate-social-post/route.ts` | Caption generation — supports post/reel/story/carousel, Instagram + TikTok | — |
 | `src/app/api/generate-post-image/route.ts` | Image pipeline — screenshot/hero/hybrid modes, 1080x1080 via Playwright | ~~#7~~ FIXED |
 | `src/app/api/generate-hero-bg/route.ts` | **Nano Banana Pro via Kie.ai** — background images (async task + polling) | ~~#7~~ FIXED |
@@ -401,23 +527,26 @@ The following bugs and security issues were identified in a code audit. They are
 | `src/app/api/caption-to-veo-prompt/route.ts` | Caption → Kling 3.0 video prompt (up to 200 words, cinematic) | — |
 | `src/app/api/generate-video/route.ts` | **Kling 3.0 via Kie.ai** — async video generation (createTask → taskId) | — |
 | `src/app/api/generate-video/status/route.ts` | Kie.ai task polling — returns video URL when complete | — |
-| `src/app/api/download-video/route.ts` | Proxies video download with Content-Disposition header | — |
+| `src/app/api/download-video/route.ts` | Proxies video download — aspect ratio in filename, expiry handling (410) | — |
 | `src/app/api/post-to-buffer/route.ts` | Buffer via Zapier MCP — "queue" and "now" methods, logs to `social_posts` | ~~#1, #9~~ FIXED |
-| `src/app/api/process-schedule/route.ts` | Scheduled content processing — cron-triggered | #4 SSRF, #6 race |
-| `src/app/api/review-monitor/route.ts` | App review monitoring — POST triggers scrape + sentiment | #2 broken contracts |
+| `src/app/api/process-schedule/route.ts` | Scheduled content processing — cron-triggered | ~~#4 SSRF~~ FIXED, ~~#6 race~~ FIXED |
+| `src/app/api/review-monitor/route.ts` | App review monitoring — POST triggers scrape + sentiment, SSRF fixed, passes url + reviews to downstream | ~~#2 broken contracts~~ FIXED |
 | `src/app/api/content-schedule/[id]/performance/route.ts` | Performance tracking updates | #8 false success |
 | `src/app/api/scrape/route.ts` | URL scraping entry point | ~~#5~~ FIXED |
 | `src/components/GenerationOverlay.tsx` | Scrape → generate plan → redirect to Quick Win | — |
 | `src/app/(marketing)/page.tsx` | Homepage — URL input, triggers GenerationOverlay, redirects to `/quickwin` | — |
 | `src/lib/orchestrator.ts` | Multi-step pipeline with progress streaming, retry, 295s max | — |
-| `src/lib/pipeline.ts` | Core Gemini 2.5 Flash wrappers — brand voice, draft, translations, etc. | — |
+| `src/lib/pipeline.ts` | Core Gemini wrappers — single `geminiUrl()` helper (change model here for all pipeline routes). Brand voice, draft, translations, etc. | — |
 | `src/lib/db.ts` | SQLite singleton — schema init, all CRUD ops | ~~#1~~ FIXED |
 | `src/lib/scraper.ts` | URL scraping — App Store (iTunes API), Google Play, generic websites | ~~#5~~ FIXED |
-| `src/proxy.ts` | Middleware / auth proxy | #3 public-by-default |
-| `src/hooks/usePlan.ts` | Plan data fetching hook | #10 cleanup leak |
+| `src/proxy.ts` | **DEAD CODE** — must rename to `src/middleware.ts` + fix export. Auth (basic auth + API key) is silently not running. | #11 middleware dead code |
+| `src/app/api/export-pdf/route.ts` | PDF export — **has unfixed SSRF** via `x-forwarded-host` header | #12 SSRF |
+| `src/hooks/usePlan.ts` | Plan data fetching hook — abort cleanup now properly wired | ~~cleanup leak~~ FIXED |
+| `src/components/PlanSidebar.tsx` | **Redesigned** — 7-section nav with always-open Create section, localStorage persistence, mobile "More" button | — |
+| `src/app/plan/[id]/page.tsx` | **Redesigned** — 3 gradient ActionCards (Quick Win, Carousel, Social) + 12 SuiteCards grid | — |
 | `src/lib/socialTemplates.ts` | 100+ social media post templates across platforms/tones | — |
 | `AUTH-ARCHITECTURE.md` | Supabase auth migration plan (PostgreSQL + RLS) | — |
-| `STAFF-REVIEW-REPORT.md` | Full code audit — 4 fixed, 6 open | — |
+| `STAFF-REVIEW-REPORT.md` | Original code audit — 7 fixed, 3 open (superseded by Feb 21 verified review) | — |
 
 ---
 

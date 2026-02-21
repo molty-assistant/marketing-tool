@@ -4,7 +4,7 @@
 function Bone({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-lg bg-slate-700/50 ${className}`}
+      className={`animate-pulse rounded-lg bg-muted ${className}`}
     />
   );
 }
@@ -31,7 +31,7 @@ export function DashboardSkeleton() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5"
+            className="bg-card border border-border rounded-2xl p-5"
           >
             <div className="flex items-start gap-4 mb-4">
               <Bone className="w-12 h-12 rounded-xl" />
@@ -68,7 +68,7 @@ export function PlanDetailSkeleton() {
         </div>
       </div>
       {/* Config summary */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6">
+      <div className="bg-card border border-border rounded-2xl p-5 mb-6">
         <div className="flex gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Bone key={i} className="h-6 w-20 rounded-full" />
@@ -77,7 +77,7 @@ export function PlanDetailSkeleton() {
       </div>
       {/* Stage sections */}
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 mb-4">
+        <div key={i} className="bg-card/50 border border-border/50 rounded-2xl p-5 mb-4">
           <Bone className="h-6 w-64" />
         </div>
       ))}
@@ -94,7 +94,7 @@ export function DraftSkeleton() {
         <Bone className="h-8 w-72 mb-2" />
         <Bone className="h-4 w-96" />
       </div>
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 mb-6">
+      <div className="bg-card border border-border rounded-2xl p-5 mb-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-2">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -109,7 +109,7 @@ export function DraftSkeleton() {
         </div>
       </div>
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="rounded-2xl border border-slate-700/30 mb-4 p-4">
+        <div key={i} className="rounded-2xl border border-border/50 mb-4 p-4">
           <Bone className="h-5 w-48 mb-4" />
           <Bone className="h-32 w-full rounded-xl" />
         </div>
@@ -130,14 +130,14 @@ export function SerpSkeleton() {
           <Bone className="h-4 w-80" />
         </div>
       </div>
-      <div className="bg-indigo-950/30 border border-indigo-800/50 rounded-xl p-5 mb-8">
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 mb-8">
         <Bone className="h-20 w-full" />
       </div>
       {/* SERP preview card */}
-      <div className="bg-white rounded-xl p-6">
-        <Bone className="h-4 w-64 mb-2 bg-slate-300/50" />
-        <Bone className="h-6 w-96 mb-2 bg-blue-300/30" />
-        <Bone className="h-12 w-full bg-slate-300/50" />
+      <div className="bg-card rounded-xl p-6">
+        <Bone className="h-4 w-64 mb-2" />
+        <Bone className="h-6 w-96 mb-2" />
+        <Bone className="h-12 w-full" />
       </div>
     </div>
   );
@@ -151,7 +151,7 @@ export function PageSkeleton() {
       <Bone className="h-4 w-72 mb-8" />
       <div className="space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-slate-800/50 border border-slate-700 rounded-2xl p-5">
+          <div key={i} className="bg-card border border-border rounded-2xl p-5">
             <Bone className="h-5 w-64 mb-3" />
             <Bone className="h-4 w-full mb-2" />
             <Bone className="h-4 w-3/4" />

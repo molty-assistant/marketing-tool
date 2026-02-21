@@ -62,7 +62,8 @@ export function usePlan(id: string) {
     }, [id]);
 
     useEffect(() => {
-        load();
+        const cleanup = load();
+        return () => { cleanup.then((abort) => abort?.()); };
     }, [load]);
 
     return { plan, loading, error, reload: load };

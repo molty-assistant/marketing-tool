@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const appContext = {
       app_name: config?.app_name,
@@ -230,7 +230,7 @@ APP CONTEXT (structured):\n${JSON.stringify(appContext)}\n\nSCRAPED INFO (may be
     return NextResponse.json({
       calendar,
       metadata: {
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokens,
         platforms,
         weeks,

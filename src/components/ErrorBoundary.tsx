@@ -36,14 +36,14 @@ export default class ErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="w-full max-w-xl bg-slate-800/50 border border-slate-700 rounded-2xl p-6 sm:p-8 text-center">
+          <div className="w-full max-w-xl bg-card border border-border rounded-2xl p-6 sm:p-8 text-center">
             <div className="text-4xl mb-4">💥</div>
-            <h1 className="text-2xl font-bold text-white mb-2">Something went wrong</h1>
-            <p className="text-slate-400 mb-6">
+            <h1 className="text-2xl font-bold text-foreground mb-2">Something went wrong</h1>
+            <p className="text-muted-foreground mb-6">
               An unexpected error occurred while rendering this page.
             </p>
             {this.state.error?.message ? (
-              <p className="text-sm text-slate-500 bg-slate-900/40 border border-slate-700/60 rounded-xl p-3 mb-6 break-words">
+              <p className="text-sm text-muted-foreground bg-muted/50 border border-border rounded-xl p-3 mb-6 break-words">
                 {this.state.error.message}
               </p>
             ) : null}

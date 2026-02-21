@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
-function secureCompare(input: string, expected: string): boolean {
+export function secureCompare(input: string, expected: string): boolean {
   const inputBuffer = Buffer.from(input);
   const expectedBuffer = Buffer.from(expected);
   const maxLength = Math.max(inputBuffer.length, expectedBuffer.length);

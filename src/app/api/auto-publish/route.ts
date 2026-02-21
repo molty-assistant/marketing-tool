@@ -74,7 +74,7 @@ TARGET AUDIENCE: ${config.target_audience || ''}
 URL: ${config.app_url || scraped.url || ''}
 ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const geminiResp = await fetch(geminiUrl, {
       method: 'POST',

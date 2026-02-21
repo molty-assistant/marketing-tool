@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Platform = 'instagram' | 'tiktok';
 
@@ -61,6 +61,9 @@ export default function SocialPage() {
   // History
   const [history, setHistory] = useState<SocialPost[]>([]);
 
+  // Guard to prevent save effect from re-writing hydrated data on mount
+  const hydrated = useRef(false);
+
   // Visibility gates
   const canShowStep2 = selectedPlatform !== null;
   const canShowStep3AndStep4 = idea !== null;
@@ -81,6 +84,35 @@ export default function SocialPage() {
       .catch(() => {});
   }, []);
 
+  // Hydrate state from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(`social-${planId}`);
+      if (!saved) { hydrated.current = true; return; }
+      const data = JSON.parse(saved);
+      if (data.selectedPlatform) setSelectedPlatform(data.selectedPlatform);
+      if (data.caption) setCaption(data.caption);
+      if (data.hashtagsInput) setHashtagsInput(data.hashtagsInput);
+      if (data.imageMode) setImageMode(data.imageMode);
+      if (data.idea) setIdea(data.idea);
+      if (data.image) setImage(data.image);
+    } catch { /* ignore corrupted data */ }
+    // Mark hydration complete after a tick so the save effect skips the first run
+    requestAnimationFrame(() => { hydrated.current = true; });
+  }, [planId]);
+
+  // Debounced save state to sessionStorage
+  useEffect(() => {
+    if (!selectedPlatform || !hydrated.current) return; // don't save empty or pre-hydration state
+    const timer = setTimeout(() => {
+      try {
+        const snapshot = { selectedPlatform, caption, hashtagsInput, imageMode, idea, image };
+        sessionStorage.setItem(`social-${planId}`, JSON.stringify(snapshot));
+      } catch { /* sessionStorage full or unavailable */ }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [selectedPlatform, caption, hashtagsInput, imageMode, idea, image, planId]);
+
   // Elapsed timer for video progress bar
   useEffect(() => {
     if (!videoOperation || videoUrl || !videoStartTime) return;
@@ -93,12 +125,23 @@ export default function SocialPage() {
   }, [videoOperation, videoUrl, videoStartTime]);
 
   // Poll video status every 10s while operation exists and URL not ready
+  // Times out after 5 minutes to avoid infinite polling
   useEffect(() => {
     if (!videoOperation || videoUrl) return;
 
     let cancelled = false;
+    const VIDEO_TIMEOUT_MS = 5 * 60 * 1000;
+    const startedAt = Date.now();
 
     async function pollOnce() {
+      if (Date.now() - startedAt > VIDEO_TIMEOUT_MS) {
+        if (!cancelled) {
+          setVideoError('Video generation timed out. Please try again.');
+          setVideoGenerating(false);
+        }
+        return;
+      }
+
       try {
         const res = await fetch(
           `/api/generate-video/status?taskId=${encodeURIComponent(videoOperation)}`
@@ -109,6 +152,9 @@ export default function SocialPage() {
 
         if (data?.done === true && data?.videoUrl) {
           setVideoUrl(String(data.videoUrl));
+          setVideoGenerating(false);
+        } else if (data?.done === true) {
+          setVideoError(data?.error ? String(data.error) : 'Video generation completed without a result');
           setVideoGenerating(false);
         }
       } catch (err) {
@@ -283,6 +329,9 @@ export default function SocialPage() {
 
       setQueueResult({ ok: true, message: `✅ Queued to ${selectedPlatform}` });
 
+      // Clear persisted state after successful queue
+      sessionStorage.removeItem(`social-${planId}`);
+
       // Refresh history
       const histRes = await fetch('/api/post-to-buffer');
       const histData = await histRes.json();
@@ -415,7 +464,7 @@ export default function SocialPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 border-t border-slate-300/70 pt-4 dark:border-slate-700/60">
+                  <div className="mt-4 flex items-center gap-3 border-t border-slate-300/70 pt-4 dark:border-slate-700/60">
                     <button
                       type="button"
                       onClick={generateIdea}
@@ -423,6 +472,27 @@ export default function SocialPage() {
                       className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-300 disabled:cursor-not-allowed disabled:bg-slate-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600 dark:disabled:bg-slate-800"
                     >
                       {ideaGenerating ? '✨ Regenerating…' : '↺ Regenerate'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sessionStorage.removeItem(`social-${planId}`);
+                        setSelectedPlatform(null);
+                        setCaption('');
+                        setHashtagsInput('');
+                        setImageMode('hybrid');
+                        setIdea(null);
+                        setImage(null);
+                        setIdeaError('');
+                        setImageError('');
+                        setVideoOperation('');
+                        setVideoUrl('');
+                        setVideoError('');
+                        setQueueResult(null);
+                      }}
+                      className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+                    >
+                      Start Over
                     </button>
                   </div>
                 </div>
@@ -514,7 +584,7 @@ export default function SocialPage() {
                       Generating video…
                     </>
                   ) : (
-                    <>🎬 Generate Video (Veo 2)</>
+                    <>🎬 Generate Video</>
                   )}
                 </button>
               </div>
@@ -559,7 +629,7 @@ export default function SocialPage() {
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-slate-800 dark:text-slate-200">Generating video…</div>
                         <div className="text-xs text-slate-500 mt-0.5">
-                          Veo 2 typically takes ~90 seconds
+                          Kling 3.0 typically takes ~90 seconds
                         </div>
                       </div>
                       <div className="text-xs whitespace-nowrap text-slate-500 dark:text-slate-400">
@@ -582,14 +652,32 @@ export default function SocialPage() {
               {/* Video download */}
               {videoUrl && (
                 <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/40">
-                  <div className="mb-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">✅ Video ready</div>
-                  <a
-                    href={`/api/download-video?uri=${encodeURIComponent(videoUrl)}`}
-                    download="promo-video.mp4"
-                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
-                  >
-                    ⬇️ Download MP4
-                  </a>
+                  <div className="mb-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">Video ready</div>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href={`/api/download-video?uri=${encodeURIComponent(videoUrl)}&aspect=${selectedPlatform === 'tiktok' ? '9:16' : '1:1'}`}
+                      download="promo-video.mp4"
+                      className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+                    >
+                      Download MP4
+                    </a>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          if (typeof navigator !== 'undefined' && navigator.share) {
+                            const res = await fetch(`/api/download-video?uri=${encodeURIComponent(videoUrl)}`);
+                            const blob = await res.blob();
+                            const file = new File([blob], 'promo-video.mp4', { type: 'video/mp4' });
+                            await navigator.share({ files: [file] });
+                          }
+                        } catch { /* user cancelled */ }
+                      }}
+                      className="inline-flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+                    >
+                      Share
+                    </button>
+                  </div>
                 </div>
               )}
             </section>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { internalBaseUrl } from '@/lib/orchestrator';
 
 /**
  * Process scheduled posts that are due.
@@ -12,24 +13,23 @@ export async function POST(request: NextRequest) {
     const db = getDb();
     const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
-    // Atomically claim due posts
-    const due = db.prepare(
-      "SELECT * FROM content_schedule WHERE scheduled_at <= ? AND status = 'scheduled'"
-    ).all(now) as Array<Record<string, string>>;
+    // Atomically claim due posts (single transaction to prevent double-processing)
+    const due = db.transaction(() => {
+      return db.prepare(
+        `UPDATE content_schedule SET status = 'generating', updated_at = datetime('now')
+         WHERE rowid IN (
+           SELECT rowid FROM content_schedule
+           WHERE scheduled_at <= ? AND status = 'scheduled'
+         ) RETURNING *`
+      ).all(now) as Array<Record<string, string>>;
+    })();
 
     if (due.length === 0) {
       return NextResponse.json({ processed: 0, results: [] });
     }
 
-    // Mark all as generating
-    const ids = due.map(r => r.id);
-    const placeholders = ids.map(() => '?').join(',');
-    db.prepare(
-      `UPDATE content_schedule SET status = 'generating', updated_at = datetime('now') WHERE id IN (${placeholders})`
-    ).run(...ids);
-
     const results: Array<{ id: string; status: string; error?: string }> = [];
-    const origin = request.nextUrl.origin;
+    const origin = internalBaseUrl();
 
     for (const item of due) {
       try {

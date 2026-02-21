@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
     const appContext = {
       app_name: config?.app_name,
@@ -239,7 +239,7 @@ Use the app's differentiators and audience. Avoid making unverifiable claims (e.
     return NextResponse.json({
       draft,
       metadata: {
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-pro',
         tokens,
         tone,
       },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, getDb } from '@/lib/db';
+import { internalBaseUrl } from '@/lib/orchestrator';
 
 /**
  * Review Monitor — automated review checking + sentiment + response suggestions
@@ -50,11 +51,11 @@ export async function POST(request: NextRequest) {
     `);
 
     // Step 1: Scrape reviews via our own API
-    const baseUrl = request.nextUrl.origin;
+    const baseUrl = internalBaseUrl();
     const scrapeRes = await fetch(`${baseUrl}/api/scrape-reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planId }),
+      body: JSON.stringify({ planId, appStoreUrl: appUrl }),
     });
 
     if (!scrapeRes.ok) {
@@ -96,12 +97,14 @@ export async function POST(request: NextRequest) {
     const sentimentRes = await fetch(`${baseUrl}/api/review-sentiment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planId }),
+      body: JSON.stringify({ planId, reviews }),
     });
 
     let sentiment = null;
     if (sentimentRes.ok) {
       sentiment = await sentimentRes.json();
+    } else {
+      console.warn('review-sentiment failed:', sentimentRes.status, await sentimentRes.text().catch(() => ''));
     }
 
     // Step 4: Generate response suggestions for negative reviews (≤ 3 stars)
@@ -111,7 +114,7 @@ export async function POST(request: NextRequest) {
     if (negativeReviews.length > 0) {
       const apiKey = process.env.GEMINI_API_KEY;
       if (apiKey) {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
         
         const prompt = `You are a customer support specialist for ${config.app_name || 'this app'}. 
 Generate professional, empathetic responses for these negative reviews. Be helpful and solution-oriented.

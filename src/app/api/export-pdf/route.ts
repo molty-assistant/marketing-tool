@@ -1,5 +1,5 @@
-import { headers } from 'next/headers';
 import { chromium } from 'playwright';
+import { internalBaseUrl } from '@/lib/orchestrator';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,14 +11,6 @@ function slugify(input: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '')
     .slice(0, 80);
-}
-
-async function getBaseUrl() {
-  const h = await headers();
-  const host = h.get('x-forwarded-host') ?? h.get('host');
-  const proto = h.get('x-forwarded-proto') ?? 'http';
-  if (!host) return null;
-  return `${proto}://${host}`;
 }
 
 function parseCookieHeader(cookieHeader: string | null | undefined) {
@@ -40,10 +32,7 @@ function getFilenameFromPlanName(planName: string | undefined | null) {
 }
 
 export async function POST(req: Request) {
-  const baseUrl = await getBaseUrl();
-  if (!baseUrl) {
-    return Response.json({ error: 'Missing host' }, { status: 400 });
-  }
+  const baseUrl = internalBaseUrl();
 
   let body: { planId?: string; token?: string };
   try {
