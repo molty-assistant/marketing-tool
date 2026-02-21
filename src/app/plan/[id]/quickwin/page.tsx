@@ -28,9 +28,12 @@ export default function QuickWinPage() {
     const [tiktokData, setTiktokData] = useState<SocialPostData | null>(null);
     const [image, setImage] = useState<ImageResult | null>(null);
 
-    const [igGenerating, setIgGenerating] = useState(true);
-    const [tiktokGenerating, setTiktokGenerating] = useState(true);
-    const [imageGenerating, setImageGenerating] = useState(true);
+    const [igGenerating, setIgGenerating] = useState(false);
+    const [tiktokGenerating, setTiktokGenerating] = useState(false);
+    const [imageGenerating, setImageGenerating] = useState(false);
+
+    // Whether the user has started generation (click or cache)
+    const [hasStarted, setHasStarted] = useState(false);
 
     // Buffer queue state
     const [igQueueing, setIgQueueing] = useState(false);
@@ -46,9 +49,6 @@ export default function QuickWinPage() {
     const [videoElapsed, setVideoElapsed] = useState(0);
     const [videoStartTime, setVideoStartTime] = useState<number | null>(null);
 
-    // Cache state
-    const [loadedFromCache, setLoadedFromCache] = useState(false);
-    const skipGeneration = useRef(false);
 
     // Tips disclosure toggles
     const [igTipsOpen, setIgTipsOpen] = useState(false);
@@ -133,15 +133,12 @@ export default function QuickWinPage() {
                 };
                 sessionStorage.setItem(cacheKey, JSON.stringify(cachePayload));
             } catch { /* sessionStorage full or unavailable */ }
-            setLoadedFromCache(true);
+            
         }
     }, [planId]);
 
-    // Auto-fire generation on load (with sessionStorage cache)
+    // Restore from sessionStorage cache on load (do NOT auto-generate)
     useEffect(() => {
-        let active = true;
-
-        // Check sessionStorage cache first
         try {
             const cached = sessionStorage.getItem(`quickwin-${planId}`);
             if (cached) {
@@ -149,19 +146,11 @@ export default function QuickWinPage() {
                 if (parsed.igData) setIgData(parsed.igData);
                 if (parsed.tiktokData) setTiktokData(parsed.tiktokData);
                 if (parsed.image) setImage(parsed.image);
-                setIgGenerating(false);
-                setTiktokGenerating(false);
-                setImageGenerating(false);
-                setLoadedFromCache(true);
-                skipGeneration.current = true;
+                
+                setHasStarted(true);
             }
         } catch { /* ignore corrupt cache */ }
-
-        if (skipGeneration.current) return;
-
-        runGeneration(() => !active);
-        return () => { active = false; };
-    }, [planId, runGeneration]);
+    }, [planId]);
 
     // Video polling — times out after 5 minutes to avoid infinite polling
     useEffect(() => {
@@ -215,12 +204,13 @@ export default function QuickWinPage() {
 
     const regenCancelRef = useRef<(() => void) | null>(null);
 
-    function handleRegenerate() {
-        // Cancel any in-flight regeneration
+    function handleGenerate() {
+        // Cancel any in-flight generation
         regenCancelRef.current?.();
 
         try { sessionStorage.removeItem(`quickwin-${planId}`); } catch { /* ignore */ }
-        setLoadedFromCache(false);
+
+        setHasStarted(true);
         setIgData(null);
         setTiktokData(null);
         setImage(null);
@@ -229,7 +219,6 @@ export default function QuickWinPage() {
         setImageGenerating(true);
         setIgTipsOpen(false);
         setTtTipsOpen(false);
-        skipGeneration.current = false;
 
         let cancelled = false;
         regenCancelRef.current = () => { cancelled = true; };
@@ -354,18 +343,28 @@ export default function QuickWinPage() {
                     <div>
                         <h1 className="text-3xl font-bold mb-2">Quick Wins</h1>
                         <p className="opacity-90 max-w-2xl text-lg">
-                            We analyzed your app and instantly generated these ready-to-post assets to help you get started right now.
+                            {hasStarted
+                                ? 'Ready-to-post assets generated from your app analysis.'
+                                : 'Generate ready-to-post social content, captions, and a hero graphic in seconds.'}
                         </p>
                     </div>
-                    {loadedFromCache && (
+                    {hasStarted && !igGenerating && !tiktokGenerating && !imageGenerating && (
                         <button
-                            onClick={handleRegenerate}
-                            className="flex shrink-0 items-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-200 dark:hover:bg-slate-700"
+                            onClick={handleGenerate}
+                            className="flex shrink-0 items-center gap-2 rounded-xl bg-white/20 backdrop-blur px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/30"
                         >
                             <RefreshCw className="h-4 w-4" /> Regenerate
                         </button>
                     )}
                 </div>
+                {!hasStarted && (
+                    <button
+                        onClick={handleGenerate}
+                        className="mt-4 flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-indigo-600 shadow-md transition hover:bg-indigo-50"
+                    >
+                        Generate Quick Wins
+                    </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -407,8 +406,12 @@ export default function QuickWinPage() {
                                     </div>
                                 )}
                             </div>
-                        ) : (
+                        ) : hasStarted ? (
                             <div className="text-red-400 text-sm">Failed to generate</div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-slate-400 text-sm">
+                                Click &ldquo;Generate&rdquo; to create an Instagram caption
+                            </div>
                         )}
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-2">
@@ -501,8 +504,12 @@ export default function QuickWinPage() {
                                     </div>
                                 )}
                             </div>
-                        ) : (
+                        ) : hasStarted ? (
                             <div className="text-red-400 text-sm">Failed to generate</div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-slate-400 text-sm">
+                                Click &ldquo;Generate&rdquo; to create a TikTok script
+                            </div>
                         )}
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-2">
@@ -572,8 +579,12 @@ export default function QuickWinPage() {
                         ) : image ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={image.publicUrl} alt="Hero graphic" className="w-full h-full object-cover" />
-                        ) : (
+                        ) : hasStarted ? (
                             <div className="absolute inset-0 flex items-center justify-center text-red-400 text-sm">Failed to generate</div>
+                        ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                                Click &ldquo;Generate&rdquo; to create a hero image
+                            </div>
                         )}
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-2">

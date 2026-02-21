@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AI-powered marketing content generator. Paste an App Store, Google Play, or website URL → get ready-to-post social content (captions, images, video, carousels) in 60 seconds, with a full marketing suite underneath.
 
-**Stack:** Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS v4, shadcn/ui, SQLite (better-sqlite3), Google Gemini 2.5 Pro + 2.5 Flash (text — single API key, model selected per route), Nano Banana Pro via Kie.ai (images), Kling 3.0 via Kie.ai (video), Perplexity (optional — competitive research).
+**Stack:** Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS v4, shadcn/ui, SQLite (better-sqlite3), Google Gemini 2.5 Flash (text — free tier, single API key), Nano Banana Pro via Kie.ai (images), Kling 3.0 via Kie.ai (video), Perplexity (optional — competitive research).
 
 ## Commands
 
@@ -68,8 +68,7 @@ SQLite at `data/marketing-tool.db` — raw SQL via singleton `getDb()` in `src/l
 
 ### AI Integration
 
-- **Text (Pro):** Gemini 2.5 Pro for creative content — `generate-social-post`, `caption-to-image-brief`, `generate-carousel`, `brand-voice`, `generate-draft`. Raw `fetch()` to REST API (no SDK).
-- **Text (Flash):** Gemini 2.5 Flash for structured/bulk tasks — all pipeline functions in `src/lib/pipeline.ts` + scheduling, calendar, translations, variants, etc.
+- **Text:** Gemini 2.5 Flash for all text generation (free tier). Single `GEMINI_API_KEY`, model `gemini-2.5-flash` across all 23 call sites. Raw `fetch()` to REST API (no SDK).
 - **Images:** Nano Banana Pro via Kie.ai async task API (create task → poll status → get URL). See `src/app/api/generate-hero-bg/route.ts`.
 - **Video:** Kling 3.0 via Kie.ai async task API. See `src/app/api/generate-video/route.ts`.
 - **Research (optional):** Perplexity for competitive analysis, keyword research, review scraping fallback. Requires `PERPLEXITY_API_KEY`.

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       'Rules: Nano Banana supports strong native text rendering. You MUST include a concise "textOverlay" (3-5 words) that acts as the hook. ' +
       'Enforce strong brand consistency through the palette and mood. Avoid UI/screenshots/logos/watermarks.';
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const res = await fetch(url, {
       method: 'POST',
