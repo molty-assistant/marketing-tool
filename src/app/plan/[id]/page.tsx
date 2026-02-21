@@ -27,10 +27,10 @@ type OverviewApi = {
 
 const ACTION_CARDS = [
   {
-    title: 'Quick Win',
-    description: 'Instagram post + TikTok script + AI image in 60 seconds',
-    href: '/quickwin',
-    icon: Zap,
+    title: 'Social Posts',
+    description: 'Create posts with AI captions, your photos, and Buffer publishing',
+    href: '/social',
+    icon: Share2,
     gradient: 'from-indigo-500 to-violet-500',
     iconBg: 'bg-indigo-400/20',
   },
@@ -43,10 +43,10 @@ const ACTION_CARDS = [
     iconBg: 'bg-pink-400/20',
   },
   {
-    title: 'Social Posts',
-    description: 'Full social flow with video, images, and Buffer integration',
-    href: '/social',
-    icon: Share2,
+    title: 'Quick Win',
+    description: 'Bulk-generate IG + TikTok + hero image in one click',
+    href: '/quickwin',
+    icon: Zap,
     gradient: 'from-cyan-500 to-blue-500',
     iconBg: 'bg-cyan-400/20',
   },

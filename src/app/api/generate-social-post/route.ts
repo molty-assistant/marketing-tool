@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan } from '@/lib/db';
 
+interface ImageInput {
+  mimeType: string;
+  base64Data: string;
+}
+
 interface GenerateSocialPostRequest {
   planId: string;
   platform: 'instagram' | 'tiktok';
   contentType: 'post' | 'reel' | 'story' | 'carousel';
   topic?: string; // optional theme/angle
+  images?: ImageInput[]; // optional user photos for multimodal generation
 }
 
 export async function POST(request: NextRequest) {
@@ -20,6 +26,18 @@ export async function POST(request: NextRequest) {
     const platform = body.platform || 'instagram';
     const contentType = body.contentType || 'post';
     const topic = body.topic || '';
+
+    // Validate optional user images (max 3, max ~7MB base64 each)
+    const images: ImageInput[] = [];
+    if (Array.isArray(body.images)) {
+      for (const img of body.images.slice(0, 3)) {
+        if (img && typeof img.mimeType === 'string' && typeof img.base64Data === 'string') {
+          if (img.base64Data.length <= 7 * 1024 * 1024) {
+            images.push({ mimeType: img.mimeType, base64Data: img.base64Data });
+          }
+        }
+      }
+    }
 
     const row = getPlan(planId);
     if (!row) {
@@ -59,6 +77,7 @@ export async function POST(request: NextRequest) {
 ${platformGuidelines[platform] || platformGuidelines.instagram}
 
 Create a single ${contentType} for the app described below. Return valid JSON only.
+${images.length > 0 ? `\nIMPORTANT: The user has provided ${images.length} photo(s). Study them carefully. Your caption MUST reference specific visual elements, colours, features, or scenes visible in the photos. Do NOT write generic copy — ground the caption in what you can actually see.` : ''}
 
 Response schema:
 {
@@ -89,7 +108,7 @@ RATING: ${scraped.rating || 'N/A'}
 URL: ${config.app_url || scraped.url || ''}
 
 CONTENT TYPE: ${contentType}
-${topic ? `TOPIC/ANGLE: ${topic}` : 'Generate a topic that would resonate with the target audience.'}
+${topic ? `USER'S REQUESTED TOPIC: "${topic}" — the post MUST be about this specific topic.` : 'Generate a topic that would resonate with the target audience.'}
 
 Generate a single compelling ${contentType} for ${platform}.`;
 
@@ -100,7 +119,12 @@ Generate a single compelling ${contentType} for ${platform}.`;
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ parts: [{ text: userContent }] }],
+        contents: [{ parts: [
+          { text: userContent },
+          ...images.map(img => ({
+            inlineData: { mimeType: img.mimeType, data: img.base64Data },
+          })),
+        ] }],
         generationConfig: {
           temperature: 0.8,
           maxOutputTokens: 4096,

@@ -52,12 +52,12 @@ const NAV_GROUPS: NavGroup[] = [
     key: 'create',
     label: 'Create',
     icon: Zap,
-    href: '/quickwin',
+    href: '/social',
     alwaysOpen: true,
     children: [
-      { label: 'Quick Win', href: '/quickwin' },
       { label: 'Social Posts', href: '/social' },
       { label: 'Carousel', href: '/carousel' },
+      { label: 'Quick Win', href: '/quickwin' },
     ],
   },
   {

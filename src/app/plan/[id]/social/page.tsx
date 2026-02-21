@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 
 type Platform = 'instagram' | 'tiktok';
 
@@ -33,6 +34,16 @@ export default function SocialPage() {
 
   // Step 1
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
+  const [topicInput, setTopicInput] = useState('');
+  const [uploadedPhotos, setUploadedPhotos] = useState<Array<{
+    dataUrl: string;
+    filename?: string;
+    publicUrl?: string;
+    mimeType: string;
+    base64Data: string;
+  }>>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Step 2
   const [ideaGenerating, setIdeaGenerating] = useState(false);
@@ -91,11 +102,13 @@ export default function SocialPage() {
       if (!saved) { hydrated.current = true; return; }
       const data = JSON.parse(saved);
       if (data.selectedPlatform) setSelectedPlatform(data.selectedPlatform);
+      if (data.topicInput) setTopicInput(data.topicInput);
       if (data.caption) setCaption(data.caption);
       if (data.hashtagsInput) setHashtagsInput(data.hashtagsInput);
       if (data.imageMode) setImageMode(data.imageMode);
       if (data.idea) setIdea(data.idea);
       if (data.image) setImage(data.image);
+      if (Array.isArray(data.uploadedPhotos)) setUploadedPhotos(data.uploadedPhotos);
     } catch { /* ignore corrupted data */ }
     // Mark hydration complete after a tick so the save effect skips the first run
     requestAnimationFrame(() => { hydrated.current = true; });
@@ -106,12 +119,14 @@ export default function SocialPage() {
     if (!selectedPlatform || !hydrated.current) return; // don't save empty or pre-hydration state
     const timer = setTimeout(() => {
       try {
-        const snapshot = { selectedPlatform, caption, hashtagsInput, imageMode, idea, image };
+        // Strip base64/dataUrl from photos to avoid exceeding sessionStorage limits
+        const photosForStorage = uploadedPhotos.map(({ dataUrl: _d, base64Data: _b, ...rest }) => rest);
+        const snapshot = { selectedPlatform, topicInput, caption, hashtagsInput, imageMode, idea, image, uploadedPhotos: photosForStorage };
         sessionStorage.setItem(`social-${planId}`, JSON.stringify(snapshot));
       } catch { /* sessionStorage full or unavailable */ }
     }, 500);
     return () => clearTimeout(timer);
-  }, [selectedPlatform, caption, hashtagsInput, imageMode, idea, image, planId]);
+  }, [selectedPlatform, topicInput, caption, hashtagsInput, imageMode, idea, image, uploadedPhotos, planId]);
 
   // Elapsed timer for video progress bar
   useEffect(() => {
@@ -172,6 +187,41 @@ export default function SocialPage() {
     };
   }, [videoOperation, videoUrl]);
 
+  // ─── Handlers ──────────────────────────────────────────────────────────────
+
+  function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
+
+    const remaining = 3 - uploadedPhotos.length;
+    const toProcess = Array.from(files).slice(0, remaining);
+
+    for (const file of toProcess) {
+      if (!file.type.startsWith('image/')) continue;
+      if (file.size > 5 * 1024 * 1024) continue;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const match = dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+        if (!match) return;
+
+        setUploadedPhotos((prev) => {
+          if (prev.length >= 3) return prev;
+          return [...prev, { dataUrl, mimeType: match[1], base64Data: match[2] }];
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Reset input so re-selecting the same file triggers change
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function removePhoto(index: number) {
+    setUploadedPhotos((prev) => prev.filter((_, i) => i !== index));
+  }
+
   // ─── Actions ───────────────────────────────────────────────────────────────
 
   async function generateIdea() {
@@ -182,10 +232,48 @@ export default function SocialPage() {
     setQueueResult(null);
 
     try {
+      // Upload photos to server if any are new (no filename yet)
+      let photos = uploadedPhotos;
+      const newPhotos = photos.filter((p) => !p.filename);
+      if (newPhotos.length > 0) {
+        setUploading(true);
+        try {
+          const uploadRes = await fetch('/api/upload-photos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photos: newPhotos.map((p) => p.dataUrl) }),
+          });
+          const uploadData = await uploadRes.json();
+          if (uploadRes.ok && Array.isArray(uploadData.files)) {
+            let fileIdx = 0;
+            photos = photos.map((p) => {
+              if (!p.filename && fileIdx < uploadData.files.length) {
+                const f = uploadData.files[fileIdx++];
+                return { ...p, filename: f.filename, publicUrl: f.publicUrl };
+              }
+              return p;
+            });
+            setUploadedPhotos(photos);
+          }
+        } finally {
+          setUploading(false);
+        }
+      }
+
+      // Build images array for multimodal Gemini
+      const images = photos
+        .filter((p) => p.mimeType && p.base64Data)
+        .map((p) => ({ mimeType: p.mimeType, base64Data: p.base64Data }));
+
       const res = await fetch('/api/generate-social-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, platform: selectedPlatform }),
+        body: JSON.stringify({
+          planId,
+          platform: selectedPlatform,
+          topic: topicInput.trim() || undefined,
+          images: images.length > 0 ? images : undefined,
+        }),
       });
 
       const data = await res.json();
@@ -362,8 +450,8 @@ export default function SocialPage() {
 
         {/* ── Step 1 ─ Choose channel ─────────────────────────────────────── */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-          <h2 className="text-xl font-semibold mb-1">Step 1 · Choose channel</h2>
-          <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">Pick the platform you want to post to.</p>
+          <h2 className="text-xl font-semibold mb-1">Step 1 · What do you want to post?</h2>
+          <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">Pick a platform, optionally add a topic and reference photos to guide the AI.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
@@ -404,6 +492,74 @@ export default function SocialPage() {
               )}
             </button>
           </div>
+
+          {/* Topic + photos (optional context for AI generation) */}
+          {selectedPlatform && (
+            <div className="mt-6 space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Topic or angle <span className="text-slate-500 font-normal">(optional)</span>
+                </label>
+                <textarea
+                  value={topicInput}
+                  onChange={(e) => setTopicInput(e.target.value)}
+                  rows={2}
+                  placeholder='e.g. "Show off the new dark mode feature" or "Behind the scenes of building the app"'
+                  className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-slate-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Reference photos <span className="text-slate-500 font-normal">(optional, max 3)</span>
+                </label>
+                <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+                  Upload photos and the AI will reference them when writing the caption.
+                </p>
+
+                {uploadedPhotos.length > 0 && (
+                  <div className="mb-3 flex flex-wrap gap-3">
+                    {uploadedPhotos.map((photo, idx) => (
+                      <div key={idx} className="relative group">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={photo.dataUrl || photo.publicUrl || ''}
+                          alt={`Upload ${idx + 1}`}
+                          className="h-20 w-20 rounded-lg border border-slate-300 object-cover dark:border-slate-600"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(idx)}
+                          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                        >
+                          x
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {uploadedPhotos.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-600 transition hover:border-slate-400 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-900/70"
+                  >
+                    + Add photos
+                  </button>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  multiple
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          )}
         </section>
 
         {/* ── Step 2 ─ Generate post idea ─────────────────────────────────── */}
@@ -478,6 +634,8 @@ export default function SocialPage() {
                       onClick={() => {
                         sessionStorage.removeItem(`social-${planId}`);
                         setSelectedPlatform(null);
+                        setTopicInput('');
+                        setUploadedPhotos([]);
                         setCaption('');
                         setHashtagsInput('');
                         setImageMode('hybrid');
@@ -587,6 +745,31 @@ export default function SocialPage() {
                     <>🎬 Generate Video</>
                   )}
                 </button>
+              </div>
+
+              {/* Additional media options */}
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {uploadedPhotos.length > 0 && !image && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const photo = uploadedPhotos[0];
+                      if (photo.filename && photo.publicUrl) {
+                        setImage({ filename: photo.filename, publicUrl: photo.publicUrl });
+                      }
+                    }}
+                    disabled={!uploadedPhotos[0]?.filename}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300 dark:hover:bg-indigo-950/50"
+                  >
+                    Use My Photo
+                  </button>
+                )}
+                <Link
+                  href={`/plan/${planId}/carousel`}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-900/70"
+                >
+                  Create Carousel
+                </Link>
               </div>
 
               {imageError && (

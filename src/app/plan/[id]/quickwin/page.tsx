@@ -367,6 +367,17 @@ export default function QuickWinPage() {
                 )}
             </div>
 
+            {/* Suggest Social Posts for more control */}
+            <div className="mb-6 flex items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3 dark:border-indigo-800/40 dark:bg-indigo-950/20">
+                <span className="text-sm text-slate-700 dark:text-slate-300">
+                    For better results, try{' '}
+                    <Link href={`/plan/${planId}/social`} className="font-medium text-indigo-600 underline hover:text-indigo-500 dark:text-indigo-400">
+                        Social Posts
+                    </Link>
+                    {' '}&mdash; add your own photos and topic before generating.
+                </span>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                 {/* Instagram Card */}
