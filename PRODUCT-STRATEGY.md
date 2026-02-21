@@ -31,9 +31,9 @@ Your immediate need is simple: paste a URL, get great social content you'd actua
 | Framework | Next.js 16.1.6, React 19.2.3, TypeScript 5.9.3 (strict) |
 | Styling | Tailwind CSS 4.1.18, shadcn/ui (new-york), lucide-react |
 | Database | SQLite via better-sqlite3 12.6.2 (WAL mode) |
-| AI (copy) | **Gemini 2.5 Flash** via raw fetch (no SDK) |
-| AI (images) | **Nano Banana Pro** via Kie.ai (`nano-banana-pro`) — 2K/4K, native text rendering |
-| AI (video) | **Kling 3.0** via Kie.ai (`kling-3.0/video`) — up to 15s, native audio, multi-shot |
+| AI (text only) | **Gemini 2.5 Flash** via Google AI Studio raw fetch — `GEMINI_API_KEY` |
+| AI (images) | **Nano Banana Pro** via Kie.ai (`nano-banana-pro`) — `KIE_API_KEY` |
+| AI (video) | **Kling 3.0** via Kie.ai (`kling-3.0/video`) — `KIE_API_KEY` |
 | Rendering | Playwright 1.58.2 (HTML → PNG) |
 | Social publishing | Buffer via Zapier MCP (`ZAPIER_MCP_TOKEN` env var, JSON-RPC 2.0 + SSE) |
 | Deployment | Railway (auto-deploy from `main`) |
