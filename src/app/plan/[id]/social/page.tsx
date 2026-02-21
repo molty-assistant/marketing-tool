@@ -101,7 +101,7 @@ export default function SocialPage() {
     async function pollOnce() {
       try {
         const res = await fetch(
-          `/api/generate-video/status?operation=${encodeURIComponent(videoOperation)}`
+          `/api/generate-video/status?taskId=${encodeURIComponent(videoOperation)}`
         );
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to poll video status');
@@ -252,7 +252,7 @@ export default function SocialPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to start video generation');
 
-      setVideoOperation(String(data.operationName || ''));
+      setVideoOperation(String(data.taskId || ''));
       setVideoStartTime(Date.now());
     } catch (err) {
       setVideoError(err instanceof Error ? err.message : 'Failed to generate video');

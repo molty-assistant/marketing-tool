@@ -9,14 +9,18 @@ import crypto from 'crypto';
  * Body:
  * {
  *   imageBrief: { hook, scene, subject, mood, palette, composition, avoid[] },
- *   aspectRatio?: "1:1" | "9:16",
+ *   aspectRatio?: "1:1" | "4:5" | "9:16" | "16:9",
  *   publicBase?: string
  * }
  *
- * Generates a background image (PNG) using Imagen 3 and saves it to /app/data/images.
+ * Generates a background image (PNG) using Nano Banana Pro via Kie.ai
+ * and saves it to the configured images directory.
  */
 
+const KIE_API_BASE = 'https://api.kie.ai/api/v1/jobs';
 const IMAGES_DIR = process.env.IMAGE_DIR || '/app/data/images';
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_ATTEMPTS = 60; // 3s * 60 = 180s max wait
 
 type ImageBrief = {
   hook?: string;
@@ -29,18 +33,23 @@ type ImageBrief = {
   avoid?: string[];
 };
 
+function getApiKey() {
+  const key = process.env.KIE_API_KEY || '';
+  return key;
+}
+
 function safeLine(label: string, value: unknown) {
   const s = typeof value === 'string' ? value.trim() : '';
   return s ? `${label}: ${s}` : '';
 }
 
-function buildImagenPrompt(brief: ImageBrief) {
+function buildImagePrompt(brief: ImageBrief) {
   const avoid = Array.isArray(brief.avoid)
     ? brief.avoid.map((x) => (typeof x === 'string' ? x.trim() : '')).filter(Boolean)
     : [];
 
   const lines = [
-    'Create a high-quality image for a social post. Nano Banana will render text perfectly.',
+    'Create a high-quality image for a social post with strong native text rendering.',
     safeLine('Scene', brief.scene),
     safeLine('Subject', brief.subject),
     safeLine('Mood', brief.mood),
@@ -49,7 +58,6 @@ function buildImagenPrompt(brief: ImageBrief) {
     brief.hook ? `Creative intent: evoke the hook "${brief.hook.trim()}"` : '',
     brief.textOverlay ? `Include the exact text overlay: "${brief.textOverlay}" prominently in the design.` : '',
     avoid.length ? `Avoid: ${avoid.join('; ')}.` : '',
-    // Hard constraints
     'Hard constraints:',
     '- No UI elements, app screens, frames, phone mockups.',
     '- Do not include people or faces.',
@@ -60,82 +68,113 @@ function buildImagenPrompt(brief: ImageBrief) {
   return lines.join('\n');
 }
 
-function extractBase64Png(payload: unknown): string | null {
-  const data = payload as {
-    predictions?: Array<{ bytesBase64Encoded?: string; image?: { bytesBase64Encoded?: string }; imageBytes?: string }>;
-    candidates?: Array<{ content?: { parts?: Array<{ inlineData?: { data?: string } }> } }>;
-    output?: Array<{ data?: string }>;
-  };
-  // Imagen predict responses have varied shapes across versions; handle common cases.
-  const p0 = data?.predictions?.[0];
-  const candidates = [
-    p0?.bytesBase64Encoded,
-    p0?.image?.bytesBase64Encoded,
-    p0?.imageBytes,
-    data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data,
-    data?.output?.[0]?.data,
-  ];
-  for (const c of candidates) {
-    if (typeof c === 'string' && c.length > 100) return c;
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function pollForResult(taskId: string, apiKey: string): Promise<{ url: string } | { error: string }> {
+  for (let i = 0; i < MAX_POLL_ATTEMPTS; i++) {
+    await sleep(POLL_INTERVAL_MS);
+
+    const res = await fetch(`${KIE_API_BASE}/recordInfo?taskId=${taskId}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+
+    if (!res.ok) {
+      return { error: `Poll failed (${res.status})` };
+    }
+
+    const json = await res.json();
+    const state = json?.data?.state;
+
+    if (state === 'success') {
+      const resultJson = json?.data?.resultJson;
+      if (!resultJson) return { error: 'Task succeeded but resultJson is empty' };
+      const parsed = JSON.parse(resultJson);
+      const url = parsed?.resultUrls?.[0];
+      if (!url) return { error: 'Task succeeded but no resultUrls found' };
+      return { url };
+    }
+
+    if (state === 'fail') {
+      const msg = json?.data?.failMsg || 'Unknown error';
+      return { error: `Image generation failed: ${msg}` };
+    }
+
+    // still waiting/queuing/generating — continue polling
   }
-  return null;
+
+  return { error: 'Image generation timed out' };
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = getApiKey();
     if (!apiKey) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY is not set' }, { status: 500 });
+      return NextResponse.json({ error: 'KIE_API_KEY is not set' }, { status: 500 });
     }
 
     const body = await request.json();
     const imageBrief = (body?.imageBrief || null) as ImageBrief | null;
-    const aspectRatio = (body?.aspectRatio === '9:16' ? '9:16' : '1:1') as '1:1' | '9:16';
+    const aspectRatio = (['1:1', '4:5', '9:16', '16:9'].includes(body?.aspectRatio) ? body.aspectRatio : '1:1') as string;
     const baseUrl = (body?.publicBase as string | undefined) || request.nextUrl.origin;
 
     if (!imageBrief) {
       return NextResponse.json({ error: 'Missing imageBrief' }, { status: 400 });
     }
 
-    const prompt = buildImagenPrompt(imageBrief);
+    const prompt = buildImagePrompt(imageBrief);
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana:predict?key=${apiKey}`;
-
-    const res = await fetch(url, {
+    // Create task via Kie.ai
+    const createRes = await fetch(`${KIE_API_BASE}/createTask`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        instances: [{ prompt }],
-        parameters: {
-          sampleCount: 1,
-          aspectRatio,
-          safetyFilterLevel: 'BLOCK_ONLY_HIGH',
-          personGeneration: 'DONT_ALLOW',
+        model: 'nano-banana-pro',
+        input: {
+          prompt,
+          aspect_ratio: aspectRatio,
+          resolution: '1K',
+          output_format: 'png',
         },
       }),
     });
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
+    if (!createRes.ok) {
+      const text = await createRes.text().catch(() => '');
       return NextResponse.json(
-        { error: 'Imagen request failed', status: res.status, details: text.slice(0, 2000) },
+        { error: 'Nano Banana Pro task creation failed', status: createRes.status, details: text.slice(0, 2000) },
         { status: 502 }
       );
     }
 
-    const json = await res.json();
-    const b64 = extractBase64Png(json);
+    const createJson = await createRes.json();
+    const taskId = createJson?.data?.taskId;
 
-    if (!b64) {
+    if (!taskId) {
       return NextResponse.json(
-        { error: 'No image returned from Imagen', details: JSON.stringify(json).slice(0, 2000) },
+        { error: 'No taskId returned from Kie.ai', details: JSON.stringify(createJson).slice(0, 2000) },
         { status: 502 }
       );
     }
 
-    const buffer = Buffer.from(b64, 'base64');
+    // Poll until complete
+    const result = await pollForResult(taskId, apiKey);
+
+    if ('error' in result) {
+      return NextResponse.json({ error: result.error }, { status: 502 });
+    }
+
+    // Download the image from the result URL and save locally
+    const imageRes = await fetch(result.url);
+    if (!imageRes.ok) {
+      return NextResponse.json({ error: 'Failed to download generated image' }, { status: 502 });
+    }
+
+    const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
 
     if (!fs.existsSync(IMAGES_DIR)) {
       fs.mkdirSync(IMAGES_DIR, { recursive: true });
@@ -143,7 +182,7 @@ export async function POST(request: NextRequest) {
 
     const filename = `${crypto.randomUUID()}.png`;
     const filePath = path.join(IMAGES_DIR, filename);
-    fs.writeFileSync(filePath, buffer);
+    fs.writeFileSync(filePath, imageBuffer);
 
     const publicUrl = `/api/images/${filename}`;
 

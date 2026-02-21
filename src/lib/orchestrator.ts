@@ -425,15 +425,15 @@ async function executeStep(
         throw new Error(`Video kickoff failed (${resp.status}). Please retry later.`);
       }
 
-      const payload = (await resp.json()) as { operationName?: string };
-      const operationName = payload.operationName;
-      if (!operationName) {
-        throw new Error('Video kickoff returned no operationName');
+      const payload = (await resp.json()) as { taskId?: string };
+      const taskId = payload.taskId;
+      if (!taskId) {
+        throw new Error('Video kickoff returned no taskId');
       }
 
       const videoRef = {
-        operationName,
-        statusPath: `/api/generate-video/status?operation=${encodeURIComponent(operationName)}`,
+        taskId,
+        statusPath: `/api/generate-video/status?taskId=${encodeURIComponent(taskId)}`,
       };
 
       saveContent(planId, 'video-operation', null, JSON.stringify(videoRef));
