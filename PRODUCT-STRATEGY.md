@@ -38,6 +38,18 @@ Your immediate need is simple: paste a URL, get great social content you'd actua
 | Social publishing | Buffer via Zapier MCP (`ZAPIER_MCP_TOKEN` env var, JSON-RPC 2.0 + SSE) |
 | Deployment | Railway (auto-deploy from `main`) |
 
+**Environment variables:**
+
+| Variable | Required | Used by |
+|----------|----------|---------|
+| `GEMINI_API_KEY` | Yes | All text generation (copy, briefs, prompts) via Google AI Studio |
+| `KIE_API_KEY` | Yes | Image generation (Nano Banana Pro) + video generation (Kling 3.0) via Kie.ai |
+| `ZAPIER_MCP_TOKEN` | For Buffer | Social publishing via Zapier MCP (JSON-RPC 2.0 + SSE) |
+| `IMAGE_DIR` | No | Image storage path, defaults to `/app/data/images` |
+| `PUBLIC_BASE_URL` or `NEXT_PUBLIC_BASE_URL` | No | Media attachment URLs in Buffer posts, falls back to request origin |
+
+**Git workflow:** Single `main` branch. No feature branches — this is a solo pre-launch project. Commit directly to main.
+
 ---
 
 ## AI Models — Current
@@ -63,7 +75,27 @@ Your immediate need is simple: paste a URL, get great social content you'd actua
 - Element references (@element_name) for character consistency
 - Standard ($0.10/s no-audio) and Pro ($0.135/s no-audio) modes
 
-**Note:** Text generation (copy, briefs, prompts) stays on Google AI Studio (Gemini). Only image and video generation moved to Kie.ai for cost and quality reasons.
+**The 6 routes still on Gemini 2.0 Flash** (to be standardised to 2.5 later):
+- `caption-to-veo-prompt` (note: route path still says "veo" but generates Kling 3.0 prompts)
+- `generate-social-post`
+- `generate-schedule`
+- `content-calendar`
+- `auto-publish`
+- `review-monitor`
+
+All other text generation uses Gemini 2.5 Flash. Image and video generation use Kie.ai.
+
+**Kie.ai API pattern** (shared by both Nano Banana Pro and Kling 3.0):
+```
+Auth:     Authorization: Bearer $KIE_API_KEY
+Create:   POST https://api.kie.ai/api/v1/jobs/createTask
+          Body: { model: "<model-id>", input: { ... } }
+          Returns: { data: { taskId: "..." } }
+Poll:     GET  https://api.kie.ai/api/v1/jobs/recordInfo?taskId={taskId}
+          Returns: { data: { state: "waiting|queuing|generating|success|fail", resultJson: "..." } }
+Result:   JSON.parse(data.resultJson) → { resultUrls: ["https://..."] }
+```
+See `generate-hero-bg/route.ts` for the image implementation and `generate-video/route.ts` for video.
 
 ---
 
@@ -360,6 +392,7 @@ The following bugs and security issues were identified in a code audit. They are
 | File | Relevance | Staff fixes |
 |------|-----------|-------------|
 | `src/app/plan/[id]/quickwin/page.tsx` | **Quick Win page** — auto-generates Instagram + TikTok + image on load | — |
+| `src/app/plan/[id]/tone-compare/page.tsx` | Side-by-side draft generation in two tones, uses `/api/generate-draft` | — |
 | `src/app/plan/[id]/social/page.tsx` | Full social flow — 4-step with video polling, image display, Buffer queue | — |
 | `src/app/api/generate-social-post/route.ts` | Caption generation — supports post/reel/story/carousel, Instagram + TikTok | — |
 | `src/app/api/generate-post-image/route.ts` | Image pipeline — screenshot/hero/hybrid modes, 1080x1080 via Playwright | ~~#7~~ FIXED |
