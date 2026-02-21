@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '');
-
-// Proxy Veo 2 video downloads — the raw URI requires an API key header
-// which browsers can't send via a plain <a href> link.
+// Proxy video downloads — Kie.ai result URLs are public but we proxy them
+// so the browser gets a proper Content-Disposition download header.
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const uri = searchParams.get('uri');
@@ -12,23 +10,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing uri parameter' }, { status: 400 });
   }
 
-  // Only allow Veo / Google AI file downloads
-  if (!uri.startsWith('https://generativelanguage.googleapis.com/')) {
-    return NextResponse.json({ error: 'Invalid URI' }, { status: 400 });
+  // Only allow HTTPS URLs
+  if (!uri.startsWith('https://')) {
+    return NextResponse.json({ error: 'Invalid URI — must be HTTPS' }, { status: 400 });
   }
 
-  // Ensure alt=media is present
-  const downloadUrl = uri.includes('alt=media') ? uri : `${uri}${uri.includes('?') ? '&' : '?'}alt=media`;
-
   try {
-    const response = await fetch(downloadUrl, {
-      headers: {
-        'x-goog-api-key': GEMINI_API_KEY,
-      },
-    });
+    const response = await fetch(uri);
 
     if (!response.ok) {
-      const text = await response.text();
+      const text = await response.text().catch(() => '');
       return NextResponse.json(
         { error: 'Failed to fetch video', detail: text.slice(0, 500) },
         { status: response.status }

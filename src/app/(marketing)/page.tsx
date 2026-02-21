@@ -155,7 +155,7 @@ export default function LandingPage() {
       {generating && (
         <GenerationOverlay
           url={generatingUrl}
-          onComplete={(planId) => router.push(`/plan/${planId}`)}
+          onComplete={(planId) => router.push(`/plan/${planId}/quickwin`)}
           onError={(err) => {
             setGenerating(false);
             setError(err);

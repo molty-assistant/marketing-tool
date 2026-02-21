@@ -42,10 +42,11 @@ export async function POST(request: NextRequest) {
 
     const system =
       'You are a senior creative director. Given a social post caption, extract ONE dominant visual hook and produce a concise image brief as JSON only. ' +
-      'Return ONLY valid JSON with exactly this schema: {"hook":"...","scene":"...","subject":"...","mood":"...","palette":"...","composition":"...","avoid":["...",...]}. ' +
-      'Rules: pick ONE hook (not multiple), no marketing fluff, keep each field under 12 words, avoid text in image, avoid UI/screenshots/logos/watermarks.';
+      'Return ONLY valid JSON with exactly this schema: {"hook":"...","scene":"...","subject":"...","mood":"...","palette":"...","composition":"...","textOverlay":"...","avoid":["...",...]}. ' +
+      'Rules: Nano Banana supports strong native text rendering. You MUST include a concise "textOverlay" (3-5 words) that acts as the hook. ' +
+      'Enforce strong brand consistency through the palette and mood. Avoid UI/screenshots/logos/watermarks.';
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -108,9 +109,10 @@ export async function POST(request: NextRequest) {
       mood: typeof parsed.mood === 'string' ? parsed.mood.trim() : '',
       palette: typeof parsed.palette === 'string' ? parsed.palette.trim() : '',
       composition: typeof parsed.composition === 'string' ? parsed.composition.trim() : '',
+      textOverlay: typeof parsed.textOverlay === 'string' ? parsed.textOverlay.trim() : '',
       avoid: Array.isArray(parsed.avoid)
         ? parsed.avoid.filter((x: unknown): x is string => typeof x === 'string').map((s: string) => s.trim())
-        : ['text', 'logos', 'UI', 'watermarks'],
+        : ['logos', 'UI', 'watermarks', 'screenshots'],
     };
 
     if (!brief.hook) {

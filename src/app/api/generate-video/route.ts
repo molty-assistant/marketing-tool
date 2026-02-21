@@ -1,121 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'node:fs';
-import path from 'node:path';
 
 export const runtime = 'nodejs';
 
-const DEFAULT_MODEL = 'models/veo-2.0-generate-001';
-const GENERATE_ENDPOINT =
-  'https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning';
+const KIE_API_BASE = 'https://api.kie.ai/api/v1/jobs';
 
 function getApiKey() {
-  return (
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    // Prefer env vars when set; fallback to repo key per project instruction.
-    (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '')
-  );
-}
-
-type VeoTemplateConfig = {
-  templates?: Record<
-    string,
-    {
-      prompt: string;
-      aspectRatio?: string;
-      durationSeconds?: number;
-    }
-  >;
-};
-
-function loadTemplates(): VeoTemplateConfig {
-  const configPath = path.join(process.cwd(), 'tools', 'veo-video.config.json');
-  const raw = fs.readFileSync(configPath, 'utf8');
-  return JSON.parse(raw);
+  return process.env.KIE_API_KEY || '';
 }
 
 /**
  * POST /api/generate-video
- * Body: { planId, template?, prompt?, aspectRatio? }
- * Returns immediately: { success: true, operationName }
+ * Body: { planId, prompt, aspectRatio?, duration?, mode? }
+ * Returns immediately: { success: true, taskId }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const planId = body?.planId ? String(body.planId) : '';
-    const templateName = body?.template ? String(body.template) : '';
     const customPrompt = body?.prompt ? String(body.prompt) : '';
-    const bodyAspectRatio = body?.aspectRatio ? String(body.aspectRatio) : '';
+    const bodyAspectRatio = body?.aspectRatio ? String(body.aspectRatio) : '1:1';
+    const duration = body?.duration ? String(body.duration) : '6';
+    const mode = body?.mode === 'pro' ? 'pro' : 'std';
 
     if (!planId) {
       return NextResponse.json({ error: 'Missing planId' }, { status: 400 });
     }
 
-    let prompt = customPrompt;
-    let aspectRatio = bodyAspectRatio;
-
-    if (templateName) {
-      const config = loadTemplates();
-      const tpl = config?.templates?.[templateName];
-      if (!tpl) {
-        return NextResponse.json(
-          {
-            error: `Unknown template "${templateName}"`,
-            availableTemplates: Object.keys(config?.templates || {})
-          },
-          { status: 400 }
-        );
-      }
-      prompt = prompt || tpl.prompt;
-      aspectRatio = aspectRatio || tpl.aspectRatio || '';
-    }
-
-    if (!prompt || prompt.trim() === '') {
+    if (!customPrompt || customPrompt.trim() === '') {
       return NextResponse.json(
-        { error: 'Missing prompt (provide prompt or template)' },
+        { error: 'Missing prompt' },
         { status: 400 }
       );
     }
 
     const apiKey = getApiKey();
+    if (!apiKey) {
+      return NextResponse.json({ error: 'KIE_API_KEY is not set' }, { status: 500 });
+    }
 
-    const veoBody = {
-      model: DEFAULT_MODEL,
-      instances: [{ prompt }],
-      parameters: {
-        aspectRatio: aspectRatio || undefined,
-        sampleCount: 1,
-        durationSeconds: 6
-      }
-    };
-
-    const res = await fetch(GENERATE_ENDPOINT, {
+    const res = await fetch(`${KIE_API_BASE}/createTask`, {
       method: 'POST',
       headers: {
-        'x-goog-api-key': apiKey,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(veoBody)
+      body: JSON.stringify({
+        model: 'kling-3.0/video',
+        input: {
+          mode,
+          prompt: customPrompt.slice(0, 2500),
+          duration,
+          aspect_ratio: bodyAspectRatio,
+          multi_shots: false,
+          sound: false,
+        },
+      }),
     });
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       return NextResponse.json(
-        { error: `Veo generate failed (${res.status} ${res.statusText}). ${text}` },
+        { error: `Kling 3.0 task creation failed (${res.status} ${res.statusText}). ${text}` },
         { status: 502 }
       );
     }
 
     const json = await res.json();
-    const operationName = json?.name;
-    if (!operationName) {
+    const taskId = json?.data?.taskId;
+    if (!taskId) {
       return NextResponse.json(
-        { error: `Unexpected Veo response (missing name): ${JSON.stringify(json)}` },
+        { error: `Unexpected Kie.ai response (missing taskId): ${JSON.stringify(json)}` },
         { status: 502 }
       );
     }
 
-    return NextResponse.json({ success: true, operationName });
+    return NextResponse.json({ success: true, taskId });
   } catch (err) {
     console.error('generate-video error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

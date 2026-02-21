@@ -61,6 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
     href: '/content',
     children: [
       { label: 'Copy Draft', href: '/draft' },
+      { label: 'Tone Compare', href: '/tone-compare' },
       { label: 'Email sequences', href: '/emails' },
       { label: 'Templates', href: '/templates' },
       { label: 'Translations', href: '/translate' },

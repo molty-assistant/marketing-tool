@@ -61,7 +61,7 @@ Mode: Review-only (no code changes applied in this audit)
   - Due rows are selected then updated in separate operations.
   - Concurrent callers can claim and process the same rows.
 
-### 7. [P2] Image generation/storage is tightly coupled to Railway path and breaks outside that runtime
+### 7. [FIXED] [P2] Image generation/storage is tightly coupled to Railway path and breaks outside that runtime
 - File refs:
   - `/Users/moltbot/Projects/marketing-tool/src/app/api/generate-post-image/route.ts:30`
   - `/Users/moltbot/Projects/marketing-tool/src/app/api/generate-hero-bg/route.ts:19`
@@ -92,7 +92,17 @@ Mode: Review-only (no code changes applied in this audit)
   - No `test` script; no automated regression guardrails.
   - `usePlan` returns an abort cleanup from inside async callback, but effect does not wire cleanup.
 
-## Validation Status During Review
+## Fix Status
+
+| # | Status |
+|---|--------|
+| 1 | **FIXED** — `social_posts` table added to schema init |
+| 5 | **FIXED** — private IP / metadata host blocklist added to scraper |
+| 7 | **FIXED** — `IMAGE_DIR` env var with `/app/data/images` default |
+| 9 | **FIXED** — `PUBLIC_BASE_URL` configurable via env var |
+| 2, 3, 4, 6, 8, 10 | Open |
+
+## Validation Status
 
 1. `npm run lint --silent`: passed.
 2. `npm run build`: passed.

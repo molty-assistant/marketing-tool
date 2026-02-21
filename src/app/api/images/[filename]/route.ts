@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-const IMAGES_DIR = '/app/data/images';
+const IMAGES_DIR = process.env.IMAGE_DIR || '/app/data/images';
 
 function contentTypeFor(filename: string): string {
   const ext = path.extname(filename).toLowerCase();

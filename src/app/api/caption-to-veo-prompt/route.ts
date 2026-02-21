@@ -9,9 +9,11 @@ function getApiKey() {
 type CandidatePart = { text?: unknown };
 
 /**
- * POST /api/caption-to-veo-prompt
+ * POST /api/caption-to-video-prompt
  * Body: { caption: string }
  * Returns: { prompt: string }
+ *
+ * Uses Gemini to convert a social media caption into a Kling 3.0 video prompt.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +27,7 @@ export async function POST(request: NextRequest) {
     const apiKey = getApiKey();
 
     const system =
-      'You are an expert at writing Veo 2 video generation prompts. Given a social media post caption, write a single cinematic video prompt. Rules: one focused scene, specify shot type (close-up/wide/medium), specify camera movement (dolly in/pan/crane), specify lighting and mood, under 100 words, no quotation marks. Return ONLY valid JSON with exactly this schema: {"prompt":"..."}.';
+      'You are an expert at writing Kling 3.0 video generation prompts. Given a social media post caption, write a single cinematic video prompt. Rules: one focused scene, specify shot type (close-up/wide/medium), specify camera movement (dolly in/pan/crane), specify lighting and mood, be descriptive (up to 200 words — Kling supports detailed prompts), no quotation marks. Return ONLY valid JSON with exactly this schema: {"prompt":"..."}.';
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -53,8 +55,8 @@ export async function POST(request: NextRequest) {
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      console.error('caption-to-veo-prompt Gemini error:', res.status, text);
-      return NextResponse.json({ error: 'Failed to generate Veo prompt' }, { status: 502 });
+      console.error('caption-to-video-prompt Gemini error:', res.status, text);
+      return NextResponse.json({ error: 'Failed to generate video prompt' }, { status: 502 });
     }
 
     const data = await res.json();
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ prompt });
   } catch (err) {
-    console.error('caption-to-veo-prompt error:', err);
+    console.error('caption-to-video-prompt error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
