@@ -1,5 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { secureCompare } from '@/lib/auth-guard';
+
+/**
+ * Constant-time string comparison for Edge runtime.
+ * Uses XOR accumulation — runs in fixed time regardless of where strings differ.
+ * No node:crypto dependency (Edge-compatible).
+ */
+function secureCompare(a: string, b: string): boolean {
+  const encoder = new TextEncoder();
+  const aBuf = encoder.encode(a);
+  const bBuf = encoder.encode(b);
+  const maxLen = Math.max(aBuf.length, bBuf.length);
+
+  let mismatch = aBuf.length ^ bBuf.length;
+  for (let i = 0; i < maxLen; i++) {
+    mismatch |= (aBuf[i] ?? 0) ^ (bBuf[i] ?? 0);
+  }
+  return mismatch === 0;
+}
 
 function isAuthEnabled(raw: string | undefined): boolean {
   if (!raw) return false;
@@ -7,7 +24,7 @@ function isAuthEnabled(raw: string | undefined): boolean {
   return value === '1' || value === 'true' || value === 'yes' || value === 'on';
 }
 
-export default function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Skip auth for shared plan routes and healthcheck
   if (
     request.nextUrl.pathname.startsWith('/shared/') ||
@@ -44,9 +61,13 @@ export default function middleware(request: NextRequest) {
     const [scheme, encoded] = authHeader.split(' ');
     if (scheme === 'Basic' && encoded) {
       const decoded = atob(encoded);
-      const [authUser, authPass] = decoded.split(':');
-      if (secureCompare(authUser, user) && secureCompare(authPass, pass)) {
-        return NextResponse.next();
+      const sepIdx = decoded.indexOf(':');
+      if (sepIdx >= 0) {
+        const authUser = decoded.slice(0, sepIdx);
+        const authPass = decoded.slice(sepIdx + 1);
+        if (secureCompare(authUser, user) && secureCompare(authPass, pass)) {
+          return NextResponse.next();
+        }
       }
     }
   }
