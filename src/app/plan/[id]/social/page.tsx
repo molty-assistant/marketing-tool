@@ -36,11 +36,11 @@ export default function SocialPage() {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
   const [topicInput, setTopicInput] = useState('');
   const [uploadedPhotos, setUploadedPhotos] = useState<Array<{
-    dataUrl: string;
+    dataUrl?: string;
     filename?: string;
     publicUrl?: string;
     mimeType: string;
-    base64Data: string;
+    base64Data?: string;
   }>>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -195,10 +195,13 @@ export default function SocialPage() {
 
     const remaining = 3 - uploadedPhotos.length;
     const toProcess = Array.from(files).slice(0, remaining);
+    let skipped = 0;
 
     for (const file of toProcess) {
-      if (!file.type.startsWith('image/')) continue;
-      if (file.size > 5 * 1024 * 1024) continue;
+      if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
+        skipped++;
+        continue;
+      }
 
       const reader = new FileReader();
       reader.onload = () => {
@@ -212,6 +215,10 @@ export default function SocialPage() {
         });
       };
       reader.readAsDataURL(file);
+    }
+
+    if (skipped > 0) {
+      setIdeaError(`${skipped} file(s) skipped — only PNG, JPEG, and WebP under 5 MB are accepted.`);
     }
 
     // Reset input so re-selecting the same file triggers change
@@ -244,7 +251,10 @@ export default function SocialPage() {
             body: JSON.stringify({ photos: newPhotos.map((p) => p.dataUrl) }),
           });
           const uploadData = await uploadRes.json();
-          if (uploadRes.ok && Array.isArray(uploadData.files)) {
+          if (!uploadRes.ok) {
+            throw new Error(uploadData.error || 'Failed to upload photos');
+          }
+          if (Array.isArray(uploadData.files)) {
             let fileIdx = 0;
             photos = photos.map((p) => {
               if (!p.filename && fileIdx < uploadData.files.length) {
@@ -872,7 +882,7 @@ export default function SocialPage() {
               <h2 className="text-xl font-semibold mb-1">Step 4 · Queue to Buffer</h2>
               <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
                 {image
-                  ? 'Your post will be queued with the generated image attached.'
+                  ? 'Your post will be queued with the image attached.'
                   : 'Your post will be queued as text + hashtags (no media).'}
               </p>
 

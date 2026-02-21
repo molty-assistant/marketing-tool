@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
       filename: string;
       publicUrl: string;
       mimeType: string;
-      base64Data: string;
     }> = [];
 
     for (const photo of photos) {
@@ -66,7 +65,6 @@ export async function POST(request: NextRequest) {
         filename,
         publicUrl: `/api/images/${filename}`,
         mimeType,
-        base64Data,
       });
     }
 
