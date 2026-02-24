@@ -118,7 +118,14 @@ npm run dev      # Start dev server
 npm run build    # Production build
 npm run start    # Start production server
 npm run lint     # Run ESLint
+npm run test     # Run tests
+npm run check:secrets  # Scan tracked files for known secret patterns
 ```
+
+## Secret Scan Notes
+
+- `tools/check-secrets.js` is excluded from scanning to avoid false positives from its own regex definitions.
+- To intentionally keep a known-safe secret-like string in code/examples, add `secret-scan: ignore` on that line.
 
 ## Deployment
 

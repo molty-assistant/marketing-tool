@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --test tools/check-secrets.test.js",
     "check:secrets": "node tools/check-secrets.js"
   },
   "dependencies": {
