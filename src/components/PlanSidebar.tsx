@@ -44,11 +44,11 @@ const NAV_GROUPS: NavGroup[] = [
     key: 'create',
     label: 'Create',
     icon: Zap,
-    href: '/social',
+    href: '/strategy/brief',
     alwaysOpen: true,
     children: [
-      { label: 'Social Posts', href: '/social' },
-      { label: 'Carousel', href: '/carousel' },
+      { label: 'Brief', href: '/strategy/brief' },
+      { label: 'Copy Draft', href: '/draft' },
     ],
   },
   {

@@ -5,12 +5,10 @@ import Link from 'next/link';
 import {
   ArrowRight,
   FileText,
-  Images,
   Megaphone,
   Package,
   PenLine,
   Search,
-  Share2,
 } from 'lucide-react';
 
 import type { MarketingPlan } from '@/lib/types';
@@ -26,20 +24,20 @@ type OverviewApi = {
 
 const ACTION_CARDS = [
   {
-    title: 'Social Posts',
-    description: 'Create posts with AI captions, your photos, and Buffer publishing',
-    href: '/social',
-    icon: Share2,
-    gradient: 'from-indigo-500 to-violet-500',
-    iconBg: 'bg-indigo-400/20',
+    title: 'Brief',
+    description: 'Generate and refine your marketing brief with clear positioning and strategy.',
+    href: '/strategy/brief',
+    icon: FileText,
+    gradient: 'from-indigo-500 to-blue-500',
+    iconBg: 'bg-indigo-400/25',
   },
   {
-    title: 'Carousel',
-    description: 'Build multi-slide Instagram carousels with AI hero images',
-    href: '/carousel',
-    icon: Images,
-    gradient: 'from-pink-500 to-rose-500',
-    iconBg: 'bg-pink-400/20',
+    title: 'Copy Draft',
+    description: 'Create app store, landing page, and release copy from your brief.',
+    href: '/draft',
+    icon: PenLine,
+    gradient: 'from-emerald-500 to-cyan-500',
+    iconBg: 'bg-emerald-400/25',
   },
 ] as const;
 
@@ -171,9 +169,9 @@ export default function PlanOverviewPage({
     const oneLiner = plan.config?.one_liner || plan.scraped?.description || '';
     const icon = plan.scraped?.icon || plan.config?.icon;
 
-    const socialPostsCount = overview?.socialPostsCount ?? 0;
+    const wordCount = overview?.wordCount ?? 0;
 
-    return { appName, oneLiner, icon, socialPostsCount };
+    return { appName, oneLiner, icon, wordCount };
   }, [plan, overview]);
 
   if (loading) {
@@ -235,10 +233,10 @@ export default function PlanOverviewPage({
                   Created {new Date(plan.createdAt).toLocaleDateString()}
                 </span>
               )}
-              {computed.socialPostsCount > 0 && (
+              {computed.wordCount > 0 && (
                 <>
                   <span className="text-slate-300 dark:text-slate-700">|</span>
-                  <span>{computed.socialPostsCount} posts created</span>
+                  <span>{computed.wordCount.toLocaleString()} words generated</span>
                 </>
               )}
             </div>
@@ -249,7 +247,7 @@ export default function PlanOverviewPage({
       {/* Action cards — top tier */}
       <div className="mb-8">
         <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-          Create Content
+          Start Here
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {ACTION_CARDS.map((card) => (
