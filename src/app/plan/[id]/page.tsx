@@ -15,8 +15,6 @@ import type { MarketingPlan } from '@/lib/types';
 
 type OverviewApi = {
   sections: Record<string, { hasContent: boolean; preview: string }>;
-  socialPostsCount: number;
-  scheduleCount: number;
   wordCount: number;
 };
 
@@ -25,7 +23,7 @@ type OverviewApi = {
 const ACTION_CARDS = [
   {
     title: 'Brief',
-    description: 'Generate and refine your marketing brief with clear positioning and strategy.',
+    description: 'Open and refine your core strategy, positioning, and message hierarchy.',
     href: '/strategy/brief',
     icon: FileText,
     gradient: 'from-indigo-500 to-blue-500',
@@ -33,7 +31,7 @@ const ACTION_CARDS = [
   },
   {
     title: 'Copy Draft',
-    description: 'Create app store, landing page, and release copy from your brief.',
+    description: 'Turn your brief into editable store, landing page, and release-note drafts.',
     href: '/draft',
     icon: PenLine,
     gradient: 'from-emerald-500 to-cyan-500',
@@ -83,8 +81,6 @@ const SUITE_ITEMS = [
   { label: 'Emails', href: '/emails', icon: Megaphone },
   { label: 'Templates', href: '/templates', icon: FileText },
   { label: 'Translations', href: '/translate', icon: PenLine },
-  { label: 'Schedule', href: '/schedule', icon: Megaphone },
-  { label: 'Calendar', href: '/calendar', icon: Megaphone },
   { label: 'Export', href: '/export', icon: Package },
 ] as const;
 
@@ -259,7 +255,7 @@ export default function PlanOverviewPage({
       {/* Marketing Suite — bottom tier */}
       <div className="mb-10">
         <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-          Marketing Suite
+          Supporting Tools
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {SUITE_ITEMS.map((item) => (
