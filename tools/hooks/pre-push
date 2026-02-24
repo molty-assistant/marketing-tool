@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "$REPO_ROOT" ]; then
+  echo "pre-push: unable to locate repository root" >&2
+  exit 1
+fi
+
+cd "$REPO_ROOT"
+
+echo "Running secret scan before push..."
+npm run --silent check:secrets

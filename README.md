@@ -42,6 +42,7 @@ AI-powered marketing content generator. Paste any App Store, Google Play, or web
 git clone https://github.com/molty-assistant/marketing-tool.git
 cd marketing-tool
 npm install
+npm run install:hooks
 cp .env.example .env.local
 # Edit .env.local with your keys (see Environment below)
 npm run dev
@@ -120,12 +121,24 @@ npm run start    # Start production server
 npm run lint     # Run ESLint
 npm run test     # Run tests
 npm run check:secrets  # Scan tracked files for known secret patterns
+npm run install:hooks  # Copy tracked hooks into .git/hooks
 ```
 
 ## Secret Scan Notes
 
 - `tools/check-secrets.js` and `tools/check-secrets.test.js` are excluded from scanning to avoid false positives from scanner regex definitions and test fixtures.
 - To intentionally keep a known-safe secret-like string in code/examples, add `secret-scan: ignore` on that line.
+
+## Git Hooks
+
+- Hook source is tracked in `tools/hooks/pre-push`.
+- Install or refresh local hooks with:
+
+```bash
+npm run install:hooks
+```
+
+- The pre-push hook runs `npm run check:secrets` and blocks pushes when real secret patterns are detected.
 
 ## Deployment
 

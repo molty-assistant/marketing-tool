@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test tools/check-secrets.test.js",
-    "check:secrets": "node tools/check-secrets.js"
+    "check:secrets": "node tools/check-secrets.js",
+    "install:hooks": "sh tools/install-hooks.sh"
   },
   "dependencies": {
     "@types/archiver": "^7.0.0",
