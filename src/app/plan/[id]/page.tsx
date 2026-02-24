@@ -164,11 +164,8 @@ export default function PlanOverviewPage({
     const appName = plan.config?.app_name || 'Untitled plan';
     const oneLiner = plan.config?.one_liner || plan.scraped?.description || '';
     const icon = plan.scraped?.icon || plan.config?.icon;
-
-    const wordCount = overview?.wordCount ?? 0;
-
-    return { appName, oneLiner, icon, wordCount };
-  }, [plan, overview]);
+    return { appName, oneLiner, icon };
+  }, [plan]);
 
   if (loading) {
     return (
@@ -229,10 +226,10 @@ export default function PlanOverviewPage({
                   Created {new Date(plan.createdAt).toLocaleDateString()}
                 </span>
               )}
-              {computed.wordCount > 0 && (
+              {(overview?.wordCount ?? 0) > 0 && (
                 <>
-                  <span className="text-slate-300 dark:text-slate-700">|</span>
-                  <span>{computed.wordCount.toLocaleString()} words generated</span>
+                  {plan?.createdAt && <span className="text-slate-300 dark:text-slate-700">|</span>}
+                  <span>{overview.wordCount.toLocaleString()} words generated</span>
                 </>
               )}
             </div>
