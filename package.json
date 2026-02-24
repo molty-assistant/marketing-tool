@@ -9,7 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:secrets": "node tools/check-secrets.js"
   },
   "dependencies": {
     "@types/archiver": "^7.0.0",

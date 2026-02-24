@@ -372,25 +372,25 @@ export default function SocialPage() {
     setQueueResult(null);
 
     try {
-      // 1) Convert caption → Veo prompt
+      // 1) Convert caption -> video prompt
       const promptRes = await fetch('/api/caption-to-veo-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ caption }),
       });
       const promptData = await promptRes.json();
-      if (!promptRes.ok) throw new Error(promptData.error || 'Failed to create Veo prompt');
+      if (!promptRes.ok) throw new Error(promptData.error || 'Failed to create video prompt');
 
-      const veoPrompt = String(promptData.prompt || '').trim();
-      if (!veoPrompt) throw new Error('Empty Veo prompt returned');
+      const videoPrompt = String(promptData.prompt || '').trim();
+      if (!videoPrompt) throw new Error('Empty video prompt returned');
 
-      // 2) Start Veo video generation
+      // 2) Start video generation
       const aspectRatio = selectedPlatform === 'tiktok' ? '9:16' : '1:1';
 
       const res = await fetch('/api/generate-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, prompt: veoPrompt, aspectRatio }),
+        body: JSON.stringify({ planId, prompt: videoPrompt, aspectRatio }),
       });
 
       const data = await res.json();
