@@ -92,7 +92,7 @@ export default function SocialPage() {
     fetch('/api/post-to-buffer')
       .then((r) => r.json())
       .then((d) => setHistory(d.posts || []))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Hydrate state from sessionStorage on mount
@@ -444,507 +444,433 @@ export default function SocialPage() {
     }
   }
 
+  // ─── Combined generate: caption + hero in parallel ─────────────────────────
+
+  const isGenerating = ideaGenerating || imageGenerating;
+
+  async function generatePost() {
+    if (!selectedPlatform) return;
+
+    // Fire both caption and image generation in parallel
+    // generateIdea sets the caption/hashtags state; once done, we also kick off the image
+    // We sequence them: idea first (since image needs caption), but start image right after
+    await generateIdea();
+    // After idea completes, caption state is set — now generate hero image
+    generateImage();
+  }
+
+  function startOver() {
+    sessionStorage.removeItem(`social-${planId}`);
+    setSelectedPlatform(null);
+    setTopicInput('');
+    setUploadedPhotos([]);
+    setCaption('');
+    setHashtagsInput('');
+    setImageMode('hero');
+    setIdea(null);
+    setImage(null);
+    setIdeaError('');
+    setImageError('');
+    setVideoOperation('');
+    setVideoUrl('');
+    setVideoError('');
+    setQueueResult(null);
+  }
+
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-10 pt-6 text-slate-900 dark:text-white">
 
-        {/* Page description */}
-        <div className="mb-8 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700/40 dark:bg-slate-800/30 dark:text-slate-300">
-          Generate platform-native captions and hashtags for Instagram and TikTok, optionally create
-          media, then queue directly via Buffer.
+      <h1 className="text-3xl font-bold mb-2">Create a Post</h1>
+      <p className="mb-8 text-slate-600 dark:text-slate-400">
+        Pick a platform, add your direction or photos, and generate a ready-to-publish post.
+      </p>
+
+      {/* ── SETUP ZONE ─────────────────────────────────────────────────── */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
+
+        {/* Platform toggle pills */}
+        <label className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
+          Platform
+        </label>
+        <div className="flex gap-2 mb-6">
+          <button
+            type="button"
+            onClick={() => setSelectedPlatform('instagram')}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${selectedPlatform === 'instagram'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+          >
+            📸 Instagram
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedPlatform('tiktok')}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${selectedPlatform === 'tiktok'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+          >
+            🎵 TikTok
+          </button>
         </div>
 
-        <h1 className="text-3xl font-bold mb-2">Social Publishing</h1>
-        <p className="mb-8 text-slate-600 dark:text-slate-400">A simple 4-step flow to generate, create, and queue posts.</p>
+        {/* Direction */}
+        <div className="mb-5">
+          <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            What&apos;s this post about? <span className="text-slate-500 font-normal">(optional)</span>
+          </label>
+          <textarea
+            value={topicInput}
+            onChange={(e) => setTopicInput(e.target.value)}
+            rows={2}
+            placeholder='e.g. "Launching dark mode" or "Behind the scenes of building v2"'
+            className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-slate-500"
+          />
+        </div>
 
-        {/* ── Step 1 ─ Choose channel ─────────────────────────────────────── */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-          <h2 className="text-xl font-semibold mb-1">Step 1 · What do you want to post?</h2>
-          <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">Pick a platform, optionally add a topic and reference photos to guide the AI.</p>
+        {/* Photo uploads */}
+        <div className="mb-6">
+          <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Your photos <span className="text-slate-500 font-normal">(optional, max 3)</span>
+          </label>
+          <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+            Upload your own images — they&apos;ll appear alongside the generated hero in your post.
+          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() => setSelectedPlatform('instagram')}
-              className={`text-left rounded-2xl border p-5 transition-all ${
-                selectedPlatform === 'instagram'
-                  ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                  : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:bg-slate-900/70 dark:hover:border-slate-600'
-              }`}
-            >
-              <div className="text-3xl mb-3">📸</div>
-              <div className="text-lg font-semibold mb-1">Instagram</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                Square-first content, rich captions and up to 30 hashtags.
+          <div className="flex flex-wrap gap-3 items-center">
+            {uploadedPhotos.map((photo, idx) => (
+              <div key={idx} className="relative group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.dataUrl || photo.publicUrl || ''}
+                  alt={`Upload ${idx + 1}`}
+                  className="h-20 w-20 rounded-lg border border-slate-300 object-cover dark:border-slate-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(idx)}
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                >
+                  ×
+                </button>
               </div>
-              {selectedPlatform === 'instagram' && (
-                <div className="mt-3 text-xs font-medium text-indigo-600 dark:text-indigo-400">✓ Selected</div>
-              )}
-            </button>
+            ))}
 
-            <button
-              type="button"
-              onClick={() => setSelectedPlatform('tiktok')}
-              className={`text-left rounded-2xl border p-5 transition-all ${
-                selectedPlatform === 'tiktok'
-                  ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                  : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:bg-slate-900/70 dark:hover:border-slate-600'
-              }`}
-            >
-              <div className="text-3xl mb-3">🎵</div>
-              <div className="text-lg font-semibold mb-1">TikTok</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                Vertical-first, punchy copy and trending hashtags (3–5 max).
-              </div>
-              {selectedPlatform === 'tiktok' && (
-                <div className="mt-3 text-xs font-medium text-indigo-600 dark:text-indigo-400">✓ Selected</div>
-              )}
-            </button>
+            {uploadedPhotos.length < 3 && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 transition hover:border-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:bg-slate-900/40 dark:hover:border-slate-500"
+              >
+                <span className="text-2xl">+</span>
+              </button>
+            )}
           </div>
 
-          {/* Topic + photos (optional context for AI generation) */}
-          {selectedPlatform && (
-            <div className="mt-6 space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Topic or angle <span className="text-slate-500 font-normal">(optional)</span>
-                </label>
-                <textarea
-                  value={topicInput}
-                  onChange={(e) => setTopicInput(e.target.value)}
-                  rows={2}
-                  placeholder='e.g. "Show off the new dark mode feature" or "Behind the scenes of building the app"'
-                  className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-slate-500"
-                />
-              </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            multiple
+            onChange={handlePhotoUpload}
+            className="hidden"
+          />
+        </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Reference photos <span className="text-slate-500 font-normal">(optional, max 3)</span>
-                </label>
-                <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
-                  Upload photos and the AI will reference them when writing the caption.
-                </p>
+        {/* Generate Post button */}
+        <button
+          type="button"
+          onClick={generatePost}
+          disabled={!selectedPlatform || isGenerating}
+          className="w-full rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
+        >
+          {isGenerating ? '✨ Generating post…' : '✨ Generate Post'}
+        </button>
 
-                {uploadedPhotos.length > 0 && (
-                  <div className="mb-3 flex flex-wrap gap-3">
-                    {uploadedPhotos.map((photo, idx) => (
-                      <div key={idx} className="relative group">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={photo.dataUrl || photo.publicUrl || ''}
-                          alt={`Upload ${idx + 1}`}
-                          className="h-20 w-20 rounded-lg border border-slate-300 object-cover dark:border-slate-600"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removePhoto(idx)}
-                          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                        >
-                          x
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {uploadedPhotos.length < 3 && (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-600 transition hover:border-slate-400 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-900/70"
-                  >
-                    + Add photos
-                  </button>
-                )}
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  multiple
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* ── Step 2 ─ Generate post idea ─────────────────────────────────── */}
-        {canShowStep2 && (
-          <>
-            <div className="my-8 h-px bg-slate-300 dark:bg-slate-800" />
-
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-              <h2 className="text-xl font-semibold mb-1">Step 2 · Generate post idea</h2>
-              <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
-                AI will write a{' '}
-                <span className="capitalize">{selectedPlatform}</span>-optimised caption and hashtags.
-              </p>
-
-              {!idea && (
-                <button
-                  type="button"
-                  onClick={generateIdea}
-                  disabled={ideaGenerating}
-                  className="rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
-                >
-                  {ideaGenerating ? '✨ Generating…' : 'Generate Post Idea'}
-                </button>
-              )}
-
-              {ideaError && (
-                <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
-                  {ideaError}
-                </div>
-              )}
-
-              {idea && (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/40">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Caption
-                      </label>
-                      <textarea
-                        value={caption}
-                        onChange={(e) => setCaption(e.target.value)}
-                        rows={6}
-                        className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-slate-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Hashtags{' '}
-                        <span className="text-slate-500 font-normal">(comma-separated)</span>
-                      </label>
-                      <input
-                        value={hashtagsInput}
-                        onChange={(e) => setHashtagsInput(e.target.value)}
-                        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-slate-500"
-                        placeholder="e.g. appmarketing, saas, creator"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex items-center gap-3 border-t border-slate-300/70 pt-4 dark:border-slate-700/60">
-                    <button
-                      type="button"
-                      onClick={generateIdea}
-                      disabled={ideaGenerating}
-                      className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-300 disabled:cursor-not-allowed disabled:bg-slate-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600 dark:disabled:bg-slate-800"
-                    >
-                      {ideaGenerating ? '✨ Regenerating…' : '↺ Regenerate'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        sessionStorage.removeItem(`social-${planId}`);
-                        setSelectedPlatform(null);
-                        setTopicInput('');
-                        setUploadedPhotos([]);
-                        setCaption('');
-                        setHashtagsInput('');
-                        setImageMode('hybrid');
-                        setIdea(null);
-                        setImage(null);
-                        setIdeaError('');
-                        setImageError('');
-                        setVideoOperation('');
-                        setVideoUrl('');
-                        setVideoError('');
-                        setQueueResult(null);
-                      }}
-                      className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
-                    >
-                      Start Over
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
-          </>
+        {ideaError && (
+          <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
+            {ideaError}
+          </div>
         )}
+      </section>
 
-        {/* ── Steps 3 & 4 — only visible after a post idea is generated ────── */}
-        {canShowStep3AndStep4 && (
-          <>
-            {/* ── Step 3 ─ Create media (optional) ──────────────────────── */}
-            <div className="my-8 h-px bg-slate-300 dark:bg-slate-800" />
+      {/* ── RESULT ZONE ────────────────────────────────────────────────── */}
+      {idea && (
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
+          <h2 className="text-lg font-semibold mb-4">Your Post</h2>
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-              <h2 className="text-xl font-semibold mb-1">
-                Step 3 · Create media{' '}
-                <span className="text-slate-500 font-normal text-base">(optional)</span>
-              </h2>
-              <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
-                Generate an image or video tailored to your post idea.
-              </p>
+          {/* Editable caption */}
+          <div className="mb-4">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Caption
+            </label>
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={5}
+              className="w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-slate-500"
+            />
+          </div>
 
-              <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setImageMode('screenshot')}
-                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
-                    imageMode === 'screenshot'
-                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:bg-slate-900/70 dark:hover:border-slate-600'
-                  }`}
-                >
-                  <div className="text-sm font-semibold">Screenshot</div>
-                  <div className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Real UI. Safe and accurate.</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setImageMode('hero')}
-                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
-                    imageMode === 'hero'
-                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:bg-slate-900/70 dark:hover:border-slate-600'
-                  }`}
-                >
-                  <div className="text-sm font-semibold">Hero image</div>
-                  <div className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Inspiring visual. No screenshot.</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setImageMode('hybrid')}
-                  className={`text-left rounded-xl border px-4 py-3 transition-all ${
-                    imageMode === 'hybrid'
-                      ? 'border-indigo-500 bg-indigo-600/15 ring-1 ring-indigo-500/30'
-                      : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:bg-slate-900/70 dark:hover:border-slate-600'
-                  }`}
-                >
-                  <div className="text-sm font-semibold">Hybrid</div>
-                  <div className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">Hero + small UI card.</div>
-                </button>
-              </div>
+          {/* Editable hashtags */}
+          <div className="mb-6">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Hashtags <span className="text-slate-500 font-normal">(comma-separated)</span>
+            </label>
+            <input
+              value={hashtagsInput}
+              onChange={(e) => setHashtagsInput(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-white dark:placeholder:text-slate-500"
+              placeholder="e.g. appmarketing, saas, creator"
+            />
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={generateImage}
-                  disabled={imageGenerating}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
-                >
-                  {imageGenerating ? (
-                    <>
-                      <span className="inline-block animate-spin">⏳</span>
-                      Generating image…
-                    </>
-                  ) : (
-                    <>🖼 Generate Image</>
-                  )}
-                </button>
+          {/* Media strip — hero image + user photos side by side */}
+          <div className="mb-6">
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Media
+            </label>
 
-                <button
-                  type="button"
-                  onClick={generateVideo}
-                  disabled={videoGenerating}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
-                >
-                  {videoGenerating ? (
-                    <>
-                      <span className="inline-block animate-spin">⏳</span>
-                      Generating video…
-                    </>
-                  ) : (
-                    <>🎬 Generate Video</>
-                  )}
-                </button>
-              </div>
-
-              {/* Additional media options */}
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                {uploadedPhotos.length > 0 && !image && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const photo = uploadedPhotos[0];
-                      if (photo.filename && photo.publicUrl) {
-                        setImage({ filename: photo.filename, publicUrl: photo.publicUrl });
-                      }
-                    }}
-                    disabled={!uploadedPhotos[0]?.filename}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300 dark:hover:bg-indigo-950/50"
-                  >
-                    Use My Photo
-                  </button>
-                )}
-                <Link
-                  href={`/plan/${planId}/carousel`}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-900/70"
-                >
-                  Create Carousel
-                </Link>
-              </div>
-
-              {imageError && (
-                <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
-                  {imageError}
-                </div>
-              )}
-
-              {videoError && (
-                <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
-                  {videoError}
-                </div>
-              )}
-
-              {/* Image preview */}
+            <div className="flex flex-wrap gap-3">
+              {/* Generated hero image */}
               {image && (
-                <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/40">
-                  <div className="mb-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">✅ Image ready</div>
+                <div className="relative group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={image.publicUrl}
-                    alt="Generated post image"
-                    className="w-full max-w-sm rounded-xl border border-slate-300 dark:border-slate-700"
+                    alt="Generated hero"
+                    className="h-32 w-32 rounded-xl border border-slate-300 object-cover dark:border-slate-700"
                   />
-                  <div className="text-xs text-slate-500 mt-2 break-all">{image.filename}</div>
-                </div>
-              )}
-
-              {/* Video polling state — progress bar */}
-              {videoOperation && !videoUrl && (() => {
-                const TOTAL_SECONDS = 90;
-                const progress = Math.min(videoElapsed / TOTAL_SECONDS, 0.95);
-                const remaining = Math.max(TOTAL_SECONDS - videoElapsed, 0);
-                const remainingLabel = remaining > 0 ? `~${remaining}s remaining` : 'Almost done…';
-
-                return (
-                  <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-xl animate-pulse">🎬</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-slate-800 dark:text-slate-200">Generating video…</div>
-                        <div className="text-xs text-slate-500 mt-0.5">
-                          Kling 3.0 typically takes ~90 seconds
-                        </div>
-                      </div>
-                      <div className="text-xs whitespace-nowrap text-slate-500 dark:text-slate-400">
-                        {remainingLabel}
-                      </div>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-300 dark:bg-slate-700">
-                      <div
-                        className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
-                        style={{ width: `${progress * 100}%` }}
-                      />
-                    </div>
-                    <div className="mt-1.5 text-right text-xs text-slate-500 dark:text-slate-600">
-                      {videoElapsed}s elapsed
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Video download */}
-              {videoUrl && (
-                <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/40">
-                  <div className="mb-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">Video ready</div>
-                  <div className="flex flex-wrap gap-3">
-                    <a
-                      href={`/api/download-video?uri=${encodeURIComponent(videoUrl)}&aspect=${selectedPlatform === 'tiktok' ? '9:16' : '1:1'}`}
-                      download="promo-video.mp4"
-                      className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
-                    >
-                      Download MP4
-                    </a>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          if (typeof navigator !== 'undefined' && navigator.share) {
-                            const res = await fetch(`/api/download-video?uri=${encodeURIComponent(videoUrl)}`);
-                            const blob = await res.blob();
-                            const file = new File([blob], 'promo-video.mp4', { type: 'video/mp4' });
-                            await navigator.share({ files: [file] });
-                          }
-                        } catch { /* user cancelled */ }
-                      }}
-                      className="inline-flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
-                    >
-                      Share
-                    </button>
+                  <div className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                    AI Hero
                   </div>
                 </div>
               )}
-            </section>
 
-            {/* ── Step 4 ─ Queue to Buffer ───────────────────────────────── */}
-            <div className="my-8 h-px bg-slate-300 dark:bg-slate-800" />
+              {imageGenerating && !image && (
+                <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+                  <div className="text-center">
+                    <div className="animate-spin text-xl mb-1">⏳</div>
+                    <div className="text-xs text-slate-500">Generating…</div>
+                  </div>
+                </div>
+              )}
 
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-              <h2 className="text-xl font-semibold mb-1">Step 4 · Queue to Buffer</h2>
-              <p className="mb-5 text-sm text-slate-600 dark:text-slate-400">
-                {image
-                  ? 'Your post will be queued with the image attached.'
-                  : 'Your post will be queued as text + hashtags (no media).'}
-              </p>
+              {/* User-uploaded photos */}
+              {uploadedPhotos.filter((p) => p.publicUrl || p.dataUrl).map((photo, idx) => (
+                <div key={idx} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.dataUrl || photo.publicUrl || ''}
+                    alt={`Your photo ${idx + 1}`}
+                    className="h-32 w-32 rounded-xl border border-slate-300 object-cover dark:border-slate-700"
+                  />
+                  <div className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                    Your photo
+                  </div>
+                </div>
+              ))}
+            </div>
 
+            {imageError && (
+              <div className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
+                {imageError}
+              </div>
+            )}
+
+            {/* Media actions */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={generateImage}
+                disabled={imageGenerating}
+                className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                {imageGenerating ? 'Generating…' : image ? '🖼 New Hero Image' : '🖼 Generate Hero Image'}
+              </button>
+              <button
+                type="button"
+                onClick={generateVideo}
+                disabled={videoGenerating}
+                className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                {videoGenerating ? 'Generating…' : '🎬 Generate Video'}
+              </button>
+            </div>
+          </div>
+
+          {/* Video progress */}
+          {videoOperation && !videoUrl && (() => {
+            const TOTAL_SECONDS = 90;
+            const progress = Math.min(videoElapsed / TOTAL_SECONDS, 0.95);
+            const remaining = Math.max(TOTAL_SECONDS - videoElapsed, 0);
+            const remainingLabel = remaining > 0 ? `~${remaining}s remaining` : 'Almost done…';
+
+            return (
+              <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xl animate-pulse">🎬</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-slate-800 dark:text-slate-200">Generating video…</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Typically takes ~90 seconds</div>
+                  </div>
+                  <div className="text-xs whitespace-nowrap text-slate-500 dark:text-slate-400">
+                    {remainingLabel}
+                  </div>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-300 dark:bg-slate-700">
+                  <div
+                    className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
+                    style={{ width: `${progress * 100}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Video result */}
+          {videoUrl && (
+            <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
+              <div className="mb-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">✅ Video ready</div>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={`/api/download-video?uri=${encodeURIComponent(videoUrl)}&aspect=${selectedPlatform === 'tiktok' ? '9:16' : '1:1'}`}
+                  download="promo-video.mp4"
+                  className="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                >
+                  ⬇ Download MP4
+                </a>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      if (typeof navigator !== 'undefined' && navigator.share) {
+                        const res = await fetch(`/api/download-video?uri=${encodeURIComponent(videoUrl)}`);
+                        const blob = await res.blob();
+                        const file = new File([blob], 'promo-video.mp4', { type: 'video/mp4' });
+                        await navigator.share({ files: [file] });
+                      }
+                    } catch { /* user cancelled */ }
+                  }}
+                  className="inline-flex items-center gap-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-lg transition dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+                >
+                  Share
+                </button>
+              </div>
+            </div>
+          )}
+
+          {videoError && (
+            <div className="mb-6 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
+              {videoError}
+            </div>
+          )}
+
+          {/* ── Action bar ─────────────────────────────────────────────── */}
+          <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+            <div className="flex flex-wrap gap-3">
+              {/* Primary: Queue to Buffer */}
               <button
                 type="button"
                 onClick={queueToBuffer}
                 disabled={queueing}
                 className="rounded-xl bg-indigo-600 px-5 py-2.5 font-medium text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
               >
-                {queueing ? 'Queueing…' : 'Add to Buffer Queue'}
+                {queueing ? 'Queueing…' : '📤 Queue to Buffer'}
               </button>
 
-              {queueResult && (
-                <div
-                  className={`mt-4 rounded-xl border p-3 text-sm ${
-                    queueResult.ok
-                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-200'
-                      : 'border-red-300 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200'
-                  }`}
-                >
-                  {queueResult.message}
-                </div>
-              )}
-            </section>
-          </>
-        )}
+              {/* Copy caption */}
+              <button
+                type="button"
+                onClick={() => {
+                  const fullText = `${caption}\n\n${hashtagsArray.map((h) => `#${h.replace(/^#/, '')}`).join(' ')}`;
+                  navigator.clipboard.writeText(fullText);
+                }}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                📋 Copy
+              </button>
 
-        {/* ── Posting History ─────────────────────────────────────────────── */}
-        <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/30">
-          <h2 className="text-lg font-semibold mb-4">Posting History</h2>
-          {history.length === 0 ? (
-            <p className="text-slate-500 text-sm">No posts yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {history.map((post) => (
-                <div
-                  key={post.id}
-                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40"
+              {/* Download image */}
+              {image && (
+                <a
+                  href={image.fullPublicUrl || image.publicUrl}
+                  download={image.filename}
+                  className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium capitalize">{post.platform}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs ${
-                        post.status === 'queued'
-                          ? 'border border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-200'
-                          : post.status === 'failed'
-                            ? 'border border-red-300 bg-red-50 text-red-700 dark:border-red-800/50 dark:bg-red-950/40 dark:text-red-200'
-                            : 'border border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
-                      }`}
-                    >
-                      {post.status}
-                    </span>
-                    <span className="text-xs text-slate-500 ml-auto">{post.created_at}</span>
-                  </div>
-                  <div className="line-clamp-3 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-200">
-                    {post.caption}
-                  </div>
-                </div>
-              ))}
+                  ⬇ Download Image
+                </a>
+              )}
+
+              {/* Regenerate */}
+              <button
+                type="button"
+                onClick={generateIdea}
+                disabled={ideaGenerating}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                ↻ Regenerate
+              </button>
+
+              {/* Start over */}
+              <button
+                type="button"
+                onClick={startOver}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Start Over
+              </button>
             </div>
-          )}
+
+            {queueResult && (
+              <div
+                className={`mt-4 rounded-xl border p-3 text-sm ${queueResult.ok
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-200'
+                    : 'border-red-300 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200'
+                  }`}
+              >
+                {queueResult.message}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ── Posting History (only show if there are posts) ───────────────── */}
+      {history.length > 0 && (
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/30">
+          <h2 className="text-lg font-semibold mb-4">Posting History</h2>
+          <div className="space-y-3">
+            {history.map((post) => (
+              <div
+                key={post.id}
+                className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium capitalize">{post.platform}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs ${post.status === 'queued'
+                        ? 'border border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-200'
+                        : post.status === 'failed'
+                          ? 'border border-red-300 bg-red-50 text-red-700 dark:border-red-800/50 dark:bg-red-950/40 dark:text-red-200'
+                          : 'border border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                      }`}
+                  >
+                    {post.status}
+                  </span>
+                  <span className="text-xs text-slate-500 ml-auto">{post.created_at}</span>
+                </div>
+                <div className="line-clamp-3 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-200">
+                  {post.caption}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
     </div>
   );
 }

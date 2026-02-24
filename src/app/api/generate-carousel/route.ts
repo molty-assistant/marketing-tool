@@ -130,7 +130,7 @@ ${params.direction ? `User direction: ${params.direction}` : ''}
 
 Generate a ${params.slideCount}-slide Instagram carousel concept. Return JSON only.`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
   const res = await fetch(url, {
     method: 'POST',

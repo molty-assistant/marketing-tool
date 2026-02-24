@@ -39,8 +39,8 @@ export default function LandingPage() {
   const features = useMemo(
     () => [
       {
-        title: 'AI Briefs',
-        desc: 'Generate a complete, structured marketing brief from any URL.',
+        title: 'Social Posts',
+        desc: 'Platform-native captions and hashtags for Instagram and TikTok, generated from your product.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M8 6h10M8 10h10M8 14h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -49,32 +49,8 @@ export default function LandingPage() {
         ),
       },
       {
-        title: 'Competitor Analysis',
-        desc: 'Quick scan of positioning, angles, and messaging in your space.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M4 19V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M8 19V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M12 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M16 19V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M20 19V9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        title: 'Export Pack',
-        desc: 'Download your brief as clean Markdown and PDF-ready content.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M12 3v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M8 9l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4 17v3h16v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        title: 'Multi-Platform',
-        desc: 'Works for App Store, Google Play, and any website landing page.',
+        title: 'Carousel Builder',
+        desc: 'Multi-slide Instagram carousels with AI-designed visuals. Drag, edit, download.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M4 7a3 3 0 013-3h10a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7z" stroke="currentColor" strokeWidth="2" />
@@ -83,8 +59,8 @@ export default function LandingPage() {
         ),
       },
       {
-        title: 'Brand Assets',
-        desc: 'Generate copy-friendly assets and visual direction you can reuse.',
+        title: 'AI Images & Video',
+        desc: 'Hero graphics and short-form video generated to match your brand and content.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M4 19V5h16v14H4z" stroke="currentColor" strokeWidth="2" />
@@ -95,33 +71,13 @@ export default function LandingPage() {
         ),
       },
       {
-        title: 'A/B Variants',
-        desc: 'Create multiple copy angles and iterate faster with your team.',
+        title: 'Queue to Buffer',
+        desc: 'Send posts straight to your Buffer queue — schedule and forget.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M7 6h10M7 12h10M7 18h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M5 4h14v16H5V4z" stroke="currentColor" strokeWidth="2" />
-          </svg>
-        ),
-      },
-      {
-        title: 'Shareable Links',
-        desc: 'Send a single link to teammates or clients for review and edits.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M10 13a5 5 0 010-7l1-1a5 5 0 017 7l-1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M14 11a5 5 0 010 7l-1 1a5 5 0 01-7-7l1-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        title: 'SEO + Keywords',
-        desc: 'Discover messaging and keyword opportunities for growth channels.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M10 10a4 4 0 118 0 4 4 0 01-8 0z" stroke="currentColor" strokeWidth="2" />
-            <path d="M2 20l6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M14 14l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M12 3v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M8 9l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 17v3h16v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         ),
       },
@@ -155,7 +111,7 @@ export default function LandingPage() {
       {generating && (
         <GenerationOverlay
           url={generatingUrl}
-          onComplete={(planId) => router.push(`/plan/${planId}/quickwin`)}
+          onComplete={(planId) => router.push(`/plan/${planId}/social`)}
           onError={(err) => {
             setGenerating(false);
             setError(err);
@@ -171,14 +127,14 @@ export default function LandingPage() {
 
         <div className="relative mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-700 dark:text-indigo-200">
-            <span className="text-slate-700 dark:text-slate-300">Generate a brief in minutes, not days</span>
+            <span className="text-slate-700 dark:text-slate-300">From URL to social post in 60 seconds</span>
           </div>
 
           <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Turn Any URL Into a Complete Marketing Plan
+            Paste Any URL. Get Social Content You&apos;d Actually Post.
           </h1>
           <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
-            Paste a link. Get a brief, content strategy, social posts, email sequences, SEO keywords, and distribution plan — in under 60 seconds.
+            Instagram posts, TikTok scripts, hero images, and carousels — generated from your app in 60 seconds. Queue to Buffer in one click.
           </p>
 
           {/* CTA */}
@@ -200,7 +156,7 @@ export default function LandingPage() {
                 onClick={handleStart}
                 className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
               >
-                Generate plan →
+                Generate content →
               </Button>
             </div>
             {error && <p className="mt-2 text-left text-sm text-red-600 dark:text-red-400">{error}</p>}
@@ -210,8 +166,8 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Export to Markdown/PDF</span>
-              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Built for founders & marketers</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Instagram · TikTok · Carousels</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Built for indie makers</span>
             </div>
           </div>
         </div>
@@ -222,7 +178,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">How it works</h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            From link → brief → asset pack, in three simple steps.
+            From link → content → posted, in three simple steps.
           </p>
         </div>
 
@@ -235,13 +191,13 @@ export default function LandingPage() {
             },
             {
               step: '02',
-              title: 'AI Generates',
-              desc: 'We draft positioning, messaging, copy angles, and structure.',
+              title: 'AI Creates Content',
+              desc: 'Captions, hashtags, hero images, and carousels — platform-ready.',
             },
             {
               step: '03',
-              title: 'Download Pack',
-              desc: 'Export a clean brief and reuse the outputs anywhere.',
+              title: 'Post or Queue',
+              desc: 'Copy, download, or queue directly to Buffer.',
             },
           ].map((s) => (
             <div
@@ -262,9 +218,9 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section id="features" className="mt-12 scroll-mt-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Everything you need to ship marketing faster</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Everything you need to post about your app</h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            Practical outputs — not generic advice — designed to drop straight into your workflow.
+            Content you can actually publish — generated from your product, not a template.
           </p>
         </div>
 
@@ -288,7 +244,7 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
             <div className="text-sm font-semibold text-slate-900 dark:text-white">Marketing Tool</div>
-            <div className="mt-1 text-sm text-slate-500">Turn any URL into a complete marketing brief.</div>
+            <div className="mt-1 text-sm text-slate-500">Social content from any URL, in 60 seconds.</div>
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">

@@ -11,7 +11,6 @@ import {
   PenLine,
   Search,
   Share2,
-  Zap,
 } from 'lucide-react';
 
 import type { MarketingPlan } from '@/lib/types';
@@ -41,14 +40,6 @@ const ACTION_CARDS = [
     icon: Images,
     gradient: 'from-pink-500 to-rose-500',
     iconBg: 'bg-pink-400/20',
-  },
-  {
-    title: 'Quick Win',
-    description: 'Bulk-generate IG + TikTok + hero image in one click',
-    href: '/quickwin',
-    icon: Zap,
-    gradient: 'from-cyan-500 to-blue-500',
-    iconBg: 'bg-cyan-400/20',
   },
 ] as const;
 
@@ -260,7 +251,7 @@ export default function PlanOverviewPage({
         <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
           Create Content
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {ACTION_CARDS.map((card) => (
             <ActionCard key={card.href} card={card} planId={id} />
           ))}

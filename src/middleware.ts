@@ -24,7 +24,7 @@ function isAuthEnabled(raw: string | undefined): boolean {
   return value === '1' || value === 'true' || value === 'yes' || value === 'on';
 }
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   // Skip auth for shared plan routes and healthcheck
   if (
     request.nextUrl.pathname.startsWith('/shared/') ||

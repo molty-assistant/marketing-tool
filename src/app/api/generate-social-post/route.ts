@@ -112,7 +112,7 @@ ${topic ? `USER'S REQUESTED TOPIC: "${topic}" — the post MUST be about this sp
 
 Generate a single compelling ${contentType} for ${platform}.`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
 
     const geminiResponse = await fetch(url, {
       method: 'POST',
@@ -163,7 +163,7 @@ Generate a single compelling ${contentType} for ${platform}.`;
       metadata: {
         platform,
         contentType,
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-pro',
         generatedAt: new Date().toISOString(),
       },
     });

@@ -5,10 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  FileText,
-  PenLine,
-  Megaphone,
-  Search,
   Package,
   ChevronDown,
   ChevronRight,
@@ -32,11 +28,7 @@ type NavChild = {
 type NavGroupKey =
   | 'create'
   | 'plan'
-  | 'strategy'
-  | 'content'
-  | 'distribution'
-  | 'seo'
-  | 'export';
+  | 'more';
 
 type NavGroup = {
   key: NavGroupKey;
@@ -57,7 +49,6 @@ const NAV_GROUPS: NavGroup[] = [
     children: [
       { label: 'Social Posts', href: '/social' },
       { label: 'Carousel', href: '/carousel' },
-      { label: 'Quick Win', href: '/quickwin' },
     ],
   },
   {
@@ -70,60 +61,28 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: 'strategy',
-    label: 'Strategy',
-    icon: FileText,
+    key: 'more',
+    label: 'More Tools',
+    icon: Package,
     href: '/strategy',
     children: [
       { label: 'Brief', href: '/strategy/brief' },
       { label: 'Foundation', href: '/foundation' },
       { label: 'Competitors', href: '/competitors' },
       { label: 'Reviews', href: '/reviews' },
-    ],
-  },
-  {
-    key: 'content',
-    label: 'Content',
-    icon: PenLine,
-    href: '/content',
-    children: [
       { label: 'Copy Draft', href: '/draft' },
       { label: 'Tone Compare', href: '/tone-compare' },
-      { label: 'Email sequences', href: '/emails' },
+      { label: 'Email Sequences', href: '/emails' },
       { label: 'Templates', href: '/templates' },
       { label: 'Translations', href: '/translate' },
       { label: 'Approvals', href: '/approvals' },
-    ],
-  },
-  {
-    key: 'distribution',
-    label: 'Distribution',
-    icon: Megaphone,
-    href: '/distribution',
-    children: [
       { label: 'Schedule', href: '/schedule' },
       { label: 'Calendar', href: '/calendar' },
       { label: 'Distribute', href: '/distribute' },
       { label: 'Performance', href: '/performance' },
-    ],
-  },
-  {
-    key: 'seo',
-    label: 'SEO & ASO',
-    icon: Search,
-    href: '/seo',
-    children: [
       { label: 'Keywords', href: '/keywords' },
       { label: 'SERP Preview', href: '/serp' },
       { label: 'Variants', href: '/variants' },
-    ],
-  },
-  {
-    key: 'export',
-    label: 'Export',
-    icon: Package,
-    href: '/export',
-    children: [
       { label: 'Assets', href: '/assets' },
       { label: 'Preview', href: '/preview' },
       { label: 'Digest', href: '/digest' },
@@ -171,11 +130,7 @@ export function PlanSidebar({
     return {
       create: true,
       plan: true,
-      strategy: false,
-      content: false,
-      distribution: false,
-      seo: false,
-      export: false,
+      more: false,
     };
   });
 
@@ -342,8 +297,8 @@ export function PlanSidebar({
               group.key === 'plan'
                 ? pathname === basePath
                 : pathname === groupHref ||
-                  (group.href !== '' && pathname.startsWith(groupHref + '/')) ||
-                  group.children?.some((c) => pathname === `${basePath}${c.href}`);
+                (group.href !== '' && pathname.startsWith(groupHref + '/')) ||
+                group.children?.some((c) => pathname === `${basePath}${c.href}`);
 
             // Always-open section (Create) — no collapse, visually distinct
             if (group.alwaysOpen && group.children?.length) {
