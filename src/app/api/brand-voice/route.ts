@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'GEMINI_API_KEY is not set' }, { status: 500 });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const appContext = {
       app_name: config?.app_name,
@@ -129,7 +129,7 @@ Constraints:
     // Persist the generated brand voice
     updatePlanContent(planId, 'brandVoice', parsed);
 
-    return NextResponse.json({ brandVoice: parsed, metadata: { model: 'gemini-2.5-pro' } });
+    return NextResponse.json({ brandVoice: parsed, metadata: { model: 'gemini-2.5-flash' } });
   } catch (err) {
     console.error('brand-voice error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
