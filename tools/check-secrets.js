@@ -4,7 +4,10 @@ const { execSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const IGNORED_PATHS = new Set(['tools/check-secrets.js']);
+const IGNORED_PATHS = new Set([
+  'tools/check-secrets.js',
+  'tools/check-secrets.test.js',
+]);
 const IGNORE_LINE_MARKER = 'secret-scan: ignore';
 
 const SECRET_PATTERNS = [

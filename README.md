@@ -124,7 +124,7 @@ npm run check:secrets  # Scan tracked files for known secret patterns
 
 ## Secret Scan Notes
 
-- `tools/check-secrets.js` is excluded from scanning to avoid false positives from its own regex definitions.
+- `tools/check-secrets.js` and `tools/check-secrets.test.js` are excluded from scanning to avoid false positives from scanner regex definitions and test fixtures.
 - To intentionally keep a known-safe secret-like string in code/examples, add `secret-scan: ignore` on that line.
 
 ## Deployment

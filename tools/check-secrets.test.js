@@ -19,7 +19,7 @@ function withTempFile(contents, run) {
 }
 
 test('scanFile detects unmarked secrets', () => {
-  withTempFile('const key = "sk_1234567890abcdef";\n', (filePath) => {
+  withTempFile('const key = "sk_1234567890abcdef";\n', (filePath) => { // secret-scan: ignore
     const findings = scanFile(filePath, 'fixtures/demo.js');
     assert.equal(findings.length, 1);
     assert.equal(findings[0].label, 'sk_ secret');
@@ -29,8 +29,8 @@ test('scanFile detects unmarked secrets', () => {
 
 test('scanFile ignores lines marked as known-safe', () => {
   const contents = [
-    `const safe = "pplx-1234567890ab"; // ${IGNORE_LINE_MARKER}`,
-    'const leaked = "pplx-ABCDEFGHIJKL";',
+    `const safe = "pplx-1234567890ab"; // ${IGNORE_LINE_MARKER}`, // secret-scan: ignore
+    'const leaked = "pplx-ABCDEFGHIJKL";', // secret-scan: ignore
     '',
   ].join('\n');
 
@@ -42,8 +42,10 @@ test('scanFile ignores lines marked as known-safe', () => {
   });
 });
 
-test('shouldSkipFile excludes scanner implementation path', () => {
+test('shouldSkipFile excludes scanner implementation and fixtures', () => {
   assert.equal(shouldSkipFile('tools/check-secrets.js'), true);
   assert.equal(shouldSkipFile('tools\\check-secrets.js'), true);
+  assert.equal(shouldSkipFile('tools/check-secrets.test.js'), true);
+  assert.equal(shouldSkipFile('tools\\check-secrets.test.js'), true);
   assert.equal(shouldSkipFile('src/app/page.tsx'), false);
 });
