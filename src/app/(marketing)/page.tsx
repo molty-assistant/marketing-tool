@@ -1,6 +1,4 @@
 'use client';
-
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GenerationOverlay from '@/components/GenerationOverlay';
@@ -259,9 +257,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">
-            <Link href="/dashboard" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Plans
-            </Link>
             <a href="#features" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
               Features
             </a>
