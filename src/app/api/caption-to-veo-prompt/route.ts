@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
 function getApiKey() {
-  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+  return process.env.GEMINI_API_KEY || '';
 }
 
 type CandidatePart = { text?: unknown };
@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     const apiKey = getApiKey();
+    if (!apiKey) {
+      return NextResponse.json({ error: 'GEMINI_API_KEY is not set' }, { status: 500 });
+    }
 
     const system =
       'You are an expert at writing Kling 3.0 video generation prompts. Given a social media post caption, write a single cinematic video prompt. Rules: one focused scene, specify shot type (close-up/wide/medium), specify camera movement (dolly in/pan/crane), specify lighting and mood, be descriptive (up to 200 words — Kling supports detailed prompts), no quotation marks. Return ONLY valid JSON with exactly this schema: {"prompt":"..."}.';
@@ -87,11 +90,9 @@ export async function POST(request: NextRequest) {
 
     const obj = (parsed && typeof parsed === 'object') ? (parsed as Record<string, unknown>) : null;
     const videoPrompt = obj?.videoPrompt;
-    const veoPrompt = obj?.veoPrompt;
     const promptCandidate =
       (obj && typeof obj.prompt === 'string' && obj.prompt) ||
       (typeof videoPrompt === 'string' && videoPrompt) ||
-      (typeof veoPrompt === 'string' && veoPrompt) ||
       (typeof parsed === 'string' ? parsed : '') ||
       '';
 

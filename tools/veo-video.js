@@ -36,12 +36,11 @@ function requiredArg(name, value) {
 }
 
 function getApiKey() {
-  return (
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    // Confirmed working key (project instruction). Prefer env vars when set.
-    (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '')
-  );
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+  if (!key) {
+    throw new Error('Missing API key. Set GEMINI_API_KEY (or GOOGLE_API_KEY).');
+  }
+  return key;
 }
 
 function normalizeAspect(aspectRatio) {
@@ -251,7 +250,7 @@ function usage() {
     `  --config     Path to an alternate config JSON\n` +
     `  --help       Show help\n\n` +
     `Environment:\n` +
-    `  GEMINI_API_KEY / GOOGLE_API_KEY (optional; falls back to repo key)\n`;
+    `  GEMINI_API_KEY / GOOGLE_API_KEY (required)\n`;
 }
 
 async function main() {
