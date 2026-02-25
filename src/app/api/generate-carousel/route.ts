@@ -40,7 +40,7 @@ interface CarouselSlide {
 }
 
 function getGeminiKey() {
-  return process.env.GEMINI_API_KEY || '';
+  return process.env.GEMINI_API_KEY ?? '';
 }
 
 function getKieKey() {

@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     const apiKey = getApiKey();
+    if (!apiKey) {
+      return NextResponse.json({ error: 'GEMINI_API_KEY is not set' }, { status: 500 });
+    }
 
     const system =
       'You are an expert at writing Kling 3.0 video generation prompts. Given a social media post caption, write a single cinematic video prompt. Rules: one focused scene, specify shot type (close-up/wide/medium), specify camera movement (dolly in/pan/crane), specify lighting and mood, be descriptive (up to 200 words — Kling supports detailed prompts), no quotation marks. Return ONLY valid JSON with exactly this schema: {"prompt":"..."}.';
