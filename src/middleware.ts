@@ -25,11 +25,17 @@ function isAuthEnabled(raw: string | undefined): boolean {
 }
 
 export function middleware(request: NextRequest) {
-  // Skip auth for shared plan routes and healthcheck
+  const pathname = request.nextUrl.pathname;
+
+  // Keep public routes accessible even when basic auth is enabled.
   if (
-    request.nextUrl.pathname.startsWith('/shared/') ||
-    request.nextUrl.pathname.startsWith('/api/shared/') ||
-    request.nextUrl.pathname === '/api/health'
+    pathname === '/' ||
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    pathname.startsWith('/shared/') ||
+    pathname.startsWith('/api/shared/') ||
+    pathname === '/api/health'
   ) {
     return NextResponse.next();
   }
