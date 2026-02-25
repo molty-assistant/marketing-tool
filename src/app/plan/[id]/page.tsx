@@ -165,7 +165,7 @@ export default function PlanOverviewPage({
     const oneLiner = plan.config?.one_liner || plan.scraped?.description || '';
     const icon = plan.scraped?.icon || plan.config?.icon;
     return { appName, oneLiner, icon };
-  }, [plan]);
+  }, [plan, overview]);
 
   if (loading) {
     return (
@@ -229,7 +229,7 @@ export default function PlanOverviewPage({
               {(overview?.wordCount ?? 0) > 0 && (
                 <>
                   {plan?.createdAt && <span className="text-slate-300 dark:text-slate-700">|</span>}
-                  <span>{overview.wordCount.toLocaleString()} words generated</span>
+                  <span>{overview?.wordCount.toLocaleString()} words generated</span>
                 </>
               )}
             </div>
