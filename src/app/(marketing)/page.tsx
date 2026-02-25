@@ -175,10 +175,33 @@ export default function LandingPage() {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
               >
-                Buy 99 GBP Launch Pack
+                Buy £99 Launch Brief + Copy Pack
               </a>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* EXAMPLE PACK */}
+      <section className="mt-6">
+        <div className="mx-auto max-w-3xl rounded-2xl border border-emerald-200/70 bg-emerald-50/70 p-5 sm:p-6 dark:border-emerald-900/60 dark:bg-emerald-950/20">
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+            See an example pack
+          </p>
+          <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+            Preview a delivered £99 Launch Brief + Copy Pack
+          </h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Read the LightScout sample plan exactly as clients receive it.
+          </p>
+          <a
+            href="https://marketing-tool-production.up.railway.app/shared/6e540e90-748f-4be4-a139-e42f36e923cd"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+          >
+            Open LightScout example ↗
+          </a>
         </div>
       </section>
 
