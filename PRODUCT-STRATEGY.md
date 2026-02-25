@@ -10,17 +10,17 @@
 
 You've built a technically mature marketing tool with 67+ API endpoints, 28+ pages, and a full AI content pipeline — but have never used it end-to-end for a real app. A major refactor just landed (19 feature branches merged: video pipeline, weekly digest, keyword research, competitive intel, export bundle, review monitoring, variant scoring, dark mode, rate limiting, and more). The codebase is stable — ESLint clean, build passing.
 
-Your immediate need is simple: paste a URL, get great social content you'd actually post. This plan defines what the product *is*, the core flows, what you need from a marketing perspective, and how to evolve it toward SME sales.
+Your immediate need is simple: paste a URL, get a brief and copy package you can actually ship. This plan defines what the product *is*, the core flows, what you need from a marketing perspective, and how to evolve it toward SME sales.
 
 ---
 
 ## What the Product Is
 
-**Positioning:** "Paste any app or website URL → get ready-to-post social content with AI-generated images and video in 60 seconds. Full marketing plan underneath when you need it."
+**Positioning:** "Paste any app or website URL → get a launch-ready marketing brief and copy drafts in 60 seconds. Optional channel outputs are available when needed."
 
-**Core promise:** Remove the blank-page problem for founders and small businesses who know their product but don't know what to write, design, or post.
+**Core promise:** Remove the blank-page problem for founders and small businesses who know their product but need clear positioning and copy to ship.
 
-**Key differentiator:** Buffer/Hootsuite assume you already have content. Canva assumes you know what to say. This tool starts from a URL and produces the copy, image, and video together — informed by actual data about the product.
+**Key differentiator:** Most tools assume you already know the message. This tool starts from a URL and produces a coherent brief plus launch copy first, then expands into assets/channels if requested.
 
 ---
 
@@ -170,31 +170,26 @@ Unlimited plans, multiple workspaces, API access, bulk generation
 
 ## Core Flows
 
-### Flow 1: Quick Win (the "just give me a post" flow)
+### Flow 1: Brief + Copy (default flow)
 
 **Trigger:** Paste URL on homepage
 **Time:** ~60 seconds
-**Output:** 1 Instagram post + image, 1 TikTok script
+**Output:** strategy brief + launch-ready copy workspace
 
 ```
-URL --> Scrape --> Generate Plan --> Quick Win Page
-                                      |-- POST /api/generate-social-post (instagram)
-                                      |-- POST /api/generate-social-post (tiktok)
-                                      +-- POST /api/generate-post-image (hero mode)
-                                             |
-                                    Three output cards:
-                                    [Instagram]  [TikTok]  [Upgrade teaser]
-                                             |
-                                   Copy / Download / Queue to Buffer
+URL --> Scrape --> Generate Plan --> /plan/[id] overview
+                                      |-- /plan/[id]/strategy/brief
+                                      |-- /plan/[id]/draft
+                                      +-- /plan/[id]/export
 ```
 
-**Built:** `/plan/[id]/quickwin` — auto-generates all three on load, shows progress, then reveals cards. Homepage redirects here after plan generation.
+**Built:** Homepage generation now redirects to `/plan/[id]` (not `/social`), with brief + copy-first navigation.
 
 **What already exists to power this:**
-- `/api/generate-social-post` — returns caption, hashtags, hook, media_concept, media_specs, cta, posting_time, engagement_tips. Supports `contentType`: post, reel, story, carousel. Temperature 0.8.
-- `/api/generate-post-image` — three visual modes: screenshot, hero (Nano Banana Pro via Kie.ai), hybrid. Renders via Playwright at 1080x1080.
-- `/api/caption-to-image-brief` — converts caption → structured image brief (hook, scene, subject, mood, palette, composition).
-- `/plan/[id]/social/page.tsx` — the existing 4-step flow (choose platform → generate idea → create media → queue to Buffer) is the exact pattern to replicate in a simplified single-page Quick Win.
+- `/api/generate-plan` — builds and stores the full plan from scraped input.
+- `/plan/[id]/strategy/brief` — default brief review and export surface.
+- `/plan/[id]/draft` + `/api/generate-draft` — copywriting workflow with tone and section controls.
+- `/api/export-bundle` + `/api/export-pdf` — handoff-ready export flows.
 
 ### Flow 2: Carousel Builder
 
@@ -406,7 +401,7 @@ The following bugs and security issues were identified across two code audits. T
 ### Phase 2: Quick Win page — **COMPLETE**
 
 1. [x] Build `/plan/[id]/quickwin` page — auto-fires Instagram caption + TikTok caption + image generation on load, renders 3 output cards
-2. [x] Homepage redirects to Quick Win after plan generation (in `(marketing)/page.tsx` onComplete callback)
+2. [x] Homepage now redirects to `/plan/[id]` after plan generation (brief + copy-first default)
 3. [x] Migrate image generation to Nano Banana Pro via Kie.ai + video to Kling 3.0 via Kie.ai
 4. [x] **[Staff #7]** Make image storage path configurable via env var (`IMAGE_DIR` defaulting to `/app/data/images`)
 
@@ -437,8 +432,8 @@ A 5-part review (code quality, UX/UI, product fit, deploy readiness, MVP assessm
 5. [x] **Dark mode breakage** — Tone Compare, ErrorBoundary, and Skeleton components fully migrated from hardcoded dark colors to CSS theme tokens (`bg-card`, `text-foreground`, `bg-muted`, `border-border`)
 
 **Navigation redesign (Phase 2):**
-6. [x] **Sidebar restructure** — 7 sections with always-open "Create" group (Quick Win, Social, Carousel), localStorage persistence, mobile "More" button
-7. [x] **Plan overview hub** — 3 large gradient ActionCards (Quick Win, Carousel, Social Posts) + 12 smaller SuiteCards grid replacing old 5 equal hub cards
+6. [x] **Sidebar restructure** — brief/copy-first primary group with social/distribution routes delisted from default nav
+7. [x] **Plan overview hub** — primary ActionCards now focus on Brief + Copy Draft, with supporting tools in a secondary grid
 
 **Post-review Phase 3 (UX Polish) — COMPLETE:**
 8. [x] **Quick Win sessionStorage caching** — cache results, hydrate on revisit, Regenerate button
@@ -533,8 +528,8 @@ Single `GEMINI_API_KEY` (free tier), different model strings per route:
 | `src/app/api/review-monitor/route.ts` | App review monitoring — POST triggers scrape + sentiment, SSRF fixed, passes url + reviews to downstream | ~~#2 broken contracts~~ FIXED |
 | `src/app/api/content-schedule/[id]/performance/route.ts` | Performance tracking updates | #8 false success |
 | `src/app/api/scrape/route.ts` | URL scraping entry point | ~~#5~~ FIXED |
-| `src/components/GenerationOverlay.tsx` | Scrape → generate plan → redirect to Quick Win | — |
-| `src/app/(marketing)/page.tsx` | Homepage — URL input, triggers GenerationOverlay, redirects to `/quickwin` | — |
+| `src/components/GenerationOverlay.tsx` | Scrape → generate plan → redirect into plan workspace | — |
+| `src/app/(marketing)/page.tsx` | Homepage — URL input, triggers GenerationOverlay, redirects to `/plan/[id]` | — |
 | `src/lib/orchestrator.ts` | Multi-step pipeline with progress streaming, retry, 295s max | — |
 | `src/lib/pipeline.ts` | Core Gemini wrappers — single `geminiUrl()` helper (change model here for all pipeline routes). Brand voice, draft, translations, etc. | — |
 | `src/lib/db.ts` | SQLite singleton — schema init, all CRUD ops | ~~#1~~ FIXED |
@@ -542,8 +537,8 @@ Single `GEMINI_API_KEY` (free tier), different model strings per route:
 | `src/proxy.ts` | **DEAD CODE** — must rename to `src/middleware.ts` + fix export. Auth (basic auth + API key) is silently not running. | #11 middleware dead code |
 | `src/app/api/export-pdf/route.ts` | PDF export — **has unfixed SSRF** via `x-forwarded-host` header | #12 SSRF |
 | `src/hooks/usePlan.ts` | Plan data fetching hook — abort cleanup now properly wired | ~~cleanup leak~~ FIXED |
-| `src/components/PlanSidebar.tsx` | **Redesigned** — 7-section nav with always-open Create section, localStorage persistence, mobile "More" button | — |
-| `src/app/plan/[id]/page.tsx` | **Redesigned** — 3 gradient ActionCards (Quick Win, Carousel, Social) + 12 SuiteCards grid | — |
+| `src/components/PlanSidebar.tsx` | **Redesigned** — brief/copy-first nav with social/distribution routes delisted from primary paths | — |
+| `src/app/plan/[id]/page.tsx` | **Redesigned** — brief + copy ActionCards with secondary supporting tools grid | — |
 | `src/lib/socialTemplates.ts` | 100+ social media post templates across platforms/tones | — |
 | `AUTH-ARCHITECTURE.md` | Supabase auth migration plan (PostgreSQL + RLS) | — |
 | `STAFF-REVIEW-REPORT.md` | Original code audit — 7 fixed, 3 open (superseded by Feb 21 verified review) | — |

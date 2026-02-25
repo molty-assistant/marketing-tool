@@ -1,4 +1,4 @@
-import { Eye, Image, Package } from 'lucide-react';
+import { Eye, Image, PenLine } from 'lucide-react';
 
 import { PlanLinkCard, PlanPageShell } from '@/components/plan/PlanPage';
 
@@ -13,9 +13,15 @@ export default async function ExportHubPage({
     <PlanPageShell
       title="Export"
       description="Review and package outputs for handoff, sharing, and launch operations."
-      helper="Recommended order: Assets -> Preview -> Distribution Export"
+      helper="Recommended order: Copy Draft -> Assets -> Preview"
     >
       <div className="space-y-3">
+        <PlanLinkCard
+          href={`/plan/${id}/draft`}
+          title="Copy Draft"
+          description="Refine final copy before bundling or sharing"
+          icon={PenLine}
+        />
         <PlanLinkCard
           href={`/plan/${id}/assets`}
           title="Assets"
@@ -25,14 +31,8 @@ export default async function ExportHubPage({
         <PlanLinkCard
           href={`/plan/${id}/preview`}
           title="Preview"
-          description="Check listing and content output before distribution"
+          description="Check listing and content output before export"
           icon={Eye}
-        />
-        <PlanLinkCard
-          href={`/plan/${id}/distribute`}
-          title="Distribution Export"
-          description="Bundle channel-ready content for publishing workflows"
-          icon={Package}
         />
       </div>
     </PlanPageShell>

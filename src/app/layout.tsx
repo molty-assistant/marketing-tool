@@ -8,12 +8,12 @@ import { ThemeScript } from '@/components/theme/ThemeScript';
 export const metadata: Metadata = {
   title: 'Marketing Tool — Vibe Marketing Brief Generator',
   description:
-    'Paste any App Store, Google Play, or website URL and get a complete 5-stage marketing brief powered by the Vibe Marketing methodology. AI-enhanced copy, competitive analysis, and social media assets included.',
+    'Paste any App Store, Google Play, or website URL and get a complete marketing brief with launch-ready copy drafts.',
   metadataBase: new URL('https://marketing-tool-production.up.railway.app'),
   openGraph: {
     title: 'Marketing Tool — Vibe Marketing Brief Generator',
     description:
-      'Paste any app or website URL → get a full marketing brief with AI copy, competitor research, and social assets.',
+      'Paste any app or website URL → get a full marketing brief with AI copy and competitor research.',
     type: 'website',
     siteName: 'Marketing Tool',
     locale: 'en_GB',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Marketing Tool — Vibe Marketing Brief Generator',
     description:
-      'Paste any app or website URL → get a full marketing brief with AI copy, competitor research, and social assets.',
+      'Paste any app or website URL → get a full marketing brief with AI copy and competitor research.',
   },
   robots: {
     index: true,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     'app store marketing',
     'AI copywriting',
     'competitive analysis',
-    'social media assets',
+    'launch copy',
   ],
 };
 
