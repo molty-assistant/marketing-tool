@@ -10,36 +10,28 @@ import {
   Package,
   PenLine,
   Search,
-  Share2,
 } from 'lucide-react';
 
 import type { MarketingPlan } from '@/lib/types';
-
-type OverviewApi = {
-  sections: Record<string, { hasContent: boolean; preview: string }>;
-  socialPostsCount: number;
-  scheduleCount: number;
-  wordCount: number;
-};
 
 /* ─── Action Card (top tier — large, prominent) ─── */
 
 const ACTION_CARDS = [
   {
-    title: 'Social Posts',
-    description: 'Create posts with AI captions, your photos, and Buffer publishing',
-    href: '/social',
-    icon: Share2,
-    gradient: 'from-indigo-500 to-violet-500',
+    title: 'Brief',
+    description: 'Review positioning, audience, and message architecture',
+    href: '/strategy/brief',
+    icon: FileText,
+    gradient: 'from-indigo-500 to-sky-500',
     iconBg: 'bg-indigo-400/20',
   },
   {
-    title: 'Carousel',
-    description: 'Build multi-slide Instagram carousels with AI hero images',
-    href: '/carousel',
-    icon: Images,
-    gradient: 'from-pink-500 to-rose-500',
-    iconBg: 'bg-pink-400/20',
+    title: 'Copy Draft',
+    description: 'Generate launch-ready copy variants for your app listing and landing page',
+    href: '/draft',
+    icon: PenLine,
+    gradient: 'from-emerald-500 to-cyan-500',
+    iconBg: 'bg-emerald-400/20',
   },
 ] as const;
 
@@ -76,17 +68,17 @@ function ActionCard({
 /* ─── Suite Card (bottom tier — small, muted) ─── */
 
 const SUITE_ITEMS = [
-  { label: 'Brief', href: '/strategy/brief', icon: FileText },
+  { label: 'Foundation', href: '/foundation', icon: FileText },
   { label: 'Competitors', href: '/competitors', icon: Search },
-  { label: 'Copy Draft', href: '/draft', icon: PenLine },
   { label: 'Keywords', href: '/keywords', icon: Search },
   { label: 'Tone Compare', href: '/tone-compare', icon: PenLine },
   { label: 'SERP Preview', href: '/serp', icon: Search },
   { label: 'Emails', href: '/emails', icon: Megaphone },
   { label: 'Templates', href: '/templates', icon: FileText },
   { label: 'Translations', href: '/translate', icon: PenLine },
-  { label: 'Schedule', href: '/schedule', icon: Megaphone },
-  { label: 'Calendar', href: '/calendar', icon: Megaphone },
+  { label: 'Carousel', href: '/carousel', icon: Images },
+  { label: 'Assets', href: '/assets', icon: Package },
+  { label: 'Preview', href: '/preview', icon: Package },
   { label: 'Export', href: '/export', icon: Package },
 ] as const;
 
@@ -123,7 +115,6 @@ export default function PlanOverviewPage({
 }) {
   const { id } = use(params);
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
-  const [overview, setOverview] = useState<OverviewApi | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -133,20 +124,14 @@ export default function PlanOverviewPage({
       setLoading(true);
       setError('');
 
-      Promise.all([
-        fetch(`/api/plans/${id}`).then((r) => {
+      fetch(`/api/plans/${id}`)
+        .then((r) => {
           if (!r.ok) throw new Error('Failed to load plan');
           return r.json() as Promise<MarketingPlan>;
-        }),
-        fetch(`/api/plans/${id}/overview`).then((r) => {
-          if (!r.ok) throw new Error('Failed to load overview');
-          return r.json() as Promise<OverviewApi>;
-        }),
-      ])
-        .then(([p, o]) => {
+        })
+        .then((p) => {
           if (cancelled) return;
           setPlan(p);
-          setOverview(o);
         })
         .catch((e: unknown) => {
           if (cancelled) return;
@@ -171,10 +156,8 @@ export default function PlanOverviewPage({
     const oneLiner = plan.config?.one_liner || plan.scraped?.description || '';
     const icon = plan.scraped?.icon || plan.config?.icon;
 
-    const socialPostsCount = overview?.socialPostsCount ?? 0;
-
-    return { appName, oneLiner, icon, socialPostsCount };
-  }, [plan, overview]);
+    return { appName, oneLiner, icon };
+  }, [plan]);
 
   if (loading) {
     return (
@@ -235,12 +218,6 @@ export default function PlanOverviewPage({
                   Created {new Date(plan.createdAt).toLocaleDateString()}
                 </span>
               )}
-              {computed.socialPostsCount > 0 && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-700">|</span>
-                  <span>{computed.socialPostsCount} posts created</span>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -249,7 +226,7 @@ export default function PlanOverviewPage({
       {/* Action cards — top tier */}
       <div className="mb-8">
         <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-          Create Content
+          Start Here
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {ACTION_CARDS.map((card) => (
@@ -261,7 +238,7 @@ export default function PlanOverviewPage({
       {/* Marketing Suite — bottom tier */}
       <div className="mb-10">
         <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-          Marketing Suite
+          Supporting Tools
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {SUITE_ITEMS.map((item) => (

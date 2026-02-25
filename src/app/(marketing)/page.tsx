@@ -39,18 +39,18 @@ export default function LandingPage() {
   const features = useMemo(
     () => [
       {
-        title: 'Social Posts',
-        desc: 'Platform-native captions and hashtags for Instagram and TikTok, generated from your product.',
+        title: 'Marketing Brief',
+        desc: 'Generate a structured positioning brief from any app or website URL.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M8 6h10M8 10h10M8 14h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M8 6h10M8 10h10M8 14h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             <path d="M6 4h12a2 2 0 012 2v14l-4-3H6a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
           </svg>
         ),
       },
       {
-        title: 'Carousel Builder',
-        desc: 'Multi-slide Instagram carousels with AI-designed visuals. Drag, edit, download.',
+        title: 'Copy Drafts',
+        desc: 'Generate app-store and landing copy variants ready for review and handoff.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M4 7a3 3 0 013-3h10a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7z" stroke="currentColor" strokeWidth="2" />
@@ -59,8 +59,8 @@ export default function LandingPage() {
         ),
       },
       {
-        title: 'AI Images & Video',
-        desc: 'Hero graphics and short-form video generated to match your brand and content.',
+        title: 'Launch Pack',
+        desc: 'Ship a concise brief and copy pack to your team or client in one flow.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M4 19V5h16v14H4z" stroke="currentColor" strokeWidth="2" />
@@ -71,8 +71,8 @@ export default function LandingPage() {
         ),
       },
       {
-        title: 'Queue to Buffer',
-        desc: 'Send posts straight to your Buffer queue — schedule and forget.',
+        title: 'Optional Channels',
+        desc: 'Social and distribution routes remain available when you need them.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M12 3v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -111,7 +111,7 @@ export default function LandingPage() {
       {generating && (
         <GenerationOverlay
           url={generatingUrl}
-          onComplete={(planId) => router.push(`/plan/${planId}/social`)}
+          onComplete={(planId) => router.push(`/plan/${planId}`)}
           onError={(err) => {
             setGenerating(false);
             setError(err);
@@ -127,14 +127,14 @@ export default function LandingPage() {
 
         <div className="relative mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-700 dark:text-indigo-200">
-            <span className="text-slate-700 dark:text-slate-300">From URL to social post in 60 seconds</span>
+            <span className="text-slate-700 dark:text-slate-300">From URL to Brief + Copy in under a minute</span>
           </div>
 
           <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Paste Any URL. Get Social Content You&apos;d Actually Post.
+            Paste Any URL. Get a Brief You Can Ship.
           </h1>
           <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
-            Instagram posts, TikTok scripts, hero images, and carousels — generated from your app in 60 seconds. Queue to Buffer in one click.
+            Generate a structured marketing brief plus launch-ready copy drafts from your app, store listing, or website.
           </p>
 
           {/* CTA */}
@@ -156,7 +156,7 @@ export default function LandingPage() {
                 onClick={handleStart}
                 className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
               >
-                Generate content →
+                Generate brief →
               </Button>
             </div>
             {error && <p className="mt-2 text-left text-sm text-red-600 dark:text-red-400">{error}</p>}
@@ -166,8 +166,19 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Instagram · TikTok · Carousels</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Brief · Copy Draft · Export</span>
               <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Built for indie makers</span>
+            </div>
+
+            <div className="mt-4">
+              <a
+                href="https://buy.stripe.com/6oU28t1uwbKY0lx8vt0Ny00"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+              >
+                Buy 99 GBP Launch Pack
+              </a>
             </div>
           </div>
         </div>
@@ -178,7 +189,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">How it works</h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            From link → content → posted, in three simple steps.
+            From link to launch-ready strategy and copy in three steps.
           </p>
         </div>
 
@@ -191,13 +202,13 @@ export default function LandingPage() {
             },
             {
               step: '02',
-              title: 'AI Creates Content',
-              desc: 'Captions, hashtags, hero images, and carousels — platform-ready.',
+              title: 'Generate Brief',
+              desc: 'AI builds positioning, audience focus, and launch messaging.',
             },
             {
               step: '03',
-              title: 'Post or Queue',
-              desc: 'Copy, download, or queue directly to Buffer.',
+              title: 'Refine Copy',
+              desc: 'Open draft copy, tone variants, and export your launch pack.',
             },
           ].map((s) => (
             <div
@@ -218,9 +229,9 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section id="features" className="mt-12 scroll-mt-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Everything you need to post about your app</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Everything you need to brief and ship launch copy</h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            Content you can actually publish — generated from your product, not a template.
+            Service-first workflow: strategy and copy first, channels optional.
           </p>
         </div>
 
@@ -244,7 +255,7 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
             <div className="text-sm font-semibold text-slate-900 dark:text-white">Marketing Tool</div>
-            <div className="mt-1 text-sm text-slate-500">Social content from any URL, in 60 seconds.</div>
+            <div className="mt-1 text-sm text-slate-500">Brief + copy generation from any URL, in 60 seconds.</div>
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">

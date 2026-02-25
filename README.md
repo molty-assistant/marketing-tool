@@ -1,26 +1,28 @@
 # Marketing Tool
 
-AI-powered marketing content generator. Paste any App Store, Google Play, or website URL → get ready-to-post social content with AI-generated images and video in 60 seconds. Full marketing suite underneath when you need it.
+AI-powered brief + copy generator. Paste any App Store, Google Play, or website URL and get a structured marketing brief plus launch-ready copy drafts in about 60 seconds.
 
 ## What It Does
 
-**Quick Win flow (60 seconds):**
+**Default flow (brief + copy):**
 1. Paste a URL → scrape app/website metadata
 2. Generate a marketing plan automatically
-3. Get an Instagram post (caption + AI image) + TikTok script immediately
-4. Copy, download, or queue to Buffer
+3. Land on your plan overview and review the brief
+4. Generate copy drafts, tone variants, and export your launch pack
 
-**Full marketing suite:**
-- **Carousel Builder** — Auto/guided/manual modes, drag-to-reorder slides, Nano Banana Pro hero images
-- **Video Generation** — Kling 3.0 via Kie.ai, 15s clips from captions
+**Core workspace:**
+- **Strategy Brief** — Positioning, audience, and messaging summary
 - **Copy Drafts** — App Store descriptions, feature bullets, landing page hero, keywords
 - **Tone Compare** — Generate same section in two tones side-by-side
 - **Translations** — Localise into 10+ languages (marketing-aware, not literal)
-- **SERP Preview** — See Google results appearance with SEO warnings
-- **Content Calendar** — Schedule + queue posts to Buffer
 - **Email Sequences** — AI-generated drip campaigns
 - **Competitive Analysis** — Compare against competitors
 - **Export Bundle** — PDF + ZIP of all assets
+- **SERP Preview** — See Google results appearance with SEO warnings
+
+**Optional/direct routes (kept):**
+- **Social Posts, Schedule, Calendar, Digest, Distribution** — still available via direct URLs
+- **Carousel Builder + Video Generation** — optional expansion workflows
 
 ## Stack
 
@@ -33,7 +35,7 @@ AI-powered marketing content generator. Paste any App Store, Google Play, or web
 | AI (images) | Nano Banana Pro via Kie.ai |
 | AI (video) | Kling 3.0 via Kie.ai |
 | Rendering | Playwright (HTML → PNG for carousels/assets) |
-| Social | Buffer via Zapier MCP |
+| Social (optional) | Buffer via Zapier MCP |
 | Hosting | Railway (auto-deploy from `main`) |
 
 ## Getting Started
@@ -68,9 +70,9 @@ npm run dev
 | `/` | Home — paste a URL to start |
 | `/wizard` | Guided onboarding — pick a goal, enter URL |
 | `/dashboard` | All plans with search/filter |
-| `/plan/[id]` | Plan overview — 3 action cards + marketing suite grid |
-| `/plan/[id]/quickwin` | Quick Win — auto-generates IG + TikTok + image |
-| `/plan/[id]/social` | Full social flow — 4-step with video, Buffer queue |
+| `/plan/[id]` | Default workspace — brief + copy first |
+| `/plan/[id]/quickwin` | Optional quick social workflow |
+| `/plan/[id]/social` | Optional full social flow (direct route) |
 | `/plan/[id]/carousel` | Carousel builder — auto/guided/manual modes |
 | `/plan/[id]/draft` | AI copy drafts (4 tones) |
 | `/plan/[id]/tone-compare` | Side-by-side tone comparison |
@@ -79,10 +81,10 @@ npm run dev
 | `/plan/[id]/keywords` | Keyword research |
 | `/plan/[id]/assets` | Visual asset generation |
 | `/plan/[id]/emails` | Email sequence generation |
-| `/plan/[id]/schedule` | Content scheduling |
-| `/plan/[id]/calendar` | Visual content calendar |
+| `/plan/[id]/schedule` | Optional content scheduling |
+| `/plan/[id]/calendar` | Optional visual content calendar |
 | `/plan/[id]/competitors` | Competitive analysis |
-| `/plan/[id]/templates` | Social media templates |
+| `/plan/[id]/templates` | Copy and campaign templates |
 | `/plan/[id]/export` | Export bundle (PDF + ZIP) |
 | `/shared/[token]` | Public read-only shared plan |
 
@@ -97,7 +99,7 @@ src/
 │   └── shared/[token]/     # Public shared view
 ├── components/             # Reusable UI components
 │   ├── ui/                 # shadcn/ui components
-│   ├── PlanSidebar.tsx     # 7-section navigation with Create section
+│   ├── PlanSidebar.tsx     # Brief/copy-first plan navigation
 │   ├── ErrorBoundary.tsx   # Global error boundary
 │   ├── GenerationOverlay.tsx # Scrape → plan → redirect overlay
 │   └── Skeleton.tsx        # Loading skeleton variants
@@ -128,7 +130,7 @@ Railway with auto-deploy from `main`. SQLite requires a Railway volume mapped to
 
 | File | Description |
 |------|-------------|
-| `PRODUCT-STRATEGY.md` | Product vision, core flows, AI models, marketing recommendations, build phases |
+| `PRODUCT-STRATEGY.md` | Product vision and brief+copy-first strategy |
 | `REVIEW-AND-FIX-PLAN.md` | Post-review fix plan — Phase 1+2 complete, Phase 3 pending |
 | `CLAUDE.md` | AI coding assistant guidance for this repo |
 | `AUTH-ARCHITECTURE.md` | Supabase auth migration plan (future) |
