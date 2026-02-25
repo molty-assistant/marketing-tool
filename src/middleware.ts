@@ -31,6 +31,10 @@ export function middleware(request: NextRequest) {
   if (
     pathname === '/' ||
     pathname === '/favicon.ico' ||
+    pathname === '/site.webmanifest' ||
+    pathname === '/manifest.json' ||
+    pathname === '/apple-touch-icon.png' ||
+    pathname === '/apple-touch-icon-precomposed.png' ||
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
     pathname.startsWith('/shared/') ||
