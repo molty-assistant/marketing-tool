@@ -44,11 +44,11 @@ const NAV_GROUPS: NavGroup[] = [
     key: 'create',
     label: 'Create',
     icon: Zap,
-    href: '/social',
+    href: '/strategy/brief',
     alwaysOpen: true,
     children: [
-      { label: 'Social Posts', href: '/social' },
-      { label: 'Carousel', href: '/carousel' },
+      { label: 'Brief', href: '/strategy/brief' },
+      { label: 'Copy Draft', href: '/draft' },
     ],
   },
   {
@@ -62,7 +62,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: 'more',
-    label: 'More Tools',
+    label: 'Supporting Tools',
     icon: Package,
     href: '/strategy',
     children: [
@@ -76,8 +76,6 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Templates', href: '/templates' },
       { label: 'Translations', href: '/translate' },
       { label: 'Approvals', href: '/approvals' },
-      { label: 'Schedule', href: '/schedule' },
-      { label: 'Calendar', href: '/calendar' },
       { label: 'Distribute', href: '/distribute' },
       { label: 'Performance', href: '/performance' },
       { label: 'Keywords', href: '/keywords' },
