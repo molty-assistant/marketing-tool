@@ -111,6 +111,9 @@ async function generateVideo(prompt, aspectRatio, outputPath, options = {}) {
   requiredArg('output', outputPath);
 
   const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('Missing API key. Set GEMINI_API_KEY (or GOOGLE_API_KEY) environment variable.');
+  }
   const aspect = normalizeAspect(aspectRatio);
   const durationSeconds = normalizeDurationSeconds(options.durationSeconds);
 
