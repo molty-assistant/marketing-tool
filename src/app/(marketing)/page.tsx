@@ -59,8 +59,8 @@ export default function LandingPage() {
         ),
       },
       {
-        title: 'AI Images & Video',
-        desc: 'Hero graphics and short-form video generated to match your brand and content.',
+        title: 'Tone Compare',
+        desc: 'Review voice variants and tighten final wording before you publish.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M4 19V5h16v14H4z" stroke="currentColor" strokeWidth="2" />
@@ -71,8 +71,8 @@ export default function LandingPage() {
         ),
       },
       {
-        title: 'Queue to Buffer',
-        desc: 'Send posts straight to your Buffer queue — schedule and forget.',
+        title: 'Publish-Ready Output',
+        desc: 'Move from brief to editable drafts you can export and ship quickly.',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
             <path d="M12 3v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -111,7 +111,7 @@ export default function LandingPage() {
       {generating && (
         <GenerationOverlay
           url={generatingUrl}
-          onComplete={(planId) => router.push(`/plan/${planId}/social`)}
+          onComplete={(planId) => router.push(`/plan/${planId}`)}
           onError={(err) => {
             setGenerating(false);
             setError(err);
@@ -166,7 +166,7 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Instagram · TikTok · Carousels</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Brief · Copy Draft · Publish-ready</span>
               <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Built for indie makers</span>
             </div>
           </div>

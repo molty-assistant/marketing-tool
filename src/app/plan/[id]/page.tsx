@@ -5,20 +5,16 @@ import Link from 'next/link';
 import {
   ArrowRight,
   FileText,
-  Images,
   Megaphone,
   Package,
   PenLine,
   Search,
-  Share2,
 } from 'lucide-react';
 
 import type { MarketingPlan } from '@/lib/types';
 
 type OverviewApi = {
   sections: Record<string, { hasContent: boolean; preview: string }>;
-  socialPostsCount: number;
-  scheduleCount: number;
   wordCount: number;
 };
 
@@ -26,20 +22,20 @@ type OverviewApi = {
 
 const ACTION_CARDS = [
   {
-    title: 'Social Posts',
-    description: 'Create posts with AI captions, your photos, and Buffer publishing',
-    href: '/social',
-    icon: Share2,
-    gradient: 'from-indigo-500 to-violet-500',
-    iconBg: 'bg-indigo-400/20',
+    title: 'Brief',
+    description: 'Open and refine your core strategy, positioning, and message hierarchy.',
+    href: '/strategy/brief',
+    icon: FileText,
+    gradient: 'from-indigo-500 to-blue-500',
+    iconBg: 'bg-indigo-400/25',
   },
   {
-    title: 'Carousel',
-    description: 'Build multi-slide Instagram carousels with AI hero images',
-    href: '/carousel',
-    icon: Images,
-    gradient: 'from-pink-500 to-rose-500',
-    iconBg: 'bg-pink-400/20',
+    title: 'Copy Draft',
+    description: 'Turn your brief into editable store, landing page, and release-note drafts.',
+    href: '/draft',
+    icon: PenLine,
+    gradient: 'from-emerald-500 to-cyan-500',
+    iconBg: 'bg-emerald-400/25',
   },
 ] as const;
 
@@ -85,8 +81,6 @@ const SUITE_ITEMS = [
   { label: 'Emails', href: '/emails', icon: Megaphone },
   { label: 'Templates', href: '/templates', icon: FileText },
   { label: 'Translations', href: '/translate', icon: PenLine },
-  { label: 'Schedule', href: '/schedule', icon: Megaphone },
-  { label: 'Calendar', href: '/calendar', icon: Megaphone },
   { label: 'Export', href: '/export', icon: Package },
 ] as const;
 
@@ -171,9 +165,7 @@ export default function PlanOverviewPage({
     const oneLiner = plan.config?.one_liner || plan.scraped?.description || '';
     const icon = plan.scraped?.icon || plan.config?.icon;
 
-    const socialPostsCount = overview?.socialPostsCount ?? 0;
-
-    return { appName, oneLiner, icon, socialPostsCount };
+    return { appName, oneLiner, icon };
   }, [plan, overview]);
 
   if (loading) {
@@ -235,12 +227,6 @@ export default function PlanOverviewPage({
                   Created {new Date(plan.createdAt).toLocaleDateString()}
                 </span>
               )}
-              {computed.socialPostsCount > 0 && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-700">|</span>
-                  <span>{computed.socialPostsCount} posts created</span>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -261,7 +247,7 @@ export default function PlanOverviewPage({
       {/* Marketing Suite — bottom tier */}
       <div className="mb-10">
         <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-          Marketing Suite
+          Supporting Tools
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {SUITE_ITEMS.map((item) => (
