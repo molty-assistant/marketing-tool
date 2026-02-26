@@ -30,6 +30,7 @@ export function middleware(request: NextRequest) {
   // Keep public routes accessible even when basic auth is enabled.
   if (
     pathname === '/' ||
+    pathname === '/intake' ||
     pathname === '/favicon.ico' ||
     pathname === '/site.webmanifest' ||
     pathname === '/manifest.json' ||
