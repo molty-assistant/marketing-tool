@@ -448,7 +448,7 @@ export async function POST(request: NextRequest) {
         )
       : [];
 
-    const includeAssets = body.includeAssets !== false;
+    const includeAssets = body.includeAssets === true;
 
     const row = getPlan(planId);
     if (!row) {

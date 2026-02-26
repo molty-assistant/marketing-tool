@@ -45,7 +45,7 @@ export default function ExportBundleButton({
   const [open, setOpen] = useState(false);
   const [selectedTones, setSelectedTones] = useState<string[]>([...TONES]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [includeAssets, setIncludeAssets] = useState(true);
+  const [includeAssets, setIncludeAssets] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -190,7 +190,7 @@ export default function ExportBundleButton({
           <div className="flex items-center justify-between gap-3 bg-slate-800/30 border border-slate-700/60 rounded-xl px-4 py-3">
             <div>
               <div className="text-sm font-semibold text-white">Include assets</div>
-              <div className="text-xs text-slate-400">Generates PNG social images</div>
+              <div className="text-xs text-slate-400">Generates PNG visual assets (default: off)</div>
             </div>
             <label className="inline-flex items-center gap-2">
               <input

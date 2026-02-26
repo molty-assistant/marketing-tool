@@ -5,7 +5,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 export const metadata: Metadata = {
   title: 'Marketing Tool — Vibe Marketing Brief Generator',
   description:
-    'Paste any App Store, Google Play, or website URL and get a complete 5-stage marketing brief powered by the Vibe Marketing methodology. AI-enhanced copy, competitive analysis, and social media assets included.',
+    'Paste any App Store, Google Play, or website URL and get a complete marketing brief with launch-ready copy drafts.',
 };
 
 export default function MarketingLayout({
@@ -30,12 +30,14 @@ export default function MarketingLayout({
             >
               Start
             </Link>
-            <Link
-              href="/dashboard"
-              className="text-slate-600 hover:text-slate-900 transition-colors dark:text-slate-400 dark:hover:text-white"
+            <a
+              href="https://buy.stripe.com/6oU28t1uwbKY0lx8vt0Ny00"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 sm:text-sm"
             >
-              Plans
-            </Link>
+              Buy 99 GBP Launch Pack
+            </a>
             <ThemeToggle />
           </div>
         </div>
