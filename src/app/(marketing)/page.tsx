@@ -1,5 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import GenerationOverlay from '@/components/GenerationOverlay';
 import { Button } from '@/components/ui/button';
@@ -177,6 +178,15 @@ export default function LandingPage() {
               >
                 Buy £99 Launch Brief + Copy Pack
               </a>
+              <p className="mt-3 text-xs text-slate-600 dark:text-slate-400">
+                Paid already? Submit your intake details to start:
+              </p>
+              <Link
+                href="/intake"
+                className="mt-2 inline-flex items-center justify-center rounded-xl border border-emerald-300 bg-white px-5 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+              >
+                Go to Intake →
+              </Link>
             </div>
           </div>
         </div>
