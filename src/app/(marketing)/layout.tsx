@@ -30,6 +30,12 @@ export default function MarketingLayout({
             >
               Start
             </Link>
+            <Link
+              href="/pricing"
+              className="text-slate-700 hover:text-slate-900 font-medium transition-colors dark:text-slate-300 dark:hover:text-white"
+            >
+              Pricing
+            </Link>
             <a
               href="https://buy.stripe.com/6oU28t1uwbKY0lx8vt0Ny00"
               target="_blank"
