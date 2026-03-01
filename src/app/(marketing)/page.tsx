@@ -1,20 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GenerationOverlay from '@/components/GenerationOverlay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-
-function Icon({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
-      {children}
-    </div>
-  );
-}
 
 function normalizeUrl(input: string): string {
   return input.trim().match(/^https?:\/\//i) ? input.trim() : `https://${input.trim()}`;
@@ -35,55 +26,6 @@ export default function LandingPage() {
   const [generating, setGenerating] = useState(false);
   const [generatingUrl, setGeneratingUrl] = useState('');
   const router = useRouter();
-
-  const features = useMemo(
-    () => [
-      {
-        title: 'Marketing Brief',
-        desc: 'Turn a product URL into positioning, audience, channel priorities, and action plan.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M8 6h10M8 10h10M8 14h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M6 4h12a2 2 0 012 2v14l-4-3H6a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-          </svg>
-        ),
-      },
-      {
-        title: 'Copy Drafts',
-        desc: 'Generate editable app store, landing page, and release-note copy from the same plan.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M4 7a3 3 0 013-3h10a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7z" stroke="currentColor" strokeWidth="2" />
-            <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        title: 'Tone Compare',
-        desc: 'Review voice variants and tighten final wording before you publish.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M4 19V5h16v14H4z" stroke="currentColor" strokeWidth="2" />
-            <path d="M8 9h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M8 13h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M16 13l2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        title: 'Publish-Ready Output',
-        desc: 'Move from brief to editable drafts you can export and ship quickly.',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-            <path d="M12 3v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M8 9l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4 17v3h16v-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-    ],
-    []
-  );
 
   const handleStart = () => {
     setError('');
@@ -118,57 +60,44 @@ export default function LandingPage() {
           }}
         />
       )}
-      {/* HERO */}
+      {/* HERO — Paid PDF product */}
       <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 dark:border-slate-800 dark:bg-[#0d1117]">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
-          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-fuchsia-600/10 blur-3xl" />
+          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-violet-600/10 blur-3xl" />
         </div>
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-700 dark:text-indigo-200">
-            <span className="text-slate-700 dark:text-slate-300">From URL to brief + copy in about 60 seconds</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-slate-700 dark:text-slate-300">
+            Instant PDF · No agency · No waiting
           </div>
 
-          <h1 className="mt-5 text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Paste Any URL. Get Brief + Copy You Can Actually Use.
+          <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Your complete marketing plan — generated in minutes
           </h1>
           <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
-            Generate a clean marketing brief plus editable copy drafts from your product URL.
+            Answer 5 questions about your product. Pay once. Download a PDF full of ready-to-use copy, positioning, and a 30-day content plan.
           </p>
 
-          {/* CTA */}
-          <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5 dark:border-slate-700/60 dark:bg-slate-900/60">
-            <Label htmlFor="landing-url" className="block mb-3 text-left">
-              Product URL (required)
-            </Label>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Input
-                id="landing-url"
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder="https://linear.app (or an App Store / Play link)"
-                className="h-auto rounded-xl border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus-visible:border-transparent dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 sm:flex-1"
-              />
-              <Button
-                onClick={handleStart}
-                className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
-              >
-                Generate content →
-              </Button>
-            </div>
-            {error && <p className="mt-2 text-left text-sm text-red-600 dark:text-red-400">{error}</p>}
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/start"
+              className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-8 py-4 text-base font-semibold text-white hover:bg-indigo-500 transition-colors"
+            >
+              Get my marketing plan →
+            </Link>
+          </div>
 
-            <p className="mt-3 text-left text-xs text-slate-500 dark:text-slate-500">
-              No signup required · Works with any website, App Store, or Play Store link
-            </p>
-
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Brief · Copy Draft · Publish-ready</span>
-              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900/40">Built for indie makers</span>
-            </div>
+          {/* Pricing pills */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 dark:border-slate-700 dark:bg-slate-900">
+              Basic — <strong className="text-slate-900 dark:text-white">£39.99</strong>
+            </span>
+            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
+              Pro — <strong>£99</strong>
+            </span>
+            <span className="text-slate-400">·</span>
+            <span>No revisions · No account needed</span>
           </div>
         </div>
       </section>
@@ -178,7 +107,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">How it works</h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            From link to clear brief and draft copy in three simple steps.
+            From your product URL to a PDF you can act on — in under 3 minutes.
           </p>
         </div>
 
@@ -186,18 +115,18 @@ export default function LandingPage() {
           {[
             {
               step: '01',
-              title: 'Paste URL',
-              desc: 'Drop in an App Store, Google Play, or website URL.',
+              title: 'Answer 5 questions',
+              desc: 'Tell us your product URL, tone, audience, channel focus, and goal.',
             },
             {
               step: '02',
-              title: 'Generate Brief',
-              desc: 'Get positioning, audience, channels, and core messaging in one place.',
+              title: 'Pay once',
+              desc: 'Basic (£39.99) or Pro (£99) — secure Stripe checkout, no subscription.',
             },
             {
               step: '03',
-              title: 'Generate Copy',
-              desc: 'Create and edit copy drafts for store listing, landing page, and updates.',
+              title: 'Download your PDF',
+              desc: 'AI-generated positioning, copy, and a content plan ready to paste and ship.',
             },
           ].map((s) => (
             <div
@@ -215,27 +144,100 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section id="features" className="mt-12 scroll-mt-24">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Everything you need to shape your app messaging</h2>
-          <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            Strategy and copy generated from your product, not generic templates.
-          </p>
-        </div>
-
-        <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {features.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/30">
-              <div className="flex items-start gap-3">
-                <Icon>{f.icon}</Icon>
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-white">{f.title}</div>
-                  <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">{f.desc}</div>
-                </div>
+      {/* TIER COMPARISON */}
+      <section id="pricing" className="mt-12 scroll-mt-24">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">What you get</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Basic */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900/40">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-lg font-bold text-slate-900 dark:text-white">Basic</span>
+                <span className="text-2xl font-bold text-indigo-600">£39.99</span>
               </div>
+              <p className="text-sm text-slate-500 mb-4">9–11 pages. Sharp positioning and landing page copy.</p>
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                {[
+                  'Positioning Snapshot',
+                  'Competitor Angles + Say This Not That',
+                  '5 headline options + feature bullets',
+                  'Short + long CTA options',
+                  '5 X/Twitter + 2 LinkedIn launch posts',
+                ].map((f) => (
+                  <li key={f} className="flex gap-2"><span className="text-emerald-500 flex-shrink-0">✓</span>{f}</li>
+                ))}
+              </ul>
+              <Link
+                href="/start?tier=basic"
+                className="mt-6 flex items-center justify-center rounded-xl border-2 border-indigo-500 px-6 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+              >
+                Get Basic — £39.99
+              </Link>
             </div>
-          ))}
+
+            {/* Pro */}
+            <div className="rounded-2xl border-2 border-indigo-500 bg-white p-6 dark:bg-[#0d1117] relative overflow-hidden">
+              <div className="absolute top-4 right-4 rounded-full bg-indigo-500 px-2.5 py-0.5 text-xs font-bold text-white">Popular</div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-lg font-bold text-slate-900 dark:text-white">Pro</span>
+                <span className="text-2xl font-bold text-indigo-600">£99</span>
+              </div>
+              <p className="text-sm text-slate-500 mb-4">19–25 pages. Everything in Basic plus the full launch toolkit.</p>
+              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                {[
+                  'Everything in Basic',
+                  'Email Sequence (3 emails + A/B subjects)',
+                  '30-Day Content Calendar',
+                  'Ad Copy Angles for Meta/X',
+                  'App Store / Listing Copy',
+                  'Tone-of-Voice Cheat Sheet',
+                  '10 X/Twitter + 5 LinkedIn posts',
+                ].map((f) => (
+                  <li key={f} className="flex gap-2"><span className="text-emerald-500 flex-shrink-0">✓</span>{f}</li>
+                ))}
+              </ul>
+              <Link
+                href="/start?tier=pro"
+                className="mt-6 flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
+              >
+                Get Pro — £99
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FREE TOOL — secondary section */}
+      <section className="mt-12">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/20">
+          <div className="max-w-3xl">
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Also free</div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Interactive Marketing Tool</h2>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              Paste a URL and get a full interactive marketing brief + copy drafts for free — no payment needed. Great for exploring before you commit.
+            </p>
+            <div className="mt-5 flex flex-col sm:flex-row gap-3">
+              <Input
+                id="landing-url"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder="https://yourproduct.com"
+                className="h-auto rounded-xl border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus-visible:border-transparent dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 sm:flex-1"
+              />
+              <Button
+                onClick={handleStart}
+                variant="outline"
+                className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
+              >
+                Try free tool →
+              </Button>
+            </div>
+            {error && <p className="mt-2 text-left text-sm text-red-600 dark:text-red-400">{error}</p>}
+          </div>
         </div>
       </section>
 
@@ -243,23 +245,28 @@ export default function LandingPage() {
       <footer className="mt-14 border-t border-slate-200 pt-8 pb-10 dark:border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <div className="text-sm font-semibold text-slate-900 dark:text-white">Marketing Tool</div>
-            <div className="mt-1 text-sm text-slate-500">Brief + copy from any URL, in minutes.</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-white">Marketing Toolkit</div>
+            <div className="mt-1 text-sm text-slate-500">Instant AI-generated marketing plans.</div>
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">
-            <Link href="/dashboard" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Plans
+            <Link href="/start" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+              Get a plan
             </Link>
-            <a href="#features" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Features
+            <a href="#pricing" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+              Pricing
             </a>
-            {/* Pricing removed */}
+            <Link href="/my-pdfs" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+              My plans
+            </Link>
+            <Link href="/dashboard" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+              Free tool
+            </Link>
           </div>
         </div>
 
         <div className="mt-8 text-xs text-slate-600">
-          © {new Date().getFullYear()} Marketing Tool. All rights reserved.
+          © {new Date().getFullYear()} Marketing Toolkit. All rights reserved.
         </div>
       </footer>
     </div>

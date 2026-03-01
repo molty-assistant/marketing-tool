@@ -189,6 +189,81 @@ CREATE TABLE IF NOT EXISTS approval_queue (
     if (!usageCols.some((c) => c.name === 'blocked_count')) {
       db.exec('ALTER TABLE api_usage_daily ADD COLUMN blocked_count INTEGER NOT NULL DEFAULT 0');
     }
+
+    // ── PDF product tables ────────────────────────────────────────────────────
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS pdf_orders (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        product_url TEXT NOT NULL,
+        tier TEXT NOT NULL CHECK(tier IN ('basic','pro')),
+        status TEXT NOT NULL DEFAULT 'draft'
+          CHECK(status IN ('draft','checkout_created','paid','generating','ready','failed')),
+        intake_json TEXT NOT NULL DEFAULT '{}',
+        stripe_session_id TEXT,
+        stripe_payment_intent TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_pdf_orders_email ON pdf_orders(email)
+    `);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS pdf_generation_runs (
+        id TEXT PRIMARY KEY,
+        order_id TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'running'
+          CHECK(status IN ('running','done','failed')),
+        current_step TEXT,
+        steps_json TEXT NOT NULL DEFAULT '[]',
+        attempt INTEGER NOT NULL DEFAULT 1,
+        last_error TEXT,
+        started_at TEXT NOT NULL DEFAULT (datetime('now')),
+        completed_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(order_id) REFERENCES pdf_orders(id) ON DELETE CASCADE
+      )
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_pdf_gen_runs_order_id ON pdf_generation_runs(order_id)
+    `);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS pdf_documents (
+        id TEXT PRIMARY KEY,
+        order_id TEXT NOT NULL,
+        run_id TEXT NOT NULL,
+        file_path TEXT NOT NULL,
+        file_size INTEGER NOT NULL,
+        page_count INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(order_id) REFERENCES pdf_orders(id) ON DELETE CASCADE,
+        FOREIGN KEY(run_id) REFERENCES pdf_generation_runs(id) ON DELETE CASCADE
+      )
+    `);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS pdf_download_tokens (
+        id TEXT PRIMARY KEY,
+        order_id TEXT NOT NULL,
+        token_hash TEXT NOT NULL UNIQUE,
+        download_count INTEGER NOT NULL DEFAULT 0,
+        max_downloads INTEGER NOT NULL DEFAULT 10,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(order_id) REFERENCES pdf_orders(id) ON DELETE CASCADE
+      )
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_pdf_tokens_hash ON pdf_download_tokens(token_hash)
+    `);
   }
   return db;
 }
@@ -724,4 +799,262 @@ export function trackApiUsage(input: TrackApiUsageInput): void {
        blocked_count = blocked_count + excluded.blocked_count,
        updated_at = datetime('now')`
   ).run(day, input.endpoint, input.actorType, input.actorKey, blockedCount);
+}
+
+// ── PDF product: types ────────────────────────────────────────────────────────
+
+export type PdfTier = 'basic' | 'pro';
+export type PdfOrderStatus = 'draft' | 'checkout_created' | 'paid' | 'generating' | 'ready' | 'failed';
+export type PdfRunStatus = 'running' | 'done' | 'failed';
+
+export interface PdfOrderRow {
+  id: string;
+  email: string;
+  product_url: string;
+  tier: PdfTier;
+  status: PdfOrderStatus;
+  intake_json: string;
+  stripe_session_id: string | null;
+  stripe_payment_intent: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PdfGenerationRunRow {
+  id: string;
+  order_id: string;
+  status: PdfRunStatus;
+  current_step: string | null;
+  steps_json: string;
+  attempt: number;
+  last_error: string | null;
+  started_at: string;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PdfDocumentRow {
+  id: string;
+  order_id: string;
+  run_id: string;
+  file_path: string;
+  file_size: number;
+  page_count: number;
+  created_at: string;
+}
+
+export interface PdfDownloadTokenRow {
+  id: string;
+  order_id: string;
+  token_hash: string;
+  download_count: number;
+  max_downloads: number;
+  expires_at: string;
+  created_at: string;
+}
+
+// ── PDF product: pdf_orders CRUD ─────────────────────────────────────────────
+
+export interface CreatePdfOrderInput {
+  email: string;
+  productUrl: string;
+  tier: PdfTier;
+  intakeJson: string;
+}
+
+export function createPdfOrder(input: CreatePdfOrderInput): PdfOrderRow {
+  const db = getDb();
+  const id = crypto.randomUUID();
+  db.prepare(
+    `INSERT INTO pdf_orders (id, email, product_url, tier, status, intake_json, created_at, updated_at)
+     VALUES (?, ?, ?, ?, 'draft', ?, datetime('now'), datetime('now'))`
+  ).run(id, input.email, input.productUrl, input.tier, input.intakeJson);
+  return getPdfOrder(id)!;
+}
+
+export function getPdfOrder(id: string): PdfOrderRow | undefined {
+  const db = getDb();
+  return db.prepare('SELECT * FROM pdf_orders WHERE id = ?').get(id) as PdfOrderRow | undefined;
+}
+
+export interface UpdatePdfOrderPatch {
+  status?: PdfOrderStatus;
+  tier?: PdfTier;
+  stripeSessionId?: string | null;
+  stripePaymentIntent?: string | null;
+}
+
+export function updatePdfOrder(id: string, patch: UpdatePdfOrderPatch): boolean {
+  const db = getDb();
+  const sets: string[] = [];
+  const values: unknown[] = [];
+
+  if (patch.status !== undefined) { sets.push('status = ?'); values.push(patch.status); }
+  if (patch.tier !== undefined) { sets.push('tier = ?'); values.push(patch.tier); }
+  if (patch.stripeSessionId !== undefined) { sets.push('stripe_session_id = ?'); values.push(patch.stripeSessionId); }
+  if (patch.stripePaymentIntent !== undefined) { sets.push('stripe_payment_intent = ?'); values.push(patch.stripePaymentIntent); }
+
+  if (sets.length === 0) return false;
+  sets.push("updated_at = datetime('now')");
+  values.push(id);
+
+  const res = db.prepare(`UPDATE pdf_orders SET ${sets.join(', ')} WHERE id = ?`).run(...values);
+  return res.changes > 0;
+}
+
+/**
+ * Atomically transition an order from one status to another.
+ * Returns true if the update happened (status matched), false if not (someone else got there first).
+ * Use this to prevent concurrent pipeline starts.
+ */
+export function transitionPdfOrderStatus(
+  id: string,
+  fromStatuses: string[],
+  toStatus: string,
+): boolean {
+  const db = getDb();
+  const placeholders = fromStatuses.map(() => '?').join(', ');
+  const res = db.prepare(
+    `UPDATE pdf_orders SET status = ?, updated_at = datetime('now') WHERE id = ? AND status IN (${placeholders})`
+  ).run(toStatus, id, ...fromStatuses);
+  return res.changes > 0;
+}
+
+export function getPdfOrdersByEmail(email: string): PdfOrderRow[] {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM pdf_orders WHERE email = ? ORDER BY created_at DESC')
+    .all(email) as PdfOrderRow[];
+}
+
+export function getPdfOrderByStripeSession(sessionId: string): PdfOrderRow | undefined {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM pdf_orders WHERE stripe_session_id = ?')
+    .get(sessionId) as PdfOrderRow | undefined;
+}
+
+// ── PDF product: pdf_generation_runs CRUD ────────────────────────────────────
+
+export function createPdfGenerationRun(orderId: string, attempt: number): PdfGenerationRunRow {
+  const db = getDb();
+  const id = crypto.randomUUID();
+  const initialSteps = JSON.stringify([
+    { id: 'scrape', status: 'pending' },
+    { id: 'generate-positioning', status: 'pending' },
+    { id: 'generate-copy', status: 'pending' },
+    { id: 'render-html', status: 'pending' },
+    { id: 'render-pdf', status: 'pending' },
+    { id: 'quality-check', status: 'pending' },
+  ]);
+  db.prepare(
+    `INSERT INTO pdf_generation_runs
+      (id, order_id, status, current_step, steps_json, attempt, created_at, updated_at)
+     VALUES (?, ?, 'running', NULL, ?, ?, datetime('now'), datetime('now'))`
+  ).run(id, orderId, initialSteps, attempt);
+  return getPdfGenerationRun(id)!;
+}
+
+export function getPdfGenerationRun(id: string): PdfGenerationRunRow | undefined {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM pdf_generation_runs WHERE id = ?')
+    .get(id) as PdfGenerationRunRow | undefined;
+}
+
+export function getLatestPdfGenerationRun(orderId: string): PdfGenerationRunRow | undefined {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM pdf_generation_runs WHERE order_id = ? ORDER BY attempt DESC LIMIT 1')
+    .get(orderId) as PdfGenerationRunRow | undefined;
+}
+
+export interface UpdatePdfRunPatch {
+  status?: PdfRunStatus;
+  currentStep?: string | null;
+  stepsJson?: string;
+  lastError?: string | null;
+  completedAt?: string | null;
+}
+
+export function updatePdfGenerationRun(id: string, patch: UpdatePdfRunPatch): boolean {
+  const db = getDb();
+  const sets: string[] = [];
+  const values: unknown[] = [];
+
+  if (patch.status !== undefined) { sets.push('status = ?'); values.push(patch.status); }
+  if (patch.currentStep !== undefined) { sets.push('current_step = ?'); values.push(patch.currentStep); }
+  if (patch.stepsJson !== undefined) { sets.push('steps_json = ?'); values.push(patch.stepsJson); }
+  if (patch.lastError !== undefined) { sets.push('last_error = ?'); values.push(patch.lastError); }
+  if (patch.completedAt !== undefined) { sets.push('completed_at = ?'); values.push(patch.completedAt); }
+
+  if (sets.length === 0) return false;
+  sets.push("updated_at = datetime('now')");
+  values.push(id);
+
+  const res = db.prepare(`UPDATE pdf_generation_runs SET ${sets.join(', ')} WHERE id = ?`).run(...values);
+  return res.changes > 0;
+}
+
+// ── PDF product: pdf_documents CRUD ──────────────────────────────────────────
+
+export function savePdfDocument(input: {
+  orderId: string;
+  runId: string;
+  filePath: string;
+  fileSize: number;
+  pageCount: number;
+}): PdfDocumentRow {
+  const db = getDb();
+  const id = crypto.randomUUID();
+  db.prepare(
+    `INSERT INTO pdf_documents (id, order_id, run_id, file_path, file_size, page_count, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`
+  ).run(id, input.orderId, input.runId, input.filePath, input.fileSize, input.pageCount);
+  return db.prepare('SELECT * FROM pdf_documents WHERE id = ?').get(id) as PdfDocumentRow;
+}
+
+export function getPdfDocument(orderId: string): PdfDocumentRow | undefined {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM pdf_documents WHERE order_id = ? ORDER BY created_at DESC LIMIT 1')
+    .get(orderId) as PdfDocumentRow | undefined;
+}
+
+// ── PDF product: pdf_download_tokens CRUD ────────────────────────────────────
+
+export function createPdfDownloadToken(input: {
+  orderId: string;
+  tokenHash: string;
+  expiresAt: string;
+  maxDownloads?: number;
+}): PdfDownloadTokenRow {
+  const db = getDb();
+  const id = crypto.randomUUID();
+  db.prepare(
+    `INSERT INTO pdf_download_tokens
+      (id, order_id, token_hash, download_count, max_downloads, expires_at, created_at)
+     VALUES (?, ?, ?, 0, ?, ?, datetime('now'))`
+  ).run(id, input.orderId, input.tokenHash, input.maxDownloads ?? 10, input.expiresAt);
+  return db.prepare('SELECT * FROM pdf_download_tokens WHERE id = ?').get(id) as PdfDownloadTokenRow;
+}
+
+export function getPdfDownloadTokenByHash(tokenHash: string): PdfDownloadTokenRow | undefined {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM pdf_download_tokens WHERE token_hash = ?')
+    .get(tokenHash) as PdfDownloadTokenRow | undefined;
+}
+
+/**
+ * Atomically increment download count only if under the limit.
+ * Returns true if the increment succeeded (download allowed), false if limit reached.
+ */
+export function tryIncrementDownloadCount(tokenId: string): boolean {
+  const db = getDb();
+  const res = db.prepare(
+    'UPDATE pdf_download_tokens SET download_count = download_count + 1 WHERE id = ? AND download_count < max_downloads'
+  ).run(tokenId);
+  return res.changes > 0;
 }
