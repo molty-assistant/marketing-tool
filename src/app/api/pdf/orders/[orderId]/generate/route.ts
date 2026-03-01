@@ -8,7 +8,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getPdfOrder } from '@/lib/db';
+import { getPdfOrder, updatePdfOrder } from '@/lib/db';
 import { runPdfPipeline } from '@/lib/pdf-pipeline';
 import { timingSafeEqual } from 'crypto';
 
@@ -53,7 +53,13 @@ export async function POST(
   }
 
   if (order.status === 'draft' || order.status === 'checkout_created') {
-    return Response.json({ error: 'Order has not been paid yet' }, { status: 402 });
+    // Allow admin to force-bypass payment check (useful for testing)
+    let body: Record<string, unknown> = {};
+    try { body = await req.json(); } catch { /* no body */ }
+    if (!body.force_paid) {
+      return Response.json({ error: 'Order has not been paid yet' }, { status: 402 });
+    }
+    updatePdfOrder(orderId, { status: 'paid' });
   }
 
   if (order.status === 'ready') {
