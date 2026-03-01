@@ -1,65 +1,8 @@
-'use client';
-
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import GenerationOverlay from '@/components/GenerationOverlay';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-
-function normalizeUrl(input: string): string {
-  return input.trim().match(/^https?:\/\//i) ? input.trim() : `https://${input.trim()}`;
-}
-
-function isValidUrl(input: string): boolean {
-  try {
-    new URL(normalizeUrl(input));
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export default function LandingPage() {
-  const [url, setUrl] = useState('');
-  const [error, setError] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [generatingUrl, setGeneratingUrl] = useState('');
-  const router = useRouter();
-
-  const handleStart = () => {
-    setError('');
-    if (!url.trim()) {
-      setError('Paste a URL to generate your plan.');
-      return;
-    }
-
-    const normalizedUrl = normalizeUrl(url);
-    if (!isValidUrl(normalizedUrl)) {
-      setError('Please enter a valid URL');
-      return;
-    }
-
-    setGeneratingUrl(normalizedUrl);
-    setGenerating(true);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleStart();
-  };
-
   return (
     <div className="w-full">
-      {generating && (
-        <GenerationOverlay
-          url={generatingUrl}
-          onComplete={(planId) => router.push(`/plan/${planId}`)}
-          onError={(err) => {
-            setGenerating(false);
-            setError(err);
-          }}
-        />
-      )}
       {/* HERO — Paid PDF product */}
       <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 dark:border-slate-800 dark:bg-[#0d1117]">
         <div className="absolute inset-0 pointer-events-none">
@@ -209,38 +152,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FREE TOOL — secondary section */}
-      <section className="mt-12">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/20">
-          <div className="max-w-3xl">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Also free</div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Interactive Marketing Tool</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Paste a URL and get a full interactive marketing brief + copy drafts for free — no payment needed. Great for exploring before you commit.
-            </p>
-            <div className="mt-5 flex flex-col sm:flex-row gap-3">
-              <Input
-                id="landing-url"
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder="https://yourproduct.com"
-                className="h-auto rounded-xl border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus-visible:border-transparent dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 sm:flex-1"
-              />
-              <Button
-                onClick={handleStart}
-                variant="outline"
-                className="w-full sm:w-auto h-auto font-semibold px-6 py-3 whitespace-nowrap"
-              >
-                Try free tool →
-              </Button>
-            </div>
-            {error && <p className="mt-2 text-left text-sm text-red-600 dark:text-red-400">{error}</p>}
-          </div>
-        </div>
-      </section>
-
       {/* FOOTER */}
       <footer className="mt-14 border-t border-slate-200 pt-8 pb-10 dark:border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -258,9 +169,6 @@ export default function LandingPage() {
             </a>
             <Link href="/my-pdfs" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
               My plans
-            </Link>
-            <Link href="/dashboard" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Free tool
             </Link>
           </div>
         </div>
