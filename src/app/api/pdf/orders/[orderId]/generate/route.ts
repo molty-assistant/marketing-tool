@@ -52,10 +52,12 @@ export async function POST(
     return Response.json({ error: 'Order not found' }, { status: 404 });
   }
 
+  // Parse body once — used for multiple flags below
+  let body: Record<string, unknown> = {};
+  try { body = await req.json(); } catch { /* no body */ }
+
   if (order.status === 'draft' || order.status === 'checkout_created') {
     // Allow admin to force-bypass payment check (useful for testing)
-    let body: Record<string, unknown> = {};
-    try { body = await req.json(); } catch { /* no body */ }
     if (!body.force_paid) {
       return Response.json({ error: 'Order has not been paid yet' }, { status: 402 });
     }
@@ -67,7 +69,12 @@ export async function POST(
   }
 
   if (order.status === 'generating') {
-    return Response.json({ status: 'generating', message: 'Generation already in progress' });
+    // Allow admin to reset a stuck order (e.g. after a Railway restart mid-generation)
+    if (body.force_reset) {
+      updatePdfOrder(orderId, { status: 'failed' });
+    } else {
+      return Response.json({ status: 'generating', message: 'Generation already in progress. Pass force_reset:true to unstick.' });
+    }
   }
 
   // status is 'paid' or 'failed' — run the pipeline

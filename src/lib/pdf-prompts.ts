@@ -45,10 +45,12 @@ async function callGemini(params: {
   userContent: string;
   temperature: number;
   maxOutputTokens?: number;
+  timeoutMs?: number;
 }): Promise<unknown> {
   const res = await fetch(geminiUrl(params.apiKey), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(params.timeoutMs ?? 90_000),
     body: JSON.stringify({
       system_instruction: { parts: [{ text: params.systemPrompt }] },
       contents: [{ parts: [{ text: params.userContent }] }],
@@ -335,6 +337,7 @@ ${JSON.stringify(intake, null, 2)}`;
     userContent,
     temperature: 0.6,
     maxOutputTokens: isPro ? 16384 : 8192,
+    timeoutMs: isPro ? 180_000 : 90_000, // Pro generates ~16k tokens — give it 3 minutes
   });
 
   return result as PdfBasicCopy | PdfProCopy;
