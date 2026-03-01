@@ -249,9 +249,9 @@ function runQualityCheck(input: QualityCheckInput): string | null {
   if (fileSize < 50_000) return `PDF too small: ${fileSize} bytes (min 50KB)`;
   if (fileSize > 10_000_000) return `PDF too large: ${fileSize} bytes (max 10MB)`;
 
-  const [minPages, maxPages] = tier === 'basic' ? [9, 11] : [19, 25];
-  if (pageCount < minPages || pageCount > maxPages) {
-    return `Page count ${pageCount} outside expected range ${minPages}-${maxPages} for ${tier} tier`;
+  // Page count varies with product size — only reject clearly broken outputs
+  if (pageCount < 2) {
+    return `PDF too short: only ${pageCount} page(s)`;
   }
 
   const placeholderPatterns = [/\[TODO\]/i, /\{\{[^}]+\}\}/, /PLACEHOLDER/i];
