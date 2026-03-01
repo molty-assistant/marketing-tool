@@ -19,6 +19,7 @@ function StripeBuyButton(props: {
   'buy-button-id': string;
   'publishable-key': string;
   'client-reference-id'?: string;
+  'success-url'?: string;
 }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const El = 'stripe-buy-button' as any;
@@ -179,6 +180,7 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
             buy-button-id={STRIPE_BUY_BUTTON_IDS[selectedTier]}
             publishable-key={STRIPE_PUBLISHABLE_KEY}
             client-reference-id={orderId}
+            success-url={`${typeof window !== 'undefined' ? window.location.origin : ''}/status/${orderId}`}
           />
         )}
       </div>
