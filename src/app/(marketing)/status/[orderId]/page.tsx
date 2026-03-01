@@ -150,14 +150,14 @@ export default function StatusPage() {
                 {orderStatus?.generation?.lastError ?? 'An unexpected error occurred.'}
               </p>
               <p className="text-xs text-slate-500">
-                Please contact us and we'll issue a full refund.
+                Please contact us and we&apos;ll issue a full refund.
               </p>
             </div>
           )}
 
           {!isFailed && (
             <p className="text-xs text-slate-400">
-              This page refreshes automatically. Don't close it — your PDF will be ready in 1-3 minutes.
+              This page refreshes automatically. Don&apos;t close it — your PDF will be ready in 1-3 minutes.
             </p>
           )}
 
