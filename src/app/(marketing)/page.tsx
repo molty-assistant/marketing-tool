@@ -100,7 +100,7 @@ export default function LandingPage() {
                 <span className="text-lg font-bold text-slate-900 dark:text-white">Basic</span>
                 <span className="text-2xl font-bold text-indigo-600">£39.99</span>
               </div>
-              <p className="text-sm text-slate-500 mb-4">9–11 pages. Sharp positioning and landing page copy.</p>
+              <p className="text-sm text-slate-500 mb-4">Sharp positioning and landing page copy — typically 10+ pages depending on your product.</p>
               <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                 {[
                   'Positioning Snapshot',
@@ -127,7 +127,7 @@ export default function LandingPage() {
                 <span className="text-lg font-bold text-slate-900 dark:text-white">Pro</span>
                 <span className="text-2xl font-bold text-indigo-600">£99</span>
               </div>
-              <p className="text-sm text-slate-500 mb-4">19–25 pages. Everything in Basic plus the full launch toolkit.</p>
+              <p className="text-sm text-slate-500 mb-4">Everything in Basic plus the full launch toolkit — typically 20+ pages depending on your product.</p>
               <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                 {[
                   'Everything in Basic',

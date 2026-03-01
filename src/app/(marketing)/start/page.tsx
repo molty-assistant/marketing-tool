@@ -258,8 +258,8 @@ export default function StartPage() {
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {t === 'basic'
-                        ? '9-11 page plan: positioning, copy & social posts'
-                        : '19-25 page plan: everything + emails, ads & 30-day calendar'}
+                        ? 'Positioning, copy & social posts — typically 10+ pages'
+                        : 'Everything + emails, ads & 30-day calendar — typically 20+ pages'}
                     </p>
                   </label>
                 ))}

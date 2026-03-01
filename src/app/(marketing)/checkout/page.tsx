@@ -40,7 +40,7 @@ const TIER_FEATURES = {
     'Competitor Angles + Say This Not That',
     'Landing Page Copy — 5 headlines, 8–10 bullets, CTAs',
     '5 X/Twitter + 2 LinkedIn launch posts',
-    '9–11 pages total',
+    'Typically 10+ pages (varies by product)',
   ],
   pro: [
     'Everything in Basic',
@@ -49,7 +49,7 @@ const TIER_FEATURES = {
     'Ad Copy Angles (5 angles for Meta/X)',
     'App Store / Listing Copy',
     'Tone-of-Voice Cheat Sheet',
-    '19–25 pages total',
+    'Typically 20+ pages (varies by product)',
   ],
 } as const;
 
