@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 const INTAKE_QUESTIONS = [
@@ -59,17 +59,27 @@ const INTAKE_QUESTIONS = [
 
 type IntakeAnswers = Record<string, string>;
 
+function parseTierParam(value: string | null): 'basic' | 'pro' | null {
+  if (value === 'basic' || value === 'pro') {
+    return value;
+  }
+
+  return null;
+}
+
 export default function StartPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<'form' | 'submitting'>('form');
   const [productUrl, setProductUrl] = useState('');
   const [email, setEmail] = useState('');
-  const [tier, setTier] = useState<'basic' | 'pro'>('basic');
+  const [selectedTier, setSelectedTier] = useState<'basic' | 'pro' | null>(null);
   const [answers, setAnswers] = useState<IntakeAnswers>({});
   const [extra, setExtra] = useState('');
   const [error, setError] = useState('');
   const [honeypot, setHoneypot] = useState(''); // spam trap
 
+  const tier = selectedTier ?? parseTierParam(searchParams.get('tier')) ?? 'basic';
   const allAnswered = INTAKE_QUESTIONS.every((q) => answers[q.id]);
   const canSubmit = productUrl.trim() && email.trim() && allAnswered;
 
@@ -249,7 +259,7 @@ export default function StartPage() {
                       name="tier"
                       value={t}
                       checked={tier === t}
-                      onChange={() => setTier(t)}
+                      onChange={() => setSelectedTier(t)}
                       className="sr-only"
                     />
                     <div className="flex items-center justify-between">

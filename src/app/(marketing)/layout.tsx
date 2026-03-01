@@ -25,19 +25,17 @@ export default function MarketingLayout({
           </Link>
           <div className="flex items-center gap-2 sm:gap-4 text-sm">
             <Link
-              href="/"
+              href="/#pricing"
               className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors dark:text-indigo-400 dark:hover:text-indigo-300"
             >
-              Start
+              Pricing
             </Link>
-            <a
-              href="https://buy.stripe.com/6oU28t1uwbKY0lx8vt0Ny00"
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 sm:text-sm"
+            <Link
+              href="/start"
+              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-500 sm:text-sm"
             >
-              Buy 99 GBP Launch Pack
-            </a>
+              Get a plan
+            </Link>
             <ThemeToggle />
           </div>
         </div>
