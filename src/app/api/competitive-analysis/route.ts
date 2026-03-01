@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 type PerplexityResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
@@ -70,6 +71,13 @@ Prefer JSON array: [{"name":"...","url":"...","positioning":"...","pricing":"...
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/competitive-analysis',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
     const planId = typeof body.planId === 'string' ? body.planId : '';

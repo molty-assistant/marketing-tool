@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { guardApiRoute } from '@/lib/api-guard';
 
 export const runtime = 'nodejs';
 
@@ -22,6 +23,13 @@ type CandidatePart = { text?: unknown };
  * }
  */
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/caption-to-image-brief',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json().catch(() => ({}))) as {
       caption?: string;

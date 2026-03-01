@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { guardApiRoute } from '@/lib/api-guard';
 
 export const runtime = 'nodejs';
 
@@ -16,6 +17,13 @@ type CandidatePart = { text?: unknown };
  * Uses Gemini to convert a social media caption into a Kling 3.0 video prompt.
  */
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/caption-to-veo-prompt',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json().catch(() => ({}))) as { caption?: string };
     const caption = typeof body.caption === 'string' ? body.caption.trim() : '';

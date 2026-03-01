@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 /**
  * Auto-publish: Generate a social post + image and queue it to Buffer in one step.
@@ -24,6 +25,13 @@ interface AutoPublishRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/auto-publish',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<AutoPublishRequest>;
 

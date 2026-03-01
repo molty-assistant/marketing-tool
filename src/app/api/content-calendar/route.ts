@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 export type CalendarContentType = 'post' | 'reel' | 'story' | 'thread' | 'article';
 
@@ -57,6 +58,13 @@ function isCalendarPost(x: unknown): x is CalendarPost {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/content-calendar',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<ContentCalendarRequest>;
 

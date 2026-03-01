@@ -7,8 +7,8 @@ import { guardApiRoute } from '@/lib/api-guard';
 export async function POST(request: NextRequest) {
   const rateLimitResponse = guardApiRoute(request, {
     endpoint: '/api/generate-plan',
-    maxRequests: 20,
-    windowSeconds: 60,
+    maxRequests: 5,
+    windowSeconds: 3600, // 5 per hour per IP
   });
   if (rateLimitResponse) {
     return rateLimitResponse;

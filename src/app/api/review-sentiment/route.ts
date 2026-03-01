@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, saveContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 type Review = {
   author: string;
@@ -27,6 +28,13 @@ function safeJsonParse(text: string): unknown {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/review-sentiment',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
     const planId = typeof body.planId === 'string' ? body.planId : '';

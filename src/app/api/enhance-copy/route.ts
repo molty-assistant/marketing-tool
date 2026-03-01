@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { guardApiRoute } from '@/lib/api-guard';
 
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
@@ -22,6 +23,13 @@ const TONE_DESCRIPTIONS: Record<Tone, string> = {
 };
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/enhance-copy',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<EnhanceRequest>;
 

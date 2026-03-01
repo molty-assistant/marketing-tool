@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan, getDb } from '@/lib/db';
 import { internalBaseUrl } from '@/lib/orchestrator';
+import { guardApiRoute } from '@/lib/api-guard';
 
 /**
  * Review Monitor — automated review checking + sentiment + response suggestions
@@ -17,6 +18,13 @@ import { internalBaseUrl } from '@/lib/orchestrator';
  */
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/review-monitor',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
     const planId = body.planId;
@@ -202,6 +210,13 @@ ${negativeReviews.map((r: { title: string; body: string; rating: number }) =>
 
 // GET: review monitoring history
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/review-monitor',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const planId = request.nextUrl.searchParams.get('planId');
     if (!planId) {

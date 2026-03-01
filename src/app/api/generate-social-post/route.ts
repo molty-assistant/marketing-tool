@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlan } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 interface ImageInput {
   mimeType: string;
@@ -15,6 +16,13 @@ interface GenerateSocialPostRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/generate-social-post',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<GenerateSocialPostRequest>;
 

@@ -40,7 +40,10 @@ export function middleware(request: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname.startsWith('/shared/') ||
     pathname.startsWith('/api/shared/') ||
-    pathname === '/api/health'
+    pathname === '/api/health' ||
+    // Free tool API routes — public by design, rate-limited in their own handlers
+    pathname === '/api/scrape' ||
+    pathname === '/api/generate-plan'
   ) {
     return NextResponse.next();
   }

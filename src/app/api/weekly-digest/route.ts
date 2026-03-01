@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, getPlan, saveContent } from '@/lib/db';
+import { guardApiRoute } from '@/lib/api-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +51,13 @@ function asStringOrEmpty(x: unknown): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = guardApiRoute(request, {
+    endpoint: '/api/weekly-digest',
+    maxRequests: 20,
+    windowSeconds: 3600, // 20 per hour per IP
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = (await request.json()) as Partial<WeeklyDigestRequest>;
     const planId = typeof body.planId === 'string' ? body.planId : '';
