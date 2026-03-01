@@ -131,7 +131,7 @@ export default function StartPage() {
             Tell us about your product
           </h1>
           <p className="mt-2 text-base text-slate-600 dark:text-slate-300">
-            Answer 5 quick questions and we'll generate a custom marketing plan PDF — ready to download in minutes.
+            Answer 5 quick questions and we&apos;ll generate a custom marketing plan PDF — ready to download in minutes.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-8">
@@ -160,7 +160,7 @@ export default function StartPage() {
                 required
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
-              <p className="mt-1 text-xs text-slate-500">We'll analyse this page to personalise your plan</p>
+              <p className="mt-1 text-xs text-slate-500">We&apos;ll analyse this page to personalise your plan</p>
             </div>
 
             {/* Email */}
@@ -224,7 +224,7 @@ export default function StartPage() {
               <textarea
                 value={extra}
                 onChange={(e) => setExtra(e.target.value.slice(0, 280))}
-                placeholder="e.g. We're launching on Product Hunt next week, we're in the fintech space..."
+                placeholder="e.g. We&apos;re launching on Product Hunt next week, we&apos;re in the fintech space..."
                 rows={3}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white resize-none"
               />
