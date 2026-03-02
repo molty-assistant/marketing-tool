@@ -1058,3 +1058,31 @@ export function tryIncrementDownloadCount(tokenId: string): boolean {
   ).run(tokenId);
   return res.changes > 0;
 }
+
+/**
+ * Called once at server startup. Resets any orders that were left in
+ * 'generating' state by a previous process being killed (e.g. Railway deploy).
+ * Returns the number of orders reset.
+ */
+export function resetStuckGeneratingOrders(): number {
+  const db = getDb();
+  const now = new Date().toISOString();
+
+  // Mark any in-progress generation runs as failed
+  db.prepare(`
+    UPDATE pdf_generation_runs
+    SET status = 'failed',
+        last_error = 'Server restarted while generation was in progress',
+        completed_at = ?
+    WHERE status = 'in_progress'
+  `).run(now);
+
+  // Reset stuck orders back to 'failed' so they can be re-triggered
+  const res = db.prepare(`
+    UPDATE pdf_orders
+    SET status = 'failed', updated_at = ?
+    WHERE status = 'generating'
+  `).run(now);
+
+  return res.changes;
+}
