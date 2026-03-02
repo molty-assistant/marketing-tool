@@ -10,8 +10,8 @@ import type { PdfPositioning, PdfBasicCopy, PdfProCopy } from '@/lib/pdf-prompts
 // ─── Section 1: Positioning Snapshot ─────────────────────────────────────────
 
 export function renderPositioning(pos: PdfPositioning, productName: string): string {
-  const bullets = pos.supportingBullets
-    .map((b) => `<li>${escHtml(b)}</li>`)
+  const bullets = (pos.supportingBullets ?? [])
+    .map((b) => `<li>${escHtml(String(b))}</li>`)
     .join('');
 
   return `
@@ -67,7 +67,7 @@ export function renderCompetitors(
   productName: string,
   opportunityGaps?: string[]
 ): string {
-  const competitorCards = copy.competitors
+  const competitorCards = (copy.competitors ?? [])
     .map(
       (c) => `
       <div class="card avoid-break">
@@ -84,7 +84,7 @@ export function renderCompetitors(
     )
     .join('');
 
-  const swapRows = copy.sayThisNotThat
+  const swapRows = (copy.sayThisNotThat ?? [])
     .map(
       (s) => `
       <div class="swap-row avoid-break">
@@ -132,7 +132,7 @@ export function renderCompetitors(
 export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, socialProofSuggestions?: string[]): string {
   const lp = copy.landingPage;
 
-  const headlines = lp.headlines
+  const headlines = (lp.headlines ?? [])
     .map((h, i) => `
       <div class="copy-item avoid-break">
         <div class="copy-item-number">Option ${i + 1}</div>
@@ -140,7 +140,7 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
       </div>`)
     .join('');
 
-  const subheads = lp.subheadlines
+  const subheads = (lp.subheadlines ?? [])
     .map((h, i) => `
       <div class="copy-item avoid-break">
         <div class="copy-item-number">Option ${i + 1}</div>
@@ -148,15 +148,15 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
       </div>`)
     .join('');
 
-  const bullets = lp.featureBullets
+  const bullets = (lp.featureBullets ?? [])
     .map((b) => `<li>${escHtml(b)}</li>`)
     .join('');
 
-  const shortCTAs = lp.shortCTAs
+  const shortCTAs = (lp.shortCTAs ?? [])
     .map((c) => `<span class="tag">${escHtml(c)}</span>`)
     .join(' ');
 
-  const longCTAs = lp.longCTAs
+  const longCTAs = (lp.longCTAs ?? [])
     .map((c, i) => `
       <div class="card avoid-break">
         <div class="card-label">Option ${i + 1}</div>
@@ -165,7 +165,7 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
       </div>`)
     .join('');
 
-  const sectionOrder = lp.sectionOrder
+  const sectionOrder = (lp.sectionOrder ?? [])
     .map((s, i) => `<li>${i + 1}. ${escHtml(s)}</li>`)
     .join('');
 
@@ -227,16 +227,16 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
 // ─── Section 4: Social Launch Posts ──────────────────────────────────────────
 
 export function renderSocialPosts(copy: PdfBasicCopy, productName: string): string {
-  const xPosts = copy.socialPosts.twitter
+  const xPosts = (copy.socialPosts?.twitter ?? [])
     .map((p, i) => `
       <div class="post-bubble avoid-break">
         <div class="post-platform">X / Twitter · Post ${i + 1}</div>
-        <div style="white-space:pre-wrap;">${escHtml(p)}</div>
-        <div style="color:#9CA3AF; font-size:8pt; margin-top:4pt;">${p.length} chars</div>
+        <div style="white-space:pre-wrap;">${escHtml(String(p))}</div>
+        <div style="color:#9CA3AF; font-size:8pt; margin-top:4pt;">${String(p).length} chars</div>
       </div>`)
     .join('');
 
-  const liPosts = copy.socialPosts.linkedin
+  const liPosts = (copy.socialPosts?.linkedin ?? [])
     .map((p, i) => `
       <div class="post-bubble avoid-break">
         <div class="post-platform">LinkedIn · Post ${i + 1}</div>
@@ -280,7 +280,7 @@ export function renderEmails(copy: PdfProCopy, productName: string): string {
     urgency: 'Email 3 — Last Call',
   };
 
-  const emailCards = copy.emails
+  const emailCards = (copy.emails ?? [])
     .map((e) => `
       <div class="email-card avoid-break">
         <div class="email-header">${escHtml(emailTypeLabel[e.type] ?? e.type)}</div>
@@ -313,11 +313,11 @@ export function renderEmails(copy: PdfProCopy, productName: string): string {
 // ─── Section 6 (Pro): 30-Day Content Plan ────────────────────────────────────
 
 export function renderContentPlan(copy: PdfProCopy, productName: string): string {
-  const themes = copy.contentPlan.weeklyThemes
-    .map((t, i) => `<span class="tag">Week ${i + 1}: ${escHtml(t)}</span>`)
+  const themes = (copy.contentPlan?.weeklyThemes ?? [])
+    .map((t, i) => `<span class="tag">Week ${i + 1}: ${escHtml(String(t))}</span>`)
     .join(' ');
 
-  const calendarRows = copy.contentPlan.calendar
+  const calendarRows = (copy.contentPlan?.calendar ?? [])
     .map((row) => `
       <tr class="avoid-break">
         <td style="text-align:center; font-weight:600; width:24pt;">${row.day}</td>
@@ -358,7 +358,7 @@ export function renderContentPlan(copy: PdfProCopy, productName: string): string
 // ─── Section 7 (Pro): Ad Copy Angles ─────────────────────────────────────────
 
 export function renderAdCopy(copy: PdfProCopy, productName: string): string {
-  const adCards = copy.adCopy
+  const adCards = (copy.adCopy ?? [])
     .map((ad, i) => `
       <div class="card avoid-break">
         <div class="card-label">Angle ${i + 1} · ${escHtml(ad.angle)} · <em>${escHtml(ad.emotion)}</em></div>
@@ -396,23 +396,23 @@ export function renderAdCopy(copy: PdfProCopy, productName: string): string {
 export function renderAppStoreCopy(copy: PdfProCopy, productName: string): string {
   const as = copy.appStoreCopy;
 
-  const subtitles = as.subtitles
+  const subtitles = (as.subtitles ?? [])
     .map((s, i) => `
       <div class="copy-item avoid-break">
-        <div class="copy-item-number">Option ${i + 1} · ${s.length} chars</div>
-        <div>${escHtml(s)}</div>
+        <div class="copy-item-number">Option ${i + 1} · ${String(s).length} chars</div>
+        <div>${escHtml(String(s))}</div>
       </div>`)
     .join('');
 
-  const shorts = as.shortDescriptions
+  const shorts = (as.shortDescriptions ?? [])
     .map((s, i) => `
       <div class="copy-item avoid-break">
-        <div class="copy-item-number">Option ${i + 1} · ${s.length} chars</div>
-        <div>${escHtml(s)}</div>
+        <div class="copy-item-number">Option ${i + 1} · ${String(s).length} chars</div>
+        <div>${escHtml(String(s))}</div>
       </div>`)
     .join('');
 
-  const keywords = as.keywords.map((k) => `<span class="tag">${escHtml(k)}</span>`).join(' ');
+  const keywords = (as.keywords ?? []).map((k) => `<span class="tag">${escHtml(String(k))}</span>`).join(' ');
 
   return `
     <div class="page">
@@ -429,7 +429,7 @@ export function renderAppStoreCopy(copy: PdfProCopy, productName: string): strin
       ${shorts}
 
       <h3 style="margin-top:12pt;">Long Description</h3>
-      <div class="card" style="white-space:pre-wrap; font-size:9pt; line-height:1.5;">${escHtml(as.longDescription)}</div>
+      <div class="card" style="white-space:pre-wrap; font-size:9pt; line-height:1.5;">${escHtml(as.longDescription ?? '')}</div>
 
       <h3 style="margin-top:12pt;">Keyword Suggestions</h3>
       <div>${keywords}</div>
@@ -441,8 +441,8 @@ export function renderAppStoreCopy(copy: PdfProCopy, productName: string): strin
 // ─── Section 9 (Pro): Tone of Voice ──────────────────────────────────────────
 
 export function renderToneOfVoice(copy: PdfProCopy, productName: string): string {
-  const dos = copy.toneOfVoice.dos.map((d) => `<li>${escHtml(d)}</li>`).join('');
-  const donts = copy.toneOfVoice.donts.map((d) => `<li>${escHtml(d)}</li>`).join('');
+  const dos = (copy.toneOfVoice?.dos ?? []).map((d) => `<li>${escHtml(String(d))}</li>`).join('');
+  const donts = (copy.toneOfVoice?.donts ?? []).map((d) => `<li>${escHtml(String(d))}</li>`).join('');
 
   return `
     <div class="page">
@@ -453,7 +453,7 @@ export function renderToneOfVoice(copy: PdfProCopy, productName: string): string
       <h2>Tone-of-Voice Cheat Sheet</h2>
 
       <div class="callout avoid-break" style="margin-bottom:14pt;">
-        <p>${escHtml(copy.toneOfVoice.summary)}</p>
+        <p>${escHtml(copy.toneOfVoice?.summary ?? '')}</p>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12pt;">
@@ -470,7 +470,7 @@ export function renderToneOfVoice(copy: PdfProCopy, productName: string): string
       <h3 style="margin-top:14pt;">Sample Paragraph</h3>
       <div class="card">
         <div class="card-label">Example copy in your tone</div>
-        <p style="margin-top:6pt; font-size:11pt; line-height:1.7; white-space:pre-wrap;">${escHtml(copy.toneOfVoice.sampleParagraph)}</p>
+        <p style="margin-top:6pt; font-size:11pt; line-height:1.7; white-space:pre-wrap;">${escHtml(copy.toneOfVoice?.sampleParagraph ?? '')}</p>
       </div>
     </div>
     <div class="page-break"></div>

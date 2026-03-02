@@ -311,7 +311,7 @@ Rules:
 - CTAs must be action-oriented and specific, not just "Get Started"
 - X/Twitter posts: hook on line 1, <=280 chars total, no [link] placeholders
 - LinkedIn posts: 100-150 words, first-person founder voice
-${isPro ? `- Emails: write complete, paste-ready email bodies. Use {{FIRST_NAME}} only where natural.
+${isPro ? `- Emails: write complete, paste-ready email bodies. Where personalisation is needed write [First Name] — never use {{ }} template syntax.
 - 30-day calendar: be specific with post titles/hooks — not just "Post about feature X"
 - Ad copy: tight character counts are HARD LIMITS
 - App store copy: optimise for the actual app store keyword algorithm` : ''}
