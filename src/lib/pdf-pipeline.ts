@@ -254,7 +254,7 @@ function runQualityCheck(input: QualityCheckInput): string | null {
     return `PDF too short: only ${pageCount} page(s)`;
   }
 
-  const placeholderPatterns = [/\[TODO\]/i, /\{\{[^}]+\}\}/, /PLACEHOLDER/i];
+  const placeholderPatterns = [/\[TODO\]/i, /\{\{[^}]+\}\}/, /\[PLACEHOLDER\]/i];
   for (const pattern of placeholderPatterns) {
     if (pattern.test(html)) return `HTML contains placeholder text matching ${pattern}`;
   }
