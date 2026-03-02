@@ -198,7 +198,7 @@ ${JSON.stringify(intake, null, 2)}`;
     systemPrompt,
     userContent,
     temperature: 0.4,
-    maxOutputTokens: 1024,
+    maxOutputTokens: 2048,
     timeoutMs: 60_000,
   });
 

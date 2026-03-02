@@ -24,21 +24,21 @@ export function renderPositioning(pos: PdfPositioning, productName: string): str
       <h2>Positioning Snapshot</h2>
 
       <div class="callout avoid-break">
-        <p>${escHtml(pos.statement)}</p>
+        <p>${escHtml(pos.statement ?? '')}</p>
       </div>
 
       <h3>Ideal Customer Profile</h3>
       <table class="avoid-break">
         <tbody>
-          <tr><th style="width:100pt;">Who they are</th><td>${escHtml(pos.icp.who)}</td></tr>
-          <tr><th>Their pain</th><td>${escHtml(pos.icp.pain)}</td></tr>
-          <tr><th>Their goal</th><td>${escHtml(pos.icp.goal)}</td></tr>
+          <tr><th style="width:100pt;">Who they are</th><td>${escHtml(pos.icp?.who ?? '')}</td></tr>
+          <tr><th>Their pain</th><td>${escHtml(pos.icp?.pain ?? '')}</td></tr>
+          <tr><th>Their goal</th><td>${escHtml(pos.icp?.goal ?? '')}</td></tr>
         </tbody>
       </table>
 
       <h3 style="margin-top:12pt;">Core Value Proposition</h3>
       <div class="card avoid-break">
-        <p style="font-size:12pt; font-weight:500;">${escHtml(pos.valueProposition)}</p>
+        <p style="font-size:12pt; font-weight:500;">${escHtml(pos.valueProposition ?? '')}</p>
       </div>
 
       <h3>Supporting Value Points</h3>
@@ -53,7 +53,7 @@ export function renderPositioning(pos: PdfPositioning, productName: string): str
 
       <h3>Why Now</h3>
       <div class="card">
-        <p>${escHtml(pos.whyNow)}</p>
+        <p>${escHtml(pos.whyNow ?? '')}</p>
       </div>
     </div>
     <div class="page-break"></div>
