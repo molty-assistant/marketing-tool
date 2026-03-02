@@ -22,6 +22,23 @@ function geminiUrl(apiKey: string): string {
   return `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 }
 
+// Strip // comments outside string values (Gemini sometimes adds them)
+function stripJsonComments(s: string): string {
+  return s.replace(/("(?:[^"\\]|\\.)*")|\/\/[^\n]*/g, (m, str) => str ?? '');
+}
+
+// Replace literal newlines/tabs inside JSON string values with escape sequences
+function fixJsonNewlines(s: string): string {
+  return s.replace(/"(?:[^"\\]|\\.)*"/g, (m) =>
+    m.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t')
+  );
+}
+
+// Remove trailing commas before ] or }
+function fixTrailingCommas(s: string): string {
+  return s.replace(/,(\s*[}\]])/g, '$1');
+}
+
 function parseGeminiJson(text: string): unknown {
   let cleaned = text
     .replace(/^```(?:json)?\s*\n?/i, '')
@@ -30,12 +47,21 @@ function parseGeminiJson(text: string): unknown {
   if (!cleaned.startsWith('{') && !cleaned.startsWith('[')) {
     cleaned = '{' + cleaned + '}';
   }
+
+  // Fast path — well-formed response
+  try { return JSON.parse(cleaned); } catch { /* fall through */ }
+
+  // Repair: strip comments + fix newlines in strings + trailing commas
+  const repaired = fixTrailingCommas(fixJsonNewlines(stripJsonComments(cleaned)));
+  try { return JSON.parse(repaired); } catch { /* fall through */ }
+
+  // Last resort: extract the outermost JSON object and repair that
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('Model returned invalid JSON');
   try {
-    return JSON.parse(cleaned);
-  } catch {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('Model returned invalid JSON');
-    return JSON.parse(jsonMatch[0]);
+    return JSON.parse(fixTrailingCommas(fixJsonNewlines(stripJsonComments(jsonMatch[0]))));
+  } catch (e) {
+    throw new Error(`Model returned invalid JSON: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
@@ -158,6 +184,8 @@ Rules:
 - All 3 supporting bullets must be concrete benefit statements (not features)
 - "Why now" must connect to a real market shift or trend, not just "the market is ready"
 - Write in the founder's tone (energetic but credible)
+- Return ONLY a JSON object — no markdown fences, no // comments, no trailing commas
+- All string values must be on a single line — no literal newline characters inside strings
 
 Return ONLY valid JSON matching this exact schema:
 {
@@ -205,6 +233,14 @@ export async function generatePdfCopy(
   const apiKey = getApiKey();
   const isPro = tier === 'pro';
 
+  const competitorCount = isPro ? 'exactly 3' : '2 or 3';
+  const sayThisCount = isPro ? '5' : '3';
+  const bulletCount = isPro ? 'exactly 12' : '8 to 10';
+  const shortCtaCount = isPro ? '4' : '3';
+  const longCtaCount = isPro ? '3' : '2';
+  const twitterCount = isPro ? '10' : '5';
+  const linkedinCount = isPro ? '5' : '2';
+
   const basicSchema = `{
   "competitors": [
     {
@@ -214,89 +250,84 @@ export async function generatePdfCopy(
       "angle": "string — the specific angle to use against them"
     }
   ],
-  // Basic: 2-3 competitors. Pro: exactly 3 competitors.
   "sayThisNotThat": [
     { "sayThis": "string", "notThat": "string" }
   ],
-  // Basic: 3 pairs. Pro: 5 pairs.
   "landingPage": {
     "headlines": ["string", "string", "string", "string", "string"],
-    // Exactly 5 options. Most direct first.
     "subheadlines": ["string", "string", "string"],
-    // Exactly 3 options.
-    "featureBullets": ["Benefit — how it works"],
-    // Basic: 8-10 bullets. Pro: exactly 12 bullets.
-    // Format: "[Benefit] — [how it delivers]"
+    "featureBullets": ["Concrete Benefit — how the product delivers it"],
     "shortCTAs": ["string"],
-    // Basic: 3 options. Pro: 4 options.
     "longCTAs": [{ "button": "string", "supporting": "string" }],
-    // Basic: 2. Pro: 3. Each has button label + one supporting line.
     "sectionOrder": ["string"]
-    // Ordered list of recommended landing page sections
   },
   "socialPosts": {
     "twitter": ["string"],
-    // Basic: 5 posts. Pro: 10 posts. Each <=280 chars. Hook on first line.
     "linkedin": ["string"]
-    // Basic: 2 posts. Pro: 5 posts. Each 100-150 words. No [insert link] placeholders.
   }
-}`;
+}
+
+Counts (floor = ceiling — generate EXACTLY these quantities):
+- competitors: ${competitorCount}
+- sayThisNotThat pairs: ${sayThisCount}
+- headlines: exactly 5 (most direct first)
+- subheadlines: exactly 3
+- featureBullets: ${bulletCount} (format: "[Concrete Benefit] — [how it delivers]")
+- shortCTAs: ${shortCtaCount}
+- longCTAs: ${longCtaCount}
+- twitter posts: ${twitterCount} (each <=280 chars, hook on first line)
+- linkedin posts: ${linkedinCount} (each 100-150 words, no [link] placeholders)`;
 
   const proExtensions = `
-  // PRO ONLY — add these top-level keys:
+
+PRO ONLY — also include these top-level keys in the same JSON object:
   "opportunityGaps": ["string", "string"],
-  // Exactly 2. Things competitors are ignoring that this product can own.
   "socialProofSuggestions": ["string", "string"],
-  // Exactly 2. Specific types of proof to collect (e.g., "ask beta users for time-saved metrics")
   "emails": [
     {
       "type": "launch",
       "subjectA": "string",
-      "subjectB": "string — A/B variant",
-      "previewText": "string <=90 chars",
-      "body": "string — full email body, ready to paste",
-      "ctaLabel": "string — button text"
+      "subjectB": "string",
+      "previewText": "string",
+      "body": "string",
+      "ctaLabel": "string"
     },
-    { "type": "value", ... },
-    { "type": "urgency", ... }
+    { "type": "value", "subjectA": "string", "subjectB": "string", "previewText": "string", "body": "string", "ctaLabel": "string" },
+    { "type": "urgency", "subjectA": "string", "subjectB": "string", "previewText": "string", "body": "string", "ctaLabel": "string" }
   ],
-  // Exactly 3 emails in order: launch, value, urgency.
   "contentPlan": {
     "weeklyThemes": ["Week 1 theme", "Week 2 theme", "Week 3 theme", "Week 4 theme"],
     "calendar": [
-      {
-        "day": 1,
-        "title": "string — specific post hook or title",
-        "postType": "launch|value|build-in-public|social-proof|engagement",
-        "channel": "X|LinkedIn|both",
-        "intent": "string — one sentence on what this post achieves"
-      }
-      // ... rows for days 1-30
+      { "day": 1, "title": "string", "postType": "launch|value|build-in-public|social-proof|engagement", "channel": "X|LinkedIn|both", "intent": "string" }
     ]
   },
   "adCopy": [
-    {
-      "angle": "string — angle name",
-      "emotion": "curiosity|FOMO|aspiration|pain|social-proof",
-      "headline": "string <=40 chars",
-      "body": "string <=125 chars",
-      "cta": "string <=20 chars"
-    }
+    { "angle": "string", "emotion": "curiosity|FOMO|aspiration|pain|social-proof", "headline": "string", "body": "string", "cta": "string" }
   ],
-  // Exactly 5 ad angles.
   "appStoreCopy": {
-    "subtitles": ["string <=30 chars", "string <=30 chars", "string <=30 chars"],
-    "shortDescriptions": ["string <=80 chars", "string <=80 chars"],
-    "longDescription": "string <=4000 chars",
-    "keywords": ["string", "string", ...]
-    // 8-10 keywords
+    "subtitles": ["string", "string", "string"],
+    "shortDescriptions": ["string", "string"],
+    "longDescription": "string",
+    "keywords": ["string", "string", "string", "string", "string", "string", "string", "string"]
   },
   "toneOfVoice": {
-    "summary": "string — one sentence tone description",
-    "dos": ["phrase/pattern to use x5"],
-    "donts": ["phrase/pattern to avoid x5"],
-    "sampleParagraph": "string — sample paragraph in the recommended tone"
-  }`;
+    "summary": "string",
+    "dos": ["string", "string", "string", "string", "string"],
+    "donts": ["string", "string", "string", "string", "string"],
+    "sampleParagraph": "string"
+  }
+
+Pro counts (floor = ceiling):
+- opportunityGaps: exactly 2
+- socialProofSuggestions: exactly 2
+- emails: exactly 3 in order — launch, value, urgency. Write complete paste-ready bodies using [First Name] for personalisation.
+- contentPlan.calendar: exactly 30 rows for days 1-30
+- adCopy: exactly 5 angles (headline <=40 chars, body <=125 chars, cta <=20 chars)
+- appStoreCopy.subtitles: exactly 3 (each <=30 chars)
+- appStoreCopy.shortDescriptions: exactly 2 (each <=80 chars)
+- appStoreCopy.keywords: 8-10 keywords
+- toneOfVoice.dos: exactly 5
+- toneOfVoice.donts: exactly 5`;
 
   const systemPrompt = `You are a world-class direct-response copywriter and brand strategist.
 
@@ -316,6 +347,8 @@ ${isPro ? `- Emails: write complete, paste-ready email bodies. Where personalisa
 - Ad copy: tight character counts are HARD LIMITS
 - App store copy: optimise for the actual app store keyword algorithm` : ''}
 - Artefact counts are both a floor AND a ceiling — generate EXACTLY the specified quantities
+- Return ONLY a JSON object — no markdown fences, no // comments, no trailing commas
+- All string values must be on a single line — no literal newline characters inside strings (use \\n if needed)
 
 Return ONLY valid JSON. Schema:
 ${basicSchema}
