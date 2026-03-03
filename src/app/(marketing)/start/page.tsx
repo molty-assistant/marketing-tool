@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
@@ -67,7 +67,7 @@ function parseTierParam(value: string | null): 'basic' | 'pro' | null {
   return null;
 }
 
-export default function StartPage() {
+function StartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<'form' | 'submitting'>('form');
@@ -295,5 +295,13 @@ export default function StartPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function StartPage() {
+  return (
+    <Suspense fallback={<p className="text-slate-500 animate-pulse">Loading…</p>}>
+      <StartPageContent />
+    </Suspense>
   );
 }
