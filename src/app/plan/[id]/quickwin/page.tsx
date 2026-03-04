@@ -421,7 +421,7 @@ export default function QuickWinPage() {
                             <div className="text-red-400 text-sm">Failed to generate</div>
                         ) : (
                             <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-                                Click &ldquo;Generate&rdquo; to create an Instagram caption
+                                Create a scroll-stopping Instagram caption tailored to your app
                             </div>
                         )}
                     </div>
@@ -519,7 +519,7 @@ export default function QuickWinPage() {
                             <div className="text-red-400 text-sm">Failed to generate</div>
                         ) : (
                             <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-                                Click &ldquo;Generate&rdquo; to create a TikTok script
+                                Create an engaging TikTok script with hook, body, and CTA
                             </div>
                         )}
                     </div>
@@ -594,7 +594,7 @@ export default function QuickWinPage() {
                             <div className="absolute inset-0 flex items-center justify-center text-red-400 text-sm">Failed to generate</div>
                         ) : (
                             <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
-                                Click &ldquo;Generate&rdquo; to create a hero image
+                                Generate a stunning hero graphic for your marketing
                             </div>
                         )}
                     </div>
