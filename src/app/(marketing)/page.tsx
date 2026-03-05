@@ -1,4 +1,65 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+
+const FAQ_ITEMS = [
+  {
+    question: 'How long does delivery take?',
+    answer: 'Your PDF is generated within 2-5 minutes after payment. No waiting for a human to get back to you.',
+  },
+  {
+    question: 'Is this AI-generated?',
+    answer: 'Yes, but you\'re not paying for raw AI output. You\'re paying for a structured framework based on what actually converts. We\'ve tested this with real indie makers.',
+  },
+  {
+    question: 'What if I don\'t like the results?',
+    answer: 'This is a one-time delivery product. Think of it as a strong starting foundation you can iterate on. You can always purchase another pack as your product evolves.',
+  },
+  {
+    question: 'Can I see a sample first?',
+    answer: 'Absolutely — check out the LightScout sample above. It shows you exactly what you\'ll get before you buy.',
+  },
+  {
+    question: 'Do I need an account?',
+    answer: 'No. Paste your URL, answer 5 questions, pay once, and download your PDF. No sign-up, no subscription.',
+  },
+];
+
+function FAQAccordion() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <div className="space-y-3">
+      {FAQ_ITEMS.map((item, index) => (
+        <div
+          key={index}
+          className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/40"
+        >
+          <button
+            onClick={() => setOpenIndex(openIndex === index ? null : index)}
+            className="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            aria-expanded={openIndex === index}
+          >
+            <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              {openIndex === index ? '−' : '+'}
+            </span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white">
+              {item.question}
+            </span>
+          </button>
+          {openIndex === index && (
+            <div className="px-12 pb-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                {item.answer}
+              </p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function LandingPage() {
   return (
@@ -87,6 +148,45 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* SOCIAL PROOF */}
+      <section className="mt-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">See it in action</h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+              Here's what a real Launch Pack looks like
+            </p>
+          </div>
+
+          <div className="rounded-2xl border-2 border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-700 dark:bg-slate-900/40">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">LightScout AI</h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">AI-powered photography location finder</p>
+                <div className="mt-4 rounded-lg bg-slate-50 p-4 dark:bg-slate-800/50">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    <span className="font-semibold">Delivered:</span> Complete positioning strategy, landing page copy, 30-day content calendar, social posts, and Reddit drafts
+                  </p>
+                </div>
+                <Link
+                  href="https://marketing-tool-production.up.railway.app/shared/6e540e90-748f-4be4-a139-e42f36e923cd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  View full sample pack →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* TIER COMPARISON */}
       <section id="pricing" className="mt-12 scroll-mt-24">
         <div className="max-w-4xl mx-auto">
@@ -149,6 +249,20 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mt-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Questions?</h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+              Everything you need to know before you start
+            </p>
+          </div>
+
+          <FAQAccordion />
         </div>
       </section>
 
