@@ -154,7 +154,7 @@ export default function LandingPage() {
           <div className="text-center mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">See it in action</h2>
             <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-              Here's what a real Launch Pack looks like
+              Here’s what a real Launch Pack looks like
             </p>
           </div>
 
