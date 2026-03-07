@@ -261,7 +261,7 @@ export function nextStepsPage(tier: 'basic' | 'pro', productName: string): strin
     <div class="page">
       <div class="page-header">
         <span class="page-header-product">${escHtml(productName)}</span>
-        <span class="page-header-section">Next Steps</span>
+        <span class="page-header-section">Execution: What to do now</span>
       </div>
       <h2>What to do now</h2>
 
@@ -269,8 +269,8 @@ export function nextStepsPage(tier: 'basic' | 'pro', productName: string): strin
         <div class="card avoid-break">
           <div class="card-label">This week</div>
           <ul>
-            <li>Update your landing page hero using one of the headline options in Section 3</li>
-            <li>Schedule your first 3 social posts using the drafts in Section 4</li>
+            <li>Update your landing page hero using one of the headline options from the Landing Page Copy section</li>
+            <li>Schedule your first 3 social posts using the drafts in the Social Launch Posts section</li>
             <li>Share your positioning statement with your team or an advisor for feedback</li>
           </ul>
         </div>
@@ -279,7 +279,7 @@ export function nextStepsPage(tier: 'basic' | 'pro', productName: string): strin
           <ul>
             <li>Run an A/B test on at least 2 headlines using your analytics tool</li>
             <li>Use the competitor angles to tighten your sales pitch</li>
-            <li>Collect testimonials that map to the value bullets in Section 1</li>
+            <li>Collect testimonials that map to the value bullets from your positioning</li>
           </ul>
         </div>
       </div>

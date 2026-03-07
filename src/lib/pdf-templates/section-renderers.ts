@@ -18,11 +18,27 @@ export function renderPositioning(pos: PdfPositioning, productName: string): str
     <div class="page">
       <div class="page-header">
         <span class="page-header-product">${escHtml(productName)}</span>
-        <span class="page-header-section">§1 · Positioning Snapshot</span>
+        <span class="page-header-section">§1 · Executive Summary & Positioning</span>
       </div>
 
-      <h2>Positioning Snapshot</h2>
+      <h2>Executive Summary & Positioning</h2>
 
+      <div class="card avoid-break">
+        <div class="card-label">App in 1 Sentence</div>
+        <p style="font-size:12pt; font-weight:600; color:var(--brand-primary);">${escHtml(pos.executiveSummary?.sentence ?? '')}</p>
+        <div style="margin-top:12pt; display:grid; grid-template-columns:1fr 1fr; gap:12pt;">
+          <div>
+            <div class="card-label">Ideal User</div>
+            <p style="font-weight:500;">${escHtml(pos.executiveSummary?.idealUser ?? '')}</p>
+          </div>
+          <div>
+            <div class="card-label">Core Metric</div>
+            <p style="font-weight:500;">${escHtml(pos.executiveSummary?.coreMetric ?? '')}</p>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:16pt;">Positioning Statement</h3>
       <div class="callout avoid-break">
         <p>${escHtml(pos.statement ?? '')}</p>
       </div>
@@ -136,7 +152,8 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
     .map((h, i) => `
       <div class="copy-item avoid-break">
         <div class="copy-item-number">Option ${i + 1}</div>
-        <div style="font-size:13pt; font-weight:600;">${escHtml(h)}</div>
+        <div style="font-size:13pt; font-weight:600; margin-bottom:4pt;">${escHtml(h.text)}</div>
+        <div style="font-size:9pt; color:var(--brand-primary);">[Visual: ${escHtml(h.visualAssignment)}]</div>
       </div>`)
     .join('');
 
@@ -310,46 +327,41 @@ export function renderEmails(copy: PdfProCopy, productName: string): string {
   `;
 }
 
-// ─── Section 6 (Pro): 30-Day Content Plan ────────────────────────────────────
+// ─── Section 6 (Pro): 4-Week Content Sprint ────────────────────────────────────
 
 export function renderContentPlan(copy: PdfProCopy, productName: string): string {
-  const themes = (copy.contentPlan?.weeklyThemes ?? [])
-    .map((t, i) => `<span class="tag">Week ${i + 1}: ${escHtml(String(t))}</span>`)
-    .join(' ');
+  const sprints = (copy.contentPlan?.weeklySprints ?? [])
+    .map((sprint) => {
+      const postsHtml = (sprint.posts ?? []).map((post) => `
+        <tr class="avoid-break">
+          <td>${escHtml(post.title)}</td>
+          <td style="width:70pt;"><span class="tag">${escHtml(post.postType)}</span></td>
+          <td style="width:60pt;">${escHtml(post.channel)}</td>
+          <td style="color:#6B7280;">${escHtml(post.intent)}</td>
+        </tr>
+      `).join('');
 
-  const calendarRows = (copy.contentPlan?.calendar ?? [])
-    .map((row) => `
-      <tr class="avoid-break">
-        <td style="text-align:center; font-weight:600; width:24pt;">${row.day}</td>
-        <td>${escHtml(row.title)}</td>
-        <td><span class="tag">${escHtml(row.postType)}</span></td>
-        <td>${escHtml(row.channel)}</td>
-        <td style="color:#6B7280;">${escHtml(row.intent)}</td>
-      </tr>`)
+      return `
+        <h3 style="margin-top:16pt; color:var(--brand-primary);">Week ${sprint.week}: ${escHtml(sprint.theme)}</h3>
+        <table style="margin-top:8pt;">
+          <thead>
+            <tr><th>Hook / Title</th><th>Type</th><th>Channel</th><th>Intent</th></tr>
+          </thead>
+          <tbody>${postsHtml}</tbody>
+        </table>
+      `;
+    })
     .join('');
 
   return `
     <div class="page">
       <div class="page-header">
         <span class="page-header-product">${escHtml(productName)}</span>
-        <span class="page-header-section">§6 · 30-Day Content Plan</span>
+        <span class="page-header-section">§6 · 4-Week Content Sprint</span>
       </div>
-      <h2>30-Day Content Plan</h2>
-      <p style="color:#6B7280; font-size:9pt; margin-bottom:8pt;">Weekly themes:</p>
-      <div style="margin-bottom:14pt;">${themes}</div>
-
-      <table class="calendar-grid">
-        <thead>
-          <tr>
-            <th style="width:24pt;">Day</th>
-            <th>Hook / Title</th>
-            <th style="width:70pt;">Type</th>
-            <th style="width:50pt;">Channel</th>
-            <th>Intent</th>
-          </tr>
-        </thead>
-        <tbody>${calendarRows}</tbody>
-      </table>
+      <h2>4-Week Content Sprint</h2>
+      <p style="color:#6B7280; font-size:9pt; margin-bottom:8pt;">A curriculum structured into weekly themes.</p>
+      ${sprints}
     </div>
     <div class="page-break"></div>
   `;
@@ -471,6 +483,76 @@ export function renderToneOfVoice(copy: PdfProCopy, productName: string): string
       <div class="card">
         <div class="card-label">Example copy in your tone</div>
         <p style="margin-top:6pt; font-size:11pt; line-height:1.7; white-space:pre-wrap;">${escHtml(copy.toneOfVoice?.sampleParagraph ?? '')}</p>
+      </div>
+    </div>
+    <div class="page-break"></div>
+  `;
+}
+
+// ─── Section 10: Community Strategy ──────────────────────────────────────────
+
+export function renderCommunityStrategy(copy: PdfProCopy, productName: string): string {
+  const c = copy.communityStrategy;
+  const subreddits = (c?.subreddits ?? []).map((s) => `<li>${escHtml(s)}</li>`).join('');
+  const groups = (c?.discordFacebook ?? []).map((g) => `<li>${escHtml(g)}</li>`).join('');
+
+  return `
+    <div class="page">
+      <div class="page-header">
+        <span class="page-header-product">${escHtml(productName)}</span>
+        <span class="page-header-section">§10 · Community & Growth Strategy</span>
+      </div>
+      <h2>Community & Growth Strategy</h2>
+      <p style="color:#6B7280; font-size:9pt; margin-bottom:12pt;">Where to find your first 100 users and how to talk to them.</p>
+
+      <h3>Target Subreddits</h3>
+      <ul>${subreddits}</ul>
+
+      <h3>Discord / Facebook Groups</h3>
+      <ul>${groups}</ul>
+
+      <h3 style="margin-top:14pt;">Community Posting Script</h3>
+      <div class="card avoid-break">
+        <div class="card-label">How to post without sounding spammy</div>
+        <p style="font-size:10pt; line-height:1.6; white-space:pre-wrap;">${escHtml(c?.postScript ?? '')}</p>
+      </div>
+
+      <h3 style="margin-top:14pt;">Beta-Tester Outreach</h3>
+      <div class="card avoid-break">
+        <div class="card-label">Email/DM Template to gather testimonials</div>
+        <p style="font-size:10pt; line-height:1.6; white-space:pre-wrap;">${escHtml(copy.betaTesterScript ?? '')}</p>
+      </div>
+    </div>
+    <div class="page-break"></div>
+  `;
+}
+
+// ─── Section 11: Visual Direction ──────────────────────────────────────────
+
+export function renderVisualDirection(copy: PdfProCopy, productName: string): string {
+  const v = copy.visualDirection;
+
+  return `
+    <div class="page">
+      <div class="page-header">
+        <span class="page-header-product">${escHtml(productName)}</span>
+        <span class="page-header-section">§11 · Visual Direction</span>
+      </div>
+      <h2>Visual Direction & Aesthetic Brief</h2>
+      <p style="color:#6B7280; font-size:9pt; margin-bottom:12pt;">The artistic foundation for your screenshots, ads, and social media.</p>
+
+      <div class="card avoid-break">
+        <div class="card-label">Color Palette & Vibe</div>
+        <p style="font-size:11pt; font-weight:500;">${escHtml(v?.colorPalette ?? '')}</p>
+      </div>
+
+      <div class="card avoid-break" style="margin-top:12pt;">
+        <div class="card-label">Imagery Style</div>
+        <p style="font-size:10pt; line-height:1.6;">${escHtml(v?.imageryStyle ?? '')}</p>
+      </div>
+      
+      <div class="callout avoid-break" style="margin-top:16pt;">
+        <p style="font-size:10pt;"><strong>Pro Tip:</strong> Use these exact descriptions as prompts if you are generating images with tools like Midjourney or Nano Banana Pro to ensure a consistent brand identity.</p>
       </div>
     </div>
     <div class="page-break"></div>

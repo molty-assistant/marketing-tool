@@ -89,6 +89,11 @@ async function callGemini(params: {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface PdfPositioning {
+  executiveSummary: {
+    sentence: string;
+    idealUser: string;
+    coreMetric: string;
+  };
   statement: string;
   icp: { who: string; pain: string; goal: string };
   valueProposition: string;
@@ -100,7 +105,7 @@ export interface PdfBasicCopy {
   competitors: Array<{ name: string; emphasis: string; gap: string; angle: string }>;
   sayThisNotThat: Array<{ sayThis: string; notThat: string }>;
   landingPage: {
-    headlines: string[];
+    headlines: Array<{ text: string; visualAssignment: string }>;
     subheadlines: string[];
     featureBullets: string[];
     shortCTAs: string[];
@@ -116,6 +121,16 @@ export interface PdfBasicCopy {
 export interface PdfProCopy extends PdfBasicCopy {
   opportunityGaps: [string, string];
   socialProofSuggestions: [string, string];
+  betaTesterScript: string;
+  visualDirection: {
+    colorPalette: string;
+    imageryStyle: string;
+  };
+  communityStrategy: {
+    subreddits: string[];
+    discordFacebook: string[];
+    postScript: string;
+  };
   emails: Array<{
     type: 'launch' | 'value' | 'urgency';
     subjectA: string;
@@ -125,13 +140,15 @@ export interface PdfProCopy extends PdfBasicCopy {
     ctaLabel: string;
   }>;
   contentPlan: {
-    weeklyThemes: [string, string, string, string];
-    calendar: Array<{
-      day: number;
-      title: string;
-      postType: string;
-      channel: string;
-      intent: string;
+    weeklySprints: Array<{
+      week: number;
+      theme: string;
+      posts: Array<{
+        title: string;
+        postType: string;
+        channel: string;
+        intent: string;
+      }>;
     }>;
   };
   adCopy: Array<{ angle: string; emotion: string; headline: string; body: string; cta: string }>;
@@ -163,6 +180,7 @@ Your job: analyse the scraped product page and the founder's intake answers, the
 
 Rules:
 - Be specific to THIS product — no generic statements
+- Do not just say the app is "AI-powered". You must explain the specific, tangible outcome the AI provides (e.g., instead of "AI location scout", say "Predicts golden hour lighting down to the minute")
 - Positioning statement format: "[Product] is a [category] for [who] who [need], unlike [alternative] we [key differentiator]"
 - ICP must name a specific person type, not "small businesses"
 - All 3 supporting bullets must be concrete benefit statements (not features)
@@ -171,6 +189,11 @@ Rules:
 
 Return ONLY this JSON object — no markdown, no comments:
 {
+  "executiveSummary": {
+    "sentence": "Your App in 1 Sentence",
+    "idealUser": "Your Ideal User",
+    "coreMetric": "Core Metric to Track"
+  },
   "statement": "one sentence positioning statement",
   "icp": {
     "who": "specific job title or persona",
@@ -244,7 +267,7 @@ Output exactly this JSON structure — no markdown, no comments:
   "competitors": [{ "name": "string", "emphasis": "what they lead with", "gap": "their weakness", "angle": "your counter-angle" }],
   "sayThisNotThat": [{ "sayThis": "string", "notThat": "string" }],
   "landingPage": {
-    "headlines": ["h1", "h2", "h3", "h4", "h5"],
+    "headlines": [{ "text": "string", "visualAssignment": "Visual suggestion for background or layout" }],
     "subheadlines": ["s1", "s2", "s3"],
     "featureBullets": ["Benefit — how it delivers"],
     "shortCTAs": ["string"],
@@ -259,7 +282,7 @@ Output exactly this JSON structure — no markdown, no comments:
 
 Exact counts required:
 - competitors: ${isPro ? '3' : '2 or 3'}
-- sayThisNotThat: ${isPro ? '5' : '3'} pairs
+- sayThisNotThat: ${isPro ? '5' : '3'} pairs (Make the 'Not That' sound boring, corporate, or overly technical to force a stark contrast)
 - headlines: exactly 5 (most direct first)
 - subheadlines: exactly 3
 - featureBullets: ${isPro ? '12' : '8 to 10'} (format: "Concrete Benefit — how the product delivers it")
@@ -299,15 +322,24 @@ Output exactly this JSON structure — no markdown, no comments:
 {
   "opportunityGaps": ["gap 1", "gap 2"],
   "socialProofSuggestions": ["suggestion 1", "suggestion 2"],
+  "betaTesterScript": "3-line email template to request testimonials/quotes from users",
+  "visualDirection": {
+    "colorPalette": "description of the color vibe (e.g. Moody and high-contrast)",
+    "imageryStyle": "how should the imagery/photos look"
+  },
+  "communityStrategy": {
+    "subreddits": ["r/specific1", "r/specific2"],
+    "discordFacebook": ["Specific group name 1", "Specific group name 2"],
+    "postScript": "script on how to post in these communities without sounding like a spammy ad"
+  },
   "emails": [
     { "type": "launch", "subjectA": "string", "subjectB": "string", "previewText": "string", "body": "string", "ctaLabel": "string" },
     { "type": "value", "subjectA": "string", "subjectB": "string", "previewText": "string", "body": "string", "ctaLabel": "string" },
     { "type": "urgency", "subjectA": "string", "subjectB": "string", "previewText": "string", "body": "string", "ctaLabel": "string" }
   ],
   "contentPlan": {
-    "weeklyThemes": ["week 1 theme", "week 2 theme", "week 3 theme", "week 4 theme"],
-    "calendar": [
-      { "day": 1, "title": "specific hook or post title", "postType": "launch", "channel": "X", "intent": "one sentence" }
+    "weeklySprints": [
+      { "week": 1, "theme": "string", "posts": [{ "title": "string", "postType": "launch", "channel": "X", "intent": "one sentence" }] }
     ]
   },
   "adCopy": [
@@ -331,7 +363,7 @@ Exact counts required:
 - opportunityGaps: exactly 2 (things competitors ignore that you can own)
 - socialProofSuggestions: exactly 2 (specific types of proof to collect)
 - emails: exactly 3 in order: launch, value, urgency. Write complete paste-ready bodies. Use [First Name] for personalisation.
-- contentPlan.calendar: exactly 30 rows, days 1 through 30. Be specific with titles — not just "post about feature X"
+- contentPlan.weeklySprints: exactly 4 sprints (Week 1: Introduction & Problem, Week 2: Deep Dives, Week 3: Proof, Week 4: Growth Hacks). Each sprint must have 3 to 5 posts.
 - adCopy: exactly 5 angles. headline under 40 chars, body under 125 chars, cta under 20 chars
 - appStoreCopy.subtitles: exactly 3, each under 30 chars
 - appStoreCopy.shortDescriptions: exactly 2, each under 80 chars

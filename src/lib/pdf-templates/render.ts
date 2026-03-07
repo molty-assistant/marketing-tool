@@ -14,6 +14,8 @@ import {
   renderAdCopy,
   renderAppStoreCopy,
   renderToneOfVoice,
+  renderCommunityStrategy,
+  renderVisualDirection,
 } from './section-renderers';
 import type { PdfPositioning, PdfBasicCopy, PdfProCopy } from '@/lib/pdf-prompts';
 import type { PdfOrderRow } from '@/lib/db';
@@ -37,7 +39,8 @@ export function renderPdfHtml(input: RenderPdfHtmlInput): string {
 
   // Build TOC entries
   const basicToc = [
-    { number: '1', title: 'Positioning Snapshot', pages: '2' },
+    { number: '—', title: 'Execution: What to do now', pages: '1' },
+    { number: '1', title: 'Executive Summary & Positioning', pages: '2' },
     { number: '2', title: 'Competitor Angles', pages: '1' },
     { number: '3', title: 'Landing Page Copy', pages: '3' },
     { number: '4', title: 'Social Launch Posts', pages: '2' },
@@ -46,10 +49,12 @@ export function renderPdfHtml(input: RenderPdfHtmlInput): string {
   const proToc = [
     ...basicToc,
     { number: '5', title: 'Email Sequence', pages: '2–3' },
-    { number: '6', title: '30-Day Content Plan', pages: '2–3' },
+    { number: '6', title: '4-Week Content Sprint', pages: '2–3' },
     { number: '7', title: 'Ad Copy Angles', pages: '1–2' },
     { number: '8', title: 'App Store / Listing Copy', pages: '1' },
     { number: '9', title: 'Tone-of-Voice Cheat Sheet', pages: '1' },
+    { number: '10', title: 'Community & Growth Strategy', pages: '1' },
+    { number: '11', title: 'Visual Direction', pages: '1' },
   ];
 
   const toc = order.tier === 'pro' ? proToc : basicToc;
@@ -58,6 +63,7 @@ export function renderPdfHtml(input: RenderPdfHtmlInput): string {
   const sections: string[] = [
     coverPage({ productName, productUrl, tier: order.tier, date }),
     tocPage(toc),
+    nextStepsPage(order.tier, productName),
     renderPositioning(positioning, productName),
     renderCompetitors(
       basicCopy,
@@ -78,11 +84,11 @@ export function renderPdfHtml(input: RenderPdfHtmlInput): string {
       renderContentPlan(proCopy, productName),
       renderAdCopy(proCopy, productName),
       renderAppStoreCopy(proCopy, productName),
-      renderToneOfVoice(proCopy, productName)
+      renderToneOfVoice(proCopy, productName),
+      renderCommunityStrategy(proCopy, productName),
+      renderVisualDirection(proCopy, productName)
     );
   }
-
-  sections.push(nextStepsPage(order.tier, productName));
 
   return `<!DOCTYPE html>
 <html lang="en">
