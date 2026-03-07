@@ -144,6 +144,19 @@ function StartPageContent() {
             Answer 5 quick questions and we&apos;ll generate a custom marketing plan PDF — ready to download in minutes.
           </p>
 
+          {/* Progress indicator */}
+          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Step 1 of 2: Tell us about your product
+              </span>
+              <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">50%</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+              <div className="h-full w-1/2 rounded-full bg-indigo-500" />
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="mt-8 space-y-8">
             {/* Hidden honeypot — bots fill this */}
             <input
