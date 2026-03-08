@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         status: 'no_reviews',
         message: 'No reviews found to monitor',
+        metadata: { model: 'gemini-2.5-flash' },
       });
     }
 
@@ -201,6 +202,7 @@ ${negativeReviews.map((r: { title: string; body: string; rating: number }) =>
       sentiment: sentiment?.analysis || null,
       responseSuggestions,
       checkedAt: new Date().toISOString(),
+      metadata: { model: 'gemini-2.5-flash' },
     });
   } catch (err) {
     console.error('review-monitor error:', err);

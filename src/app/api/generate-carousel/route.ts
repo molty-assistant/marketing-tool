@@ -487,6 +487,7 @@ export async function POST(request: NextRequest) {
       caption: concept.caption || '',
       hashtags: Array.isArray(concept.hashtags) ? concept.hashtags : [],
       slides: resultSlides,
+      metadata: { model: 'gemini-2.5-pro' },
     });
   } catch (err) {
     console.error('generate-carousel error:', err);

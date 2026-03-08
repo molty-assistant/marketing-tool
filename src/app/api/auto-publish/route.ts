@@ -175,6 +175,7 @@ ${topic ? `ANGLE: ${topic}` : 'Choose an engaging angle.'}`;
       },
       image,
       buffer: bufferJson,
+      metadata: { model: 'gemini-2.5-flash' },
     });
   } catch (err) {
     console.error('auto-publish error:', err);
