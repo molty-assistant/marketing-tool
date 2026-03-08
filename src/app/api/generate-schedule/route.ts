@@ -146,6 +146,7 @@ DAYS: ${days}`;
       success: true,
       created: created.length,
       ids: created,
+      metadata: { model: 'gemini-2.5-flash' },
     });
   } catch (err) {
     console.error('generate-schedule error:', err);

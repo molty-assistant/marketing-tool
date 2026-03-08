@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'AI response missing prompt' }, { status: 502 });
     }
 
-    return NextResponse.json({ prompt });
+    return NextResponse.json({ prompt, metadata: { model: 'gemini-2.5-flash' } });
   } catch (err) {
     console.error('caption-to-video-prompt error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

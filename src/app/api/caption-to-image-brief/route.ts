@@ -127,7 +127,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'AI response missing hook' }, { status: 502 });
     }
 
-    return NextResponse.json(brief);
+    return NextResponse.json({
+      ...brief,
+      metadata: { model: 'gemini-2.5-pro' },
+    });
   } catch (err) {
     console.error('caption-to-image-brief error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
