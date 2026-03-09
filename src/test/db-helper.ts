@@ -1,5 +1,11 @@
 import Database from 'better-sqlite3';
 
+const TEST_DB_GLOBAL_KEY = '__MARKETING_TOOL_TEST_DB__';
+
+type GlobalWithTestDb = typeof globalThis & {
+  [TEST_DB_GLOBAL_KEY]?: Database.Database;
+};
+
 /**
  * Creates a fresh in-memory SQLite database with the full schema
  * matching what getDb() creates in src/lib/db.ts.
@@ -201,6 +207,17 @@ export function createTestDb(): Database.Database {
   `);
 
   db.exec(`CREATE INDEX IF NOT EXISTS idx_pdf_tokens_hash ON pdf_download_tokens(token_hash)`);
+
+  const globalWithTestDb = globalThis as GlobalWithTestDb;
+  const previous = globalWithTestDb[TEST_DB_GLOBAL_KEY];
+  if (previous && previous !== db) {
+    try {
+      previous.close();
+    } catch {
+      // Ignore close errors for previously disposed in-memory handles.
+    }
+  }
+  globalWithTestDb[TEST_DB_GLOBAL_KEY] = db;
 
   return db;
 }

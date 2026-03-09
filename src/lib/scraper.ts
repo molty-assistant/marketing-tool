@@ -52,7 +52,10 @@ async function validateUrlSafety(urlStr: string): Promise<void> {
     for (const lookup of lookups) {
       checkIpNotPrivate(lookup.address);
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith('Unsafe URL:')) {
+      throw error;
+    }
     // let fetch handle DNS errors if they occur later
   }
 }

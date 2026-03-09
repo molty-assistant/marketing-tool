@@ -4,6 +4,11 @@ import fs from 'fs';
 
 const DB_DIR = path.join(process.cwd(), 'data');
 const DB_PATH = path.join(DB_DIR, 'marketing-tool.db');
+const TEST_DB_GLOBAL_KEY = '__MARKETING_TOOL_TEST_DB__';
+
+type GlobalWithTestDb = typeof globalThis & {
+  [TEST_DB_GLOBAL_KEY]?: Database.Database;
+};
 
 // Ensure data directory exists
 if (!fs.existsSync(DB_DIR)) {
@@ -12,7 +17,18 @@ if (!fs.existsSync(DB_DIR)) {
 
 let db: Database.Database | null = null;
 
+function getInjectedTestDb(): Database.Database | null {
+  if (!process.env.VITEST) return null;
+  const injected = (globalThis as GlobalWithTestDb)[TEST_DB_GLOBAL_KEY];
+  return injected ?? null;
+}
+
 export function getDb(): Database.Database {
+  const injectedTestDb = getInjectedTestDb();
+  if (injectedTestDb) {
+    return injectedTestDb;
+  }
+
   if (!db) {
     db = new Database(DB_PATH);
     db.pragma('journal_mode = WAL');

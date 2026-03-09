@@ -56,7 +56,7 @@ const OG_IMAGE_TEMPLATE = `<!DOCTYPE html>
   <div class="content">
     <div class="icon">{{icon}}</div>
     <h1 class="app-name">{{name}}</h1>
-    <p class="tagline">{{tagline}}</p>
+    <p class="tagline">{{tagline}} · {{feature_1}}</p>
     <div class="url-badge"><span class="dot"></span>{{url}}</div>
   </div>
   <div class="corner-deco"><span></span><span></span><span></span></div>
@@ -113,6 +113,7 @@ const SOCIAL_CARD_TEMPLATE = `<!DOCTYPE html>
       <span class="badge">Free</span>
       <span class="badge">No install</span>
       <span class="badge">Open source</span>
+      <span class="badge">{{url}}</span>
     </div>
   </div>
   <div class="bar"></div>
