@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
@@ -67,17 +67,49 @@ function parseTierParam(value: string | null): 'basic' | 'pro' | null {
   return null;
 }
 
+const STORAGE_KEY = 'intake-form-draft';
+
+interface FormDraft {
+  productUrl: string;
+  email: string;
+  selectedTier: 'basic' | 'pro' | null;
+  answers: IntakeAnswers;
+  extra: string;
+}
+
+function loadDraft(): Partial<FormDraft> {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
 function StartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [draft] = useState(loadDraft);
   const [step, setStep] = useState<'form' | 'submitting'>('form');
-  const [productUrl, setProductUrl] = useState('');
-  const [email, setEmail] = useState('');
-  const [selectedTier, setSelectedTier] = useState<'basic' | 'pro' | null>(null);
-  const [answers, setAnswers] = useState<IntakeAnswers>({});
-  const [extra, setExtra] = useState('');
+  const [productUrl, setProductUrl] = useState(draft.productUrl ?? '');
+  const [email, setEmail] = useState(draft.email ?? '');
+  const [selectedTier, setSelectedTier] = useState<'basic' | 'pro' | null>(draft.selectedTier ?? null);
+  const [answers, setAnswers] = useState<IntakeAnswers>(draft.answers ?? {});
+  const [extra, setExtra] = useState(draft.extra ?? '');
   const [error, setError] = useState('');
   const [honeypot, setHoneypot] = useState(''); // spam trap
+
+  // Persist to sessionStorage on changes
+  const saveDraft = useCallback(() => {
+    try {
+      const draft: FormDraft = { productUrl, email, selectedTier, answers, extra };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+    } catch { /* quota exceeded — non-critical */ }
+  }, [productUrl, email, selectedTier, answers, extra]);
+
+  useEffect(() => {
+    saveDraft();
+  }, [saveDraft]);
 
   const tier = selectedTier ?? parseTierParam(searchParams.get('tier')) ?? 'basic';
   const allAnswered = INTAKE_QUESTIONS.every((q) => answers[q.id]);
@@ -117,6 +149,8 @@ function StartPageContent() {
 
       // Cache email so the delivery page can pre-fill the ownership verification
       sessionStorage.setItem(`pdf-email-${data.orderId}`, email.trim().toLowerCase());
+      // Clear intake draft — form submitted successfully
+      sessionStorage.removeItem(STORAGE_KEY);
 
       router.push(`/checkout?orderId=${data.orderId}`);
     } catch {
@@ -277,7 +311,7 @@ function StartPageContent() {
                     />
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-slate-900 dark:text-white capitalize">{t}</span>
-                      <span className="text-sm font-bold text-indigo-600">{t === 'basic' ? '£39.99' : '£99'}</span>
+                      <span className="text-sm font-bold text-indigo-600">{t === 'basic' ? '£39' : '£99'}</span>
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
                       {t === 'basic'

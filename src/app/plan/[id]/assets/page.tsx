@@ -10,6 +10,7 @@ import {
 } from '@/lib/socialTemplates';
 import { usePlan } from '@/hooks/usePlan';
 import DismissableTip from '@/components/DismissableTip';
+import { Button } from '@/components/ui/button';
 
 type CompositeDevice = 'iphone-15' | 'iphone-15-pro' | 'android';
 
@@ -96,32 +97,37 @@ function AssetPreview({ asset }: { asset: GeneratedAsset }) {
   const scaledHeight = asset.height * scale;
 
   return (
-    <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden">
-      <div className="p-4 border-b border-slate-700/50">
+    <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-white">{asset.label}</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="font-semibold text-foreground">{asset.label}</h3>
+            <p className="text-xs text-muted-foreground">
               {asset.width}×{asset.height}px
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <button
+            <Button
               onClick={handleCopyHtml}
-              className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
+              variant="secondary"
+              size="sm"
+              className="text-xs"
             >
               📋 Copy HTML
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleDownloadHtml}
-              className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
+              variant="secondary"
+              size="sm"
+              className="text-xs"
             >
               📄 HTML
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleDownloadPng}
               disabled={renderingPng}
-              className="text-xs bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+              size="sm"
+              className="text-xs flex items-center gap-1.5"
             >
               {renderingPng ? (
                 <>
@@ -131,7 +137,7 @@ function AssetPreview({ asset }: { asset: GeneratedAsset }) {
               ) : (
                 '⬇️ Download PNG'
               )}
-            </button>
+            </Button>
           </div>
         </div>
         {renderError && (
@@ -141,7 +147,7 @@ function AssetPreview({ asset }: { asset: GeneratedAsset }) {
         )}
       </div>
       <div
-        className="p-4 bg-slate-900/50 flex justify-center"
+        className="p-4 bg-muted flex justify-center"
         style={{ minHeight: scaledHeight + 16 }}
       >
         <div
@@ -341,18 +347,18 @@ function ScreenshotCompositorSection({
   };
 
   return (
-    <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mt-10">
+    <div className="bg-card border border-border rounded-2xl p-6 mt-10">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-semibold text-white">📱 Screenshot Compositor</h2>
-          <p className="text-sm text-slate-400 mt-1">
+          <h2 className="text-lg font-semibold text-foreground">📱 Screenshot Compositor</h2>
+          <p className="text-sm text-muted-foreground mt-1">
             Wrap raw app screenshots in a device frame + headline (App Store size: 1290×2796)
           </p>
         </div>
-        <button
+        <Button
           onClick={handleGenerateAll}
           disabled={generatingAll}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-4 py-2 rounded-xl transition-colors flex items-center gap-2"
+          className="text-sm flex items-center gap-2"
         >
           {generatingAll ? (
             <>
@@ -362,7 +368,7 @@ function ScreenshotCompositorSection({
           ) : (
             '📦 Generate All (ZIP)'
           )}
-        </button>
+        </Button>
       </div>
 
       {generateAllError && (
@@ -372,12 +378,12 @@ function ScreenshotCompositorSection({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-        <label className="text-xs text-slate-400 flex flex-col gap-2">
+        <label className="text-xs text-muted-foreground flex flex-col gap-2">
           Device
           <select
             value={device}
             onChange={(e) => setDevice(e.target.value as CompositeDevice)}
-            className="bg-slate-900/60 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+            className="bg-card border border-border text-muted-foreground rounded-lg px-3 py-2"
           >
             <option value="iphone-15">iPhone 15</option>
             <option value="iphone-15-pro">iPhone 15 Pro</option>
@@ -385,20 +391,20 @@ function ScreenshotCompositorSection({
           </select>
         </label>
 
-        <label className="text-xs text-slate-400 flex flex-col gap-2">
+        <label className="text-xs text-muted-foreground flex flex-col gap-2">
           Background (CSS)
           <input
             value={background}
             onChange={(e) => setBackground(e.target.value)}
-            className="bg-slate-900/60 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+            className="bg-card border border-border text-muted-foreground rounded-lg px-3 py-2"
             placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
           />
-          <span className="text-[11px] text-slate-500">
+          <span className="text-[11px] text-muted-foreground">
             Tip: you can paste a CSS gradient or a hex color.
           </span>
         </label>
 
-        <label className="text-xs text-slate-400 flex flex-col gap-2">
+        <label className="text-xs text-muted-foreground flex flex-col gap-2">
           Text color
           <div className="flex items-center gap-2">
             <input
@@ -410,7 +416,7 @@ function ScreenshotCompositorSection({
             <input
               value={textColor}
               onChange={(e) => setTextColor(e.target.value)}
-              className="flex-1 bg-slate-900/60 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+              className="flex-1 bg-card border border-border text-muted-foreground rounded-lg px-3 py-2"
             />
           </div>
         </label>
@@ -420,22 +426,24 @@ function ScreenshotCompositorSection({
         {items.map((item, idx) => (
           <div
             key={item.id}
-            className="bg-slate-900/40 border border-slate-700/50 rounded-2xl overflow-hidden"
+            className="bg-card border border-border rounded-2xl overflow-hidden"
           >
-            <div className="p-4 border-b border-slate-700/50 flex items-center justify-between gap-3 flex-wrap">
+            <div className="p-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <div className="text-sm font-semibold text-white">
+                <div className="text-sm font-semibold text-foreground">
                   Screenshot {idx + 1}
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-muted-foreground">
                   Provide either an image URL or upload a file.
                 </div>
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={() => handlePreview(item.id)}
                   disabled={item.loading}
-                  className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-2 rounded-lg transition-colors flex items-center gap-2"
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs flex items-center gap-2"
                 >
                   {item.loading ? (
                     <>
@@ -445,20 +453,21 @@ function ScreenshotCompositorSection({
                   ) : (
                     '👀 Preview'
                   )}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => handleDownloadPreview(item.id)}
                   disabled={!item.previewUrl}
-                  className="text-xs bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg transition-colors"
+                  size="sm"
+                  className="text-xs"
                 >
                   ⬇️ PNG
-                </button>
+                </Button>
               </div>
             </div>
 
             <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-3">
-                <label className="text-xs text-slate-400 flex flex-col gap-1.5">
+                <label className="text-xs text-muted-foreground flex flex-col gap-1.5">
                   Image URL
                   <input
                     value={item.imageUrl}
@@ -468,12 +477,12 @@ function ScreenshotCompositorSection({
                         imageBase64: undefined,
                       })
                     }
-                    className="bg-slate-950/50 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+                    className="bg-muted border border-border text-muted-foreground rounded-lg px-3 py-2"
                     placeholder="https://…"
                   />
                 </label>
 
-                <label className="text-xs text-slate-400 flex flex-col gap-1.5">
+                <label className="text-xs text-muted-foreground flex flex-col gap-1.5">
                   Upload file
                   <input
                     type="file"
@@ -482,43 +491,43 @@ function ScreenshotCompositorSection({
                       const file = e.target.files?.[0];
                       if (file) void handlePickFile(item.id, file);
                     }}
-                    className="bg-slate-950/50 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+                    className="bg-muted border border-border text-muted-foreground rounded-lg px-3 py-2"
                   />
                 </label>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="text-xs text-slate-400 flex flex-col gap-1.5">
+                  <label className="text-xs text-muted-foreground flex flex-col gap-1.5">
                     Badge (optional)
                     <input
                       value={item.badge}
                       onChange={(e) => updateItem(item.id, { badge: e.target.value })}
-                      className="bg-slate-950/50 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+                      className="bg-muted border border-border text-muted-foreground rounded-lg px-3 py-2"
                       placeholder="NEW"
                     />
                   </label>
-                  <div className="text-xs text-slate-500 flex items-end pb-2">
+                  <div className="text-xs text-muted-foreground flex items-end pb-2">
                     Examples: NEW, FREE, ★ 4.9
                   </div>
                 </div>
 
-                <label className="text-xs text-slate-400 flex flex-col gap-1.5">
+                <label className="text-xs text-muted-foreground flex flex-col gap-1.5">
                   Headline
                   <input
                     value={item.headline}
                     onChange={(e) => updateItem(item.id, { headline: e.target.value })}
-                    className="bg-slate-950/50 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+                    className="bg-muted border border-border text-muted-foreground rounded-lg px-3 py-2"
                     placeholder="Track your habits in seconds"
                   />
                 </label>
 
-                <label className="text-xs text-slate-400 flex flex-col gap-1.5">
+                <label className="text-xs text-muted-foreground flex flex-col gap-1.5">
                   Subheadline (optional)
                   <input
                     value={item.subheadline}
                     onChange={(e) =>
                       updateItem(item.id, { subheadline: e.target.value })
                     }
-                    className="bg-slate-950/50 border border-slate-700 text-slate-200 rounded-lg px-3 py-2"
+                    className="bg-muted border border-border text-muted-foreground rounded-lg px-3 py-2"
                     placeholder="Simple. Fast. Beautiful."
                   />
                 </label>
@@ -530,7 +539,7 @@ function ScreenshotCompositorSection({
                 )}
 
                 <div className="flex gap-2 pt-1">
-                  <button
+                  <Button
                     onClick={() =>
                       setItems((prev) =>
                         prev.filter((p) => {
@@ -541,11 +550,13 @@ function ScreenshotCompositorSection({
                       )
                     }
                     disabled={items.length <= 1}
-                    className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-2 rounded-lg transition-colors"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs"
                   >
                     🗑️ Remove
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() =>
                       setItems((prev) => [
                         ...prev,
@@ -558,14 +569,16 @@ function ScreenshotCompositorSection({
                         },
                       ])
                     }
-                    className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg transition-colors"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs"
                   >
                     ➕ Add
-                  </button>
+                  </Button>
                 </div>
               </div>
 
-              <div className="bg-slate-950/40 border border-slate-800 rounded-2xl p-3 flex items-center justify-center">
+              <div className="bg-muted border border-border rounded-2xl p-3 flex items-center justify-center">
                 {item.previewUrl ? (
                   // Render at a sensible preview size
                   // eslint-disable-next-line @next/next/no-img-element
@@ -575,7 +588,7 @@ function ScreenshotCompositorSection({
                     className="max-h-[560px] w-auto rounded-xl shadow-xl"
                   />
                 ) : (
-                  <div className="text-sm text-slate-500 text-center px-6">
+                  <div className="text-sm text-muted-foreground text-center px-6">
                     Click <strong>Preview</strong> to render a PNG.
                   </div>
                 )}
@@ -602,17 +615,17 @@ function SocialTemplatePreview({
   const scaledHeight = template.height * scale;
 
   return (
-    <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden">
-      <div className="p-3 border-b border-slate-700/50">
+    <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="p-3 border-b border-border">
         <div className="flex items-baseline justify-between gap-2">
-          <div className="font-semibold text-white text-sm">{template.label}</div>
-          <div className="text-[11px] text-slate-500">
+          <div className="font-semibold text-foreground text-sm">{template.label}</div>
+          <div className="text-[11px] text-muted-foreground">
             {template.width}×{template.height}
           </div>
         </div>
       </div>
       <div
-        className="p-3 bg-slate-900/50 flex justify-center"
+        className="p-3 bg-muted flex justify-center"
         style={{ minHeight: scaledHeight + 12 }}
       >
         <div
@@ -828,7 +841,7 @@ export default function AssetsPage({
   if (planLoading) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 animate-pulse">Loading plan…</div>
+        <div className="text-muted-foreground animate-pulse">Loading plan…</div>
       </div>
     );
   }
@@ -836,7 +849,7 @@ export default function AssetsPage({
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link
           href="/"
           className="text-indigo-400 hover:text-indigo-300 transition-colors"
@@ -899,16 +912,16 @@ export default function AssetsPage({
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">🎨 Visual Assets</h1>
-          <p className="text-slate-400">
+          <h1 className="text-2xl font-bold text-foreground">🎨 Visual Assets</h1>
+          <p className="text-muted-foreground">
             {plan.config.app_name} — Marketing visuals
           </p>
         </div>
         {assets.length > 0 && !loading && (
-          <button
+          <Button
             onClick={handleDownloadAllZip}
             disabled={downloadingZip}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
+            className="text-sm flex items-center gap-2"
           >
             {downloadingZip ? (
               <>
@@ -918,7 +931,7 @@ export default function AssetsPage({
             ) : (
               '📦 Download All (ZIP)'
             )}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -930,8 +943,8 @@ export default function AssetsPage({
       )}
 
       {/* Color Customization */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
-        <h2 className="text-sm font-semibold text-white mb-3">Color Theme</h2>
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
+        <h2 className="text-sm font-semibold text-foreground mb-3">Color Theme</h2>
         <div className="flex flex-wrap gap-2 mb-4">
           {COLOR_PRESETS.map((preset) => (
             <button
@@ -944,10 +957,10 @@ export default function AssetsPage({
                   secondary: preset.secondary,
                 })
               }
-              className="flex items-center gap-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-xs bg-muted hover:bg-muted/50 text-muted-foreground px-3 py-2 rounded-lg transition-colors"
             >
               <span
-                className="w-3 h-3 rounded-full border border-slate-500"
+                className="w-3 h-3 rounded-full border border-border"
                 style={{
                   background: `linear-gradient(135deg, ${preset.primary}, ${preset.secondary})`,
                 }}
@@ -967,7 +980,7 @@ export default function AssetsPage({
           ).map(({ key, label }) => (
             <label
               key={key}
-              className="flex items-center gap-2 text-xs text-slate-400"
+              className="flex items-center gap-2 text-xs text-muted-foreground"
             >
               <input
                 type="color"
@@ -993,7 +1006,7 @@ export default function AssetsPage({
       {/* Assets */}
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-slate-400">Generating assets...</div>
+          <div className="text-muted-foreground">Generating assets...</div>
         </div>
       ) : (
         <div className="space-y-8">
@@ -1007,18 +1020,18 @@ export default function AssetsPage({
       <ScreenshotCompositorSection planId={id} appName={plan.config.app_name} />
 
       {/* Social Images */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mt-10 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mt-10 mb-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="text-sm font-semibold text-white">📣 Social Images</h2>
-            <p className="text-sm text-slate-400 mt-1">
+            <h2 className="text-sm font-semibold text-foreground">📣 Social Images</h2>
+            <p className="text-sm text-muted-foreground mt-1">
               Platform-sized, branded PNGs generated from your plan.
             </p>
           </div>
-          <button
+          <Button
             onClick={handleDownloadSocialPack}
             disabled={downloadingSocialZip}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
+            className="text-sm flex items-center gap-2"
           >
             {downloadingSocialZip ? (
               <>
@@ -1028,7 +1041,7 @@ export default function AssetsPage({
             ) : (
               '📦 Generate Social Pack'
             )}
-          </button>
+          </Button>
         </div>
 
         {socialZipError && (
@@ -1039,14 +1052,14 @@ export default function AssetsPage({
 
         <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-1">
-            <div className="text-xs font-semibold text-white mb-2">
+            <div className="text-xs font-semibold text-foreground mb-2">
               Platforms
             </div>
             <div className="space-y-2">
               {ALL_PLATFORMS.map((p) => (
                 <label
                   key={p.key}
-                  className="flex items-center justify-between gap-3 text-sm text-slate-300 bg-slate-900/40 border border-slate-700/60 rounded-xl px-3 py-2"
+                  className="flex items-center justify-between gap-3 text-sm text-muted-foreground bg-card border border-border rounded-xl px-3 py-2"
                 >
                   <span>{p.label}</span>
                   <input
@@ -1064,39 +1077,39 @@ export default function AssetsPage({
               ))}
             </div>
 
-            <div className="mt-5 text-xs font-semibold text-white mb-2">
+            <div className="mt-5 text-xs font-semibold text-foreground mb-2">
               Style
             </div>
             <select
               value={socialStyle}
               onChange={(e) => setSocialStyle(e.target.value as SocialStyle)}
-              className="w-full bg-slate-900/40 border border-slate-700/60 rounded-xl px-3 py-2 text-sm text-slate-200"
+              className="w-full bg-card border border-border rounded-xl px-3 py-2 text-sm text-muted-foreground"
             >
               <option value="gradient">Gradient</option>
               <option value="dark">Dark</option>
               <option value="light">Light</option>
             </select>
 
-            <div className="mt-5 text-xs font-semibold text-white mb-2">
+            <div className="mt-5 text-xs font-semibold text-foreground mb-2">
               Accent color
             </div>
-            <label className="flex items-center gap-3 text-sm text-slate-300 bg-slate-900/40 border border-slate-700/60 rounded-xl px-3 py-2">
+            <label className="flex items-center gap-3 text-sm text-muted-foreground bg-card border border-border rounded-xl px-3 py-2">
               <input
                 type="color"
                 value={accentColor}
                 onChange={(e) => setAccentColor(e.target.value)}
                 className="w-9 h-9 rounded cursor-pointer border-0"
               />
-              <span className="text-xs text-slate-400">{accentColor}</span>
+              <span className="text-xs text-muted-foreground">{accentColor}</span>
             </label>
           </div>
 
           <div className="md:col-span-2">
-            <div className="text-xs font-semibold text-white mb-2">
+            <div className="text-xs font-semibold text-foreground mb-2">
               Previews
             </div>
             {socialTemplates.length === 0 ? (
-              <div className="text-sm text-slate-400">
+              <div className="text-sm text-muted-foreground">
                 Select at least one platform.
               </div>
             ) : (
@@ -1114,9 +1127,9 @@ export default function AssetsPage({
       </div>
 
       {/* Tips */}
-      <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mt-8 mb-8">
-        <h3 className="text-sm font-semibold text-white mb-2">💡 Tips</h3>
-        <ul className="text-sm text-slate-400 space-y-1">
+      <div className="bg-card border border-border rounded-2xl p-6 mt-8 mb-8">
+        <h3 className="text-sm font-semibold text-foreground mb-2">💡 Tips</h3>
+        <ul className="text-sm text-muted-foreground space-y-1">
           <li>
             • Click <strong>&quot;⬇️ Download PNG&quot;</strong> on each asset
             for a pixel-perfect render

@@ -41,7 +41,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
       ? 'bg-emerald-600/90 border-emerald-500/50'
       : toast.type === 'error'
         ? 'bg-red-600/90 border-red-500/50'
-        : 'bg-slate-700/90 border-slate-600/50';
+        : 'bg-muted/90 border-border';
 
   const icon = toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : 'ℹ';
 

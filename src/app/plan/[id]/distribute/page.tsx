@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { Button } from '@/components/ui/button';
 
 interface CorePiece {
   title: string;
@@ -142,7 +143,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
   if (planLoading) {
     return (
       <div className="max-w-5xl mx-auto py-20">
-        <div className="text-slate-400">Loading…</div>
+        <div className="text-muted-foreground">Loading…</div>
       </div>
     );
   }
@@ -158,7 +159,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </Link>
@@ -172,37 +173,37 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-muted-foreground bg-card border border-border rounded-xl px-4 py-3">
         Turn one core piece of content into platform-native posts for Instagram, TikTok, LinkedIn, Twitter, Reddit, and email — generated in seconds from your marketing brief.
       </div>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold text-white">📣 Distribute</h1>
+            <h1 className="text-2xl font-bold text-foreground">📣 Distribute</h1>
             {data && isCached && (
-              <span className="text-xs text-slate-500">Cached · ↻ Regenerate to refresh</span>
+              <span className="text-xs text-muted-foreground">Cached · ↻ Regenerate to refresh</span>
             )}
           </div>
-          <p className="text-slate-400">{plan.config.app_name} — One core piece, many posts</p>
+          <p className="text-muted-foreground">{plan.config.app_name} — One core piece, many posts</p>
         </div>
-        <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-2.5">
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Preview</div>
-          <div className="text-sm text-slate-200 mt-1">
-            <span className="text-slate-400">Channels:</span> {platforms.length ? platforms.join(', ') : DEFAULT_PLATFORMS.join(', ')}
+        <div className="bg-card border border-border rounded-xl px-4 py-2.5">
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Preview</div>
+          <div className="text-sm text-muted-foreground mt-1">
+            <span className="text-muted-foreground">Channels:</span> {platforms.length ? platforms.join(', ') : DEFAULT_PLATFORMS.join(', ')}
           </div>
-          <div className="text-sm text-slate-200">
-            <span className="text-slate-400">Audience:</span> {plan.config.target_audience || '—'}
+          <div className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground">Audience:</span> {plan.config.target_audience || '—'}
           </div>
-          <div className="text-sm text-slate-200">
-            <span className="text-slate-400">Content:</span> {sourceContent.trim() ? 'Platform-native posts (from your source)' : 'Core piece + platform-native posts'}
+          <div className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground">Content:</span> {sourceContent.trim() ? 'Platform-native posts (from your source)' : 'Core piece + platform-native posts'}
           </div>
         </div>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8 space-y-4">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8 space-y-4">
         <div>
-          <div className="text-sm font-semibold text-white mb-2">Platforms</div>
+          <div className="text-sm font-semibold text-foreground mb-2">Platforms</div>
           <div className="flex flex-wrap gap-2">
             {DEFAULT_PLATFORMS.map((p) => (
               <button
@@ -210,33 +211,33 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
                 onClick={() => togglePlatform(p)}
                 className={`text-xs border rounded-full px-3 py-1.5 transition-colors ${
                   platforms.includes(p)
-                    ? 'bg-indigo-600/20 border-indigo-500/50 text-white'
-                    : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40 text-slate-300'
+                    ? 'bg-indigo-600/20 border-indigo-500/50 text-foreground'
+                    : 'bg-card hover:bg-muted/50 border-border text-muted-foreground'
                 }`}
               >
                 {p}
               </button>
             ))}
           </div>
-          <div className="text-xs text-slate-500 mt-2">Tip: leave source blank to auto-generate a core blog post/announcement.</div>
+          <div className="text-xs text-muted-foreground mt-2">Tip: leave source blank to auto-generate a core blog post/announcement.</div>
         </div>
 
         {!data && (
           <div>
-            <div className="text-sm font-semibold text-white mb-2">What you’ll get</div>
+            <div className="text-sm font-semibold text-foreground mb-2">What you’ll get</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(platforms.length ? platforms : DEFAULT_PLATFORMS).map((p) => {
                 const meta = platformMeta[p] || { icon: '✨', description: 'Platform-native post' };
                 return (
                   <div
                     key={p}
-                    className="bg-slate-900/40 border border-slate-700/40 rounded-xl px-3 py-2.5"
+                    className="bg-card border border-border rounded-xl px-3 py-2.5"
                   >
-                    <div className="text-xs text-white flex items-center gap-2">
+                    <div className="text-xs text-foreground flex items-center gap-2">
                       <span aria-hidden>{meta.icon}</span>
                       <span className="font-medium capitalize">{p}</span>
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-1 leading-snug">{meta.description}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{meta.description}</div>
                   </div>
                 );
               })}
@@ -245,27 +246,27 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
         )}
 
         <div>
-          <div className="text-sm font-semibold text-white mb-2">Optional source content</div>
+          <div className="text-sm font-semibold text-foreground mb-2">Optional source content</div>
           <textarea
             value={sourceContent}
             onChange={(e) => setSourceContent(e.target.value)}
             placeholder="Paste a blog post, launch announcement, or notes… (optional)"
-            className="w-full min-h-[140px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            className="w-full min-h-[140px] bg-muted border border-border rounded-xl p-3 text-sm text-muted-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
           />
         </div>
 
         <div className="flex items-center justify-end gap-3">
-          <button
+          <Button
             onClick={handleGenerate}
             disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="text-sm"
           >
             {loading ? 'Generating…' : data ? '↻ Regenerate' : '✨ Generate'}
-          </button>
+          </Button>
         </div>
 
         {data?.metadata?.tokens != null && (
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-muted-foreground">
             Model: {data.metadata.model || 'gemini'} · Tokens: {String(data.metadata.tokens)} · Atoms: {String(data.metadata.atomCount ?? atoms.length)}
           </div>
         )}
@@ -278,44 +279,46 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
       )}
 
       {!data && (
-        <div className="text-slate-500 text-sm">Click “Generate” to create a core piece and atomized content.</div>
+        <div className="text-muted-foreground text-sm">Click &quot;Generate&quot; to create a core piece and atomized content.</div>
       )}
 
       {data && (
         <div className="space-y-6">
           {/* Core piece */}
-          <div className="rounded-2xl overflow-hidden border bg-slate-800/30 border-slate-700/60">
-            <div className="p-4 border-b border-slate-700/40 flex items-center justify-between gap-3">
+          <div className="rounded-2xl overflow-hidden border bg-card border-border">
+            <div className="p-4 border-b border-border flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-white">Core piece</div>
-                <div className="text-xs text-slate-500">{data.corePiece.title}</div>
+                <div className="text-sm font-semibold text-foreground">Core piece</div>
+                <div className="text-xs text-muted-foreground">{data.corePiece.title}</div>
               </div>
-              <button
+              <Button
                 onClick={async () => {
                   await navigator.clipboard.writeText(`# ${data.corePiece.title}\n\n${data.corePiece.content}`);
                   toastSuccess('Copied core piece');
                 }}
-                className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                variant="secondary"
+                size="sm"
+                className="text-xs"
               >
                 📋 Copy
-              </button>
+              </Button>
             </div>
             <div className="p-4">
               <textarea
                 readOnly
                 value={data.corePiece.content}
-                className="w-full min-h-[260px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 focus:outline-none"
+                className="w-full min-h-[260px] bg-muted border border-border rounded-xl p-3 text-sm text-muted-foreground focus:outline-none"
               />
             </div>
           </div>
 
           {/* Filter */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="text-sm text-slate-300">Filter:</div>
+            <div className="text-sm text-muted-foreground">Filter:</div>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="bg-slate-950/40 border border-slate-700/50 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none"
+              className="bg-muted border border-border rounded-xl px-3 py-2 text-sm text-muted-foreground focus:outline-none"
             >
               <option value="all">All</option>
               {platformsPresent.map((p) => (
@@ -324,7 +327,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
                 </option>
               ))}
             </select>
-            <div className="text-xs text-slate-500">Showing {filteredAtoms.length} of {atoms.length}</div>
+            <div className="text-xs text-muted-foreground">Showing {filteredAtoms.length} of {atoms.length}</div>
           </div>
 
           {/* Atoms */}
@@ -334,49 +337,51 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
               return (
                 <div
                   key={`${atom.platform}-${atom.format}-${idx}`}
-                  className="rounded-2xl overflow-hidden border bg-slate-800/30 border-slate-700/60"
+                  className="rounded-2xl overflow-hidden border bg-card border-border"
                 >
-                  <div className="p-4 border-b border-slate-700/40 flex items-start justify-between gap-4">
+                  <div className="p-4 border-b border-border flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-white truncate">
+                      <div className="text-sm font-semibold text-foreground truncate">
                         {atom.platform} · {atom.format}
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         {atom.notes || '—'}
                       </div>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <span className="text-[11px] bg-slate-950/40 border border-slate-700/40 text-slate-300 px-2 py-1 rounded-full">
+                        <span className="text-[11px] bg-muted border border-border text-muted-foreground px-2 py-1 rounded-full">
                           {count} chars
                         </span>
                         {Array.isArray(atom.hashtags) && atom.hashtags.length > 0 && (
-                          <span className="text-[11px] bg-slate-950/40 border border-slate-700/40 text-slate-300 px-2 py-1 rounded-full">
+                          <span className="text-[11px] bg-muted border border-border text-muted-foreground px-2 py-1 rounded-full">
                             {atom.hashtags.slice(0, 5).join(' ')}{atom.hashtags.length > 5 ? ' …' : ''}
                           </span>
                         )}
                         {Array.isArray(atom.subreddits) && atom.subreddits.length > 0 && (
-                          <span className="text-[11px] bg-slate-950/40 border border-slate-700/40 text-slate-300 px-2 py-1 rounded-full">
+                          <span className="text-[11px] bg-muted border border-border text-muted-foreground px-2 py-1 rounded-full">
                             {atom.subreddits.slice(0, 3).join(' ')}{atom.subreddits.length > 3 ? ' …' : ''}
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <button
+                    <Button
                       onClick={async () => {
                         await navigator.clipboard.writeText(atom.content);
                         toastSuccess('Copied');
                       }}
-                      className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                      variant="secondary"
+                      size="sm"
+                      className="text-xs"
                     >
                       📋 Copy
-                    </button>
+                    </Button>
                   </div>
 
                   <div className="p-4">
                     <textarea
                       readOnly
                       value={atom.content}
-                      className="w-full min-h-[160px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 focus:outline-none"
+                      className="w-full min-h-[160px] bg-muted border border-border rounded-xl p-3 text-sm text-muted-foreground focus:outline-none"
                     />
                   </div>
                 </div>
@@ -386,7 +391,7 @@ export default function DistributePage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+      <div className="text-center text-sm text-muted-foreground mt-10 mb-6">
         Atomized content is a draft — tweak for each platform before posting.
       </div>
     </div>

@@ -53,7 +53,7 @@ const TIER_FEATURES = {
   ],
 } as const;
 
-const TIER_PRICE = { basic: '£39.99', pro: '£99' };
+const TIER_PRICE = { basic: '£39', pro: '£99' };
 
 function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
   const searchParams = useSearchParams();

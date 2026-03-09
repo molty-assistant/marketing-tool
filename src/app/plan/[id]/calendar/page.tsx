@@ -215,7 +215,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </Link>
@@ -229,30 +229,30 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">📅 Content Calendar</h1>
-          <p className="text-slate-400">{plan.config.app_name} — Generate a weekly posting plan</p>
+          <h1 className="text-2xl font-bold text-foreground">📅 Content Calendar</h1>
+          <p className="text-muted-foreground">{plan.config.app_name} — Generate a weekly posting plan</p>
         </div>
 
-        <button
+        <Button
           onClick={handleGenerate}
           disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+          className="text-sm"
         >
           {loading ? 'Generating…' : '✨ Generate Calendar'}
-        </button>
+        </Button>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <div className="text-sm font-semibold text-white mb-2">Platforms</div>
+            <div className="text-sm font-semibold text-foreground mb-2">Platforms</div>
             <div className="flex flex-wrap gap-2">
               {(Array.from(new Set([...DEFAULT_PLATFORMS, ...platforms]))).map((p) => (
                 <label
                   key={p}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer select-none ${platforms.includes(p)
-                    ? 'bg-indigo-600/15 border-indigo-500/40 text-white'
-                    : 'bg-slate-950/30 border-slate-700/40 text-slate-300'
+                    ? 'bg-indigo-600/15 border-indigo-500/40 text-foreground'
+                    : 'bg-muted border-border text-muted-foreground'
                     }`}
                 >
                   <input
@@ -265,16 +265,16 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
                 </label>
               ))}
             </div>
-            <div className="text-xs text-slate-500 mt-2">Tip: add or remove platforms before generating.</div>
+            <div className="text-xs text-muted-foreground mt-2">Tip: add or remove platforms before generating.</div>
           </div>
 
           <div>
-            <div className="text-sm font-semibold text-white mb-2">Weeks</div>
+            <div className="text-sm font-semibold text-foreground mb-2">Weeks</div>
             <div className="flex items-center gap-3">
               <select
                 value={weeks}
                 onChange={(e) => setWeeks(Number(e.target.value))}
-                className="bg-slate-950/40 border border-slate-700/50 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="bg-muted border border-border rounded-xl px-3 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               >
                 {[1, 2, 3, 4].map((w) => (
                   <option key={w} value={w}>
@@ -282,30 +282,30 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
                   </option>
                 ))}
               </select>
-              <div className="text-xs text-slate-500">Generate 1–4 weeks starting next Monday.</div>
+              <div className="text-xs text-muted-foreground">Generate 1–4 weeks starting next Monday.</div>
             </div>
           </div>
         </div>
 
-        {error && <div className="text-sm text-red-300 mt-4">{error}</div>}
+        {error && <div className="text-sm text-red-400 mt-4">{error}</div>}
       </div>
 
       {calendar.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/40 rounded-2xl p-10 text-center">
-          <div className="text-slate-300 font-medium mb-2">No calendar yet</div>
-          <div className="text-slate-500 text-sm">Click “Generate Calendar” to create a weekly schedule.</div>
+        <div className="bg-card border border-border rounded-2xl p-10 text-center">
+          <div className="text-muted-foreground font-medium mb-2">No calendar yet</div>
+          <div className="text-muted-foreground text-sm">Click &quot;Generate Calendar&quot; to create a weekly schedule.</div>
         </div>
       ) : (
         <div className="space-y-6">
           {weekStarts.map((weekStart) => {
             const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
             return (
-              <div key={toIsoDate(weekStart)} className="bg-slate-800/40 border border-slate-700 rounded-2xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-700/60">
-                  <div className="text-white font-semibold">
+              <div key={toIsoDate(weekStart)} className="bg-card border border-border rounded-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-border">
+                  <div className="text-foreground font-semibold">
                     Week of {weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
-                  <div className="text-xs text-slate-500">Click a post to view the full draft copy.</div>
+                  <div className="text-xs text-muted-foreground">Click a post to view the full draft copy.</div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-7">
@@ -314,11 +314,11 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
                     const items = calendarByDate.get(iso) || [];
 
                     return (
-                      <div key={iso} className="border-t md:border-t-0 md:border-l border-slate-700/50 p-3 min-h-[140px]">
-                        <div className="text-xs text-slate-400 mb-2">{formatDayLabel(iso)}</div>
+                      <div key={iso} className="border-t md:border-t-0 md:border-l border-border p-3 min-h-[140px]">
+                        <div className="text-xs text-muted-foreground mb-2">{formatDayLabel(iso)}</div>
                         <div className="space-y-2">
                           {items.length === 0 ? (
-                            <div className="text-xs text-slate-600">—</div>
+                            <div className="text-xs text-muted-foreground">—</div>
                           ) : (
                             items.map((item, idx) => (
                               <button
@@ -330,10 +330,10 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="text-xs font-semibold truncate capitalize">{item.platform}</div>
-                                  <div className="text-[11px] text-slate-300/80">{item.suggested_time}</div>
+                                  <div className="text-[11px] text-muted-foreground">{item.suggested_time}</div>
                                 </div>
-                                <div className="text-sm text-white font-medium mt-0.5 line-clamp-2">{item.title}</div>
-                                <div className="text-[11px] text-slate-400 mt-1 capitalize">{item.content_type}</div>
+                                <div className="text-sm text-foreground font-medium mt-0.5 line-clamp-2">{item.title}</div>
+                                <div className="text-[11px] text-muted-foreground mt-1 capitalize">{item.content_type}</div>
                               </button>
                             ))
                           )}
@@ -350,11 +350,11 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
 
       {/* Modal */}
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="border-b border-slate-700/60 pb-4 mb-4">
+        <DialogContent className="bg-card border-border text-foreground sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="border-b border-border pb-4 mb-4">
             <div className="flex items-start justify-between">
               <div>
-                <DialogDescription className="text-xs text-slate-400 mb-1">
+                <DialogDescription className="text-xs text-muted-foreground mb-1">
                   {selected?.date} • <span className="capitalize">{selected?.platform}</span> •{' '}
                   <span className="capitalize">{selected?.content_type}</span> • {selected?.suggested_time}
                 </DialogDescription>
@@ -366,22 +366,22 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
           {selected && (
             <div className="space-y-6">
               <div>
-                <div className="text-sm font-semibold text-white mb-2">Draft copy</div>
-                <pre className="whitespace-pre-wrap text-sm text-slate-200 bg-slate-950/30 border border-slate-700/50 rounded-xl p-4">
+                <div className="text-sm font-semibold text-foreground mb-2">Draft copy</div>
+                <pre className="whitespace-pre-wrap text-sm text-muted-foreground bg-muted border border-border rounded-xl p-4">
                   {selected.draft_copy}
                 </pre>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-white mb-2">Hashtags</div>
-                  <div className="text-sm text-slate-200 bg-slate-950/30 border border-slate-700/50 rounded-xl p-3">
+                  <div className="text-sm font-semibold text-foreground mb-2">Hashtags</div>
+                  <div className="text-sm text-muted-foreground bg-muted border border-border rounded-xl p-3">
                     {(selected.hashtags || []).length ? (selected.hashtags || []).join(' ') : '—'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white mb-2">Media notes</div>
-                  <div className="text-sm text-slate-200 bg-slate-950/30 border border-slate-700/50 rounded-xl p-3">
+                  <div className="text-sm font-semibold text-foreground mb-2">Media notes</div>
+                  <div className="text-sm text-muted-foreground bg-muted border border-border rounded-xl p-3">
                     {selected.media_notes || '—'}
                   </div>
                 </div>
@@ -445,7 +445,7 @@ export default function CalendarPage({ params }: { params: Promise<{ id: string 
             </div>
           )}
 
-          <DialogFooter className="mt-4 border-t border-slate-700/60 pt-4">
+          <DialogFooter className="mt-4 border-t border-border pt-4">
             <Button variant="secondary" onClick={() => setSelected(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>

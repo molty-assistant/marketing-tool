@@ -95,15 +95,15 @@ function SuiteCard({
   return (
     <Link
       href={`/plan/${planId}${item.href}`}
-      className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-white/[0.06] dark:bg-slate-900/40 dark:hover:border-indigo-500/25 dark:hover:bg-indigo-950/20"
+      className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:border-indigo-500/25 dark:hover:bg-indigo-950/20"
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/[0.06]">
-        <Icon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+        <Icon className="h-4 w-4 text-muted-foreground" />
       </div>
-      <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">
+      <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
         {item.label}
       </span>
-      <ArrowRight className="ml-auto h-3.5 w-3.5 text-slate-300 transition-colors group-hover:text-indigo-500 dark:text-slate-600 dark:group-hover:text-indigo-400" />
+      <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-indigo-500 dark:group-hover:text-indigo-400" />
     </Link>
   );
 }
@@ -170,12 +170,12 @@ export default function PlanOverviewPage({
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto animate-pulse">
-        <div className="mb-6 h-28 rounded-2xl border border-slate-200 bg-white dark:border-white/[0.06] dark:bg-slate-900/50" />
+        <div className="mb-6 h-28 rounded-2xl border border-border bg-card" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl bg-slate-200 dark:bg-slate-800"
+              className="h-44 rounded-2xl bg-muted"
             />
           ))}
         </div>
@@ -183,7 +183,7 @@ export default function PlanOverviewPage({
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="h-14 rounded-xl border border-slate-200 bg-white dark:border-white/[0.06] dark:bg-slate-900/40"
+              className="h-14 rounded-xl border border-border bg-card"
             />
           ))}
         </div>
@@ -194,7 +194,7 @@ export default function PlanOverviewPage({
   if (error || !plan || !computed) {
     return (
       <div className="max-w-3xl mx-auto py-20 text-center">
-        <div className="mb-4 text-slate-500 dark:text-slate-400">{error || 'Plan not found'}</div>
+        <div className="mb-4 text-muted-foreground">{error || 'Plan not found'}</div>
         <Link href="/dashboard" className="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
           ← Back to dashboard
         </Link>
@@ -205,22 +205,22 @@ export default function PlanOverviewPage({
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-white/[0.06] dark:bg-slate-900/40">
+      <div className="mb-8 rounded-2xl border border-border bg-card p-6">
         <div className="flex items-start gap-4">
           {computed.icon && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={computed.icon} alt="" className="w-14 h-14 rounded-2xl" />
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold text-slate-900 break-words dark:text-white">
+            <h1 className="text-2xl font-bold text-foreground break-words">
               {computed.appName}
             </h1>
             {computed.oneLiner && (
-              <p className="mt-1 line-clamp-2 break-words text-sm text-slate-600 dark:text-slate-400">
+              <p className="mt-1 line-clamp-2 break-words text-sm text-muted-foreground">
                 {computed.oneLiner}
               </p>
             )}
-            <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-muted-foreground">
               {plan?.createdAt && (
                 <span suppressHydrationWarning>
                   Created {new Date(plan.createdAt).toLocaleDateString()}
@@ -228,7 +228,7 @@ export default function PlanOverviewPage({
               )}
               {(overview?.wordCount ?? 0) > 0 && (
                 <>
-                  {plan?.createdAt && <span className="text-slate-300 dark:text-slate-700">|</span>}
+                  {plan?.createdAt && <span className="text-muted-foreground">|</span>}
                   <span>{overview?.wordCount.toLocaleString()} words generated</span>
                 </>
               )}
@@ -239,7 +239,7 @@ export default function PlanOverviewPage({
 
       {/* Action cards — top tier */}
       <div className="mb-8">
-        <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
           Start Here
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -251,7 +251,7 @@ export default function PlanOverviewPage({
 
       {/* Marketing Suite — bottom tier */}
       <div className="mb-10">
-        <h2 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+        <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
           Supporting Tools
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">

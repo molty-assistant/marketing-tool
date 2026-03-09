@@ -5,11 +5,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Package,
   ChevronDown,
   ChevronRight,
   Zap,
   MoreHorizontal,
+  Target,
+  FileText,
+  Send,
+  Search,
+  Download,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -28,7 +32,11 @@ type NavChild = {
 type NavGroupKey =
   | 'create'
   | 'plan'
-  | 'more';
+  | 'strategy'
+  | 'content'
+  | 'distribution'
+  | 'seo'
+  | 'export';
 
 type NavGroup = {
   key: NavGroupKey;
@@ -47,8 +55,9 @@ const NAV_GROUPS: NavGroup[] = [
     href: '/strategy/brief',
     alwaysOpen: true,
     children: [
-      { label: 'Brief', href: '/strategy/brief' },
-      { label: 'Copy Draft', href: '/draft' },
+      { label: 'Quick Win', href: '/quickwin' },
+      { label: 'Social Posts', href: '/social' },
+      { label: 'Carousel', href: '/carousel' },
     ],
   },
   {
@@ -61,26 +70,60 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: 'more',
-    label: 'Supporting Tools',
-    icon: Package,
-    href: '/strategy',
+    key: 'strategy',
+    label: 'Strategy',
+    icon: Target,
+    href: '/strategy/brief',
     children: [
       { label: 'Brief', href: '/strategy/brief' },
       { label: 'Foundation', href: '/foundation' },
       { label: 'Competitors', href: '/competitors' },
       { label: 'Reviews', href: '/reviews' },
+    ],
+  },
+  {
+    key: 'content',
+    label: 'Content',
+    icon: FileText,
+    href: '/draft',
+    children: [
       { label: 'Copy Draft', href: '/draft' },
       { label: 'Tone Compare', href: '/tone-compare' },
       { label: 'Email Sequences', href: '/emails' },
       { label: 'Templates', href: '/templates' },
       { label: 'Translations', href: '/translate' },
       { label: 'Approvals', href: '/approvals' },
+    ],
+  },
+  {
+    key: 'distribution',
+    label: 'Distribution',
+    icon: Send,
+    href: '/schedule',
+    children: [
+      { label: 'Schedule', href: '/schedule' },
+      { label: 'Calendar', href: '/calendar' },
       { label: 'Distribute', href: '/distribute' },
       { label: 'Performance', href: '/performance' },
+    ],
+  },
+  {
+    key: 'seo',
+    label: 'SEO & ASO',
+    icon: Search,
+    href: '/keywords',
+    children: [
       { label: 'Keywords', href: '/keywords' },
       { label: 'SERP Preview', href: '/serp' },
       { label: 'Variants', href: '/variants' },
+    ],
+  },
+  {
+    key: 'export',
+    label: 'Export',
+    icon: Download,
+    href: '/assets',
+    children: [
       { label: 'Assets', href: '/assets' },
       { label: 'Preview', href: '/preview' },
       { label: 'Digest', href: '/digest' },
@@ -128,7 +171,11 @@ export function PlanSidebar({
     return {
       create: true,
       plan: true,
-      more: false,
+      strategy: false,
+      content: false,
+      distribution: false,
+      seo: false,
+      export: false,
     };
   });
 
@@ -143,7 +190,7 @@ export function PlanSidebar({
   }, [open]);
 
   const createGroup = NAV_GROUPS.find((g) => g.key === 'create');
-  const suiteGroups = NAV_GROUPS.filter((g) => g.key !== 'create');
+  const suiteGroups = NAV_GROUPS.filter((g) => g.key !== 'create' && g.key !== 'plan');
   const activeGroup = NAV_GROUPS.find((group) => group.key === activeGroupKey);
   const mobileChildren = activeGroup?.children ?? [];
   const [mobileMoreOpen, setMobileMoreOpen] = React.useState(false);
@@ -151,17 +198,17 @@ export function PlanSidebar({
   return (
     <>
       {/* Mobile: compact top nav */}
-      <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 backdrop-blur dark:border-white/[0.06] dark:bg-slate-900/80 lg:hidden">
+      <div className="sticky top-0 z-20 border-b border-border bg-card/85 backdrop-blur lg:hidden">
         <div className="px-3 py-2">
           <div className="flex items-center justify-between">
             <Link
               href="/dashboard"
-              className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
               ← All Plans
             </Link>
             <div className="flex items-center gap-2">
-              <div className="max-w-[60%] truncate text-right text-xs font-medium text-slate-900 dark:text-white">
+              <div className="max-w-[60%] truncate text-right text-xs font-medium text-foreground">
                 {appName}
               </div>
               <ThemeToggle className="hidden min-[420px]:inline-flex" />
@@ -182,7 +229,7 @@ export function PlanSidebar({
                   'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
                   isActive
                     ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 )}
               >
                 {child.label}
@@ -196,7 +243,7 @@ export function PlanSidebar({
               'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
               activeGroupKey === 'plan'
                 ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
             )}
           >
             Overview
@@ -208,8 +255,8 @@ export function PlanSidebar({
             className={cn(
               'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
               mobileMoreOpen
-                ? 'bg-slate-100 text-slate-900 dark:bg-white/[0.08] dark:text-white'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
             )}
           >
             <MoreHorizontal className="w-3.5 h-3.5" />
@@ -220,7 +267,7 @@ export function PlanSidebar({
         {/* Suite sections (shown when More is open or active group is a suite group) */}
         {(mobileMoreOpen || (activeGroupKey !== 'create' && activeGroupKey !== 'plan')) && (
           <>
-            <div className="flex gap-1 overflow-x-auto px-2 pb-2 pt-1 border-t border-slate-200/70 dark:border-white/[0.04]">
+            <div className="flex gap-1 overflow-x-auto px-2 pb-2 pt-1 border-t border-border">
               {suiteGroups.filter((g) => g.key !== 'plan').map((group) => {
                 const href = `${basePath}${group.href}`;
                 const isActive = group.key === activeGroupKey;
@@ -233,7 +280,7 @@ export function PlanSidebar({
                       'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors',
                       isActive
                         ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     )}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -244,7 +291,7 @@ export function PlanSidebar({
             </div>
 
             {mobileChildren.length > 0 && activeGroupKey !== 'create' && (
-              <div className="flex gap-1 overflow-x-auto px-2 pb-2 pt-1 border-t border-slate-200/70 dark:border-white/[0.04]">
+              <div className="flex gap-1 overflow-x-auto px-2 pb-2 pt-1 border-t border-border">
                 {mobileChildren.map((child) => {
                   const childHref = `${basePath}${child.href}`;
                   const childActive = pathname === childHref;
@@ -255,8 +302,8 @@ export function PlanSidebar({
                       className={cn(
                         'px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap transition-colors',
                         childActive
-                          ? 'bg-slate-100 text-slate-900 dark:bg-white/[0.08] dark:text-white'
-                          : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/[0.04]'
+                          ? 'bg-muted text-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                       )}
                     >
                       {child.label}
@@ -270,18 +317,18 @@ export function PlanSidebar({
       </div>
 
       {/* Desktop: left sidebar */}
-      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white p-4 dark:border-white/[0.06] dark:bg-slate-900 lg:block">
+      <aside className="hidden w-60 shrink-0 border-r border-border bg-card p-4 lg:block">
         <div className="mb-6 px-2">
           <div className="flex items-center justify-between gap-2">
             <Link
               href="/dashboard"
-              className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
               ← All Plans
             </Link>
             <ThemeToggle />
           </div>
-          <h3 className="mt-2 truncate text-sm font-semibold text-slate-900 dark:text-white">
+          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">
             {appName}
           </h3>
         </div>
@@ -318,18 +365,18 @@ export function PlanSidebar({
                             'group flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                             childActive
                               ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                              : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/[0.04] dark:hover:text-white'
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                           )}
                         >
                           <span>{child.label}</span>
                           {childActive && (
-                            <ChevronRight className="w-4 h-4 text-slate-400" />
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                           )}
                         </Link>
                       );
                     })}
                   </div>
-                  <div className="mx-3 my-2 border-b border-slate-200 dark:border-white/[0.06]" />
+                  <div className="mx-3 my-2 border-b border-border" />
                 </div>
               );
             }
@@ -343,7 +390,7 @@ export function PlanSidebar({
                     'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     groupIsActive
                       ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -365,7 +412,7 @@ export function PlanSidebar({
                       'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                       groupIsActive
                         ? 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.04] dark:hover:text-white'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     )}
                   >
                     <Icon className="w-4 h-4" />
@@ -374,7 +421,7 @@ export function PlanSidebar({
                     </span>
                     <ChevronDown
                       className={cn(
-                        'w-4 h-4 transition-transform text-slate-500',
+                        'w-4 h-4 transition-transform text-muted-foreground',
                         open[group.key] && 'rotate-180'
                       )}
                     />
@@ -394,13 +441,13 @@ export function PlanSidebar({
                           className={cn(
                             'group flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors',
                             childActive
-                              ? 'bg-indigo-500/10 text-slate-900 dark:bg-white/[0.06] dark:text-white'
-                              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/[0.03] dark:hover:text-slate-300'
+                              ? 'bg-indigo-500/10 text-foreground'
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                           )}
                         >
                           <span>{child.label}</span>
                           {childActive && (
-                            <ChevronRight className="w-4 h-4 text-slate-400" />
+                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                           )}
                         </Link>
                       );

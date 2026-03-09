@@ -22,7 +22,7 @@ function Stars({ value }: { value: number }) {
       ))}
       {half && <span className="text-amber-500">☆</span>}
       {Array.from({ length: empty }).map((_, i) => (
-        <span key={`e-${i}`} className="text-slate-300">★</span>
+        <span key={`e-${i}`} className="text-muted-foreground">★</span>
       ))}
     </div>
   );
@@ -31,8 +31,8 @@ function Stars({ value }: { value: number }) {
 function PreviewSkeleton() {
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-6 h-[50px] rounded-xl bg-slate-800/60 border border-slate-700 animate-pulse" />
-      <div className="rounded-3xl border border-slate-700 bg-white overflow-hidden">
+      <div className="mb-6 h-[50px] rounded-xl bg-muted border border-border animate-pulse" />
+      <div className="rounded-3xl border border-border bg-white overflow-hidden">
         <div className="p-6 sm:p-8">
           <div className="flex gap-5 items-start">
             <div className="w-20 h-20 rounded-2xl bg-slate-200 animate-pulse" />
@@ -146,7 +146,7 @@ export default function PlanPreviewPage({
 
   if (!plan) {
     return (
-      <div className="max-w-3xl mx-auto py-20 text-slate-300">Plan not found</div>
+      <div className="max-w-3xl mx-auto py-20 text-muted-foreground">Plan not found</div>
     );
   }
 
@@ -159,17 +159,17 @@ export default function PlanPreviewPage({
       <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-white">📱 App Store Preview</h1>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             Tweak your copy inline and see a realistic iOS App Store listing preview.
           </p>
         </div>
-        <div className="text-xs text-slate-500 bg-slate-800/40 border border-slate-700 rounded-xl px-3 py-2">
+        <div className="text-xs text-muted-foreground bg-card border border-border rounded-xl px-3 py-2">
           Tip: Click any editable field
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <div className="rounded-3xl border border-slate-700 bg-white overflow-hidden shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)]">
+        <div className="rounded-3xl border border-border bg-white overflow-hidden shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)]">
           {/* Header */}
           <div className="p-6 sm:p-8">
             <div className="flex items-start gap-5">
@@ -303,7 +303,7 @@ export default function PlanPreviewPage({
                 aria-label="Description"
               />
               {!expanded && description.length > 520 && (
-                <div className="text-xs text-slate-400 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   Showing {shownDescription.length} / {description.length} chars
                 </div>
               )}
@@ -329,7 +329,7 @@ export default function PlanPreviewPage({
           </div>
         </div>
 
-        <div className="mt-4 text-center text-xs text-slate-500">
+        <div className="mt-4 text-center text-xs text-muted-foreground">
           Click any field on the card above to edit inline. This preview is visual-only — changes aren&apos;t saved back to the plan.
         </div>
       </div>

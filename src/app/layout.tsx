@@ -6,21 +6,21 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeScript } from '@/components/theme/ThemeScript';
 
 export const metadata: Metadata = {
-  title: 'Marketing Tool — Vibe Marketing Brief Generator',
+  title: 'LaunchKit — AI Marketing Plans',
   description:
     'Paste any App Store, Google Play, or website URL and get a complete marketing brief with launch-ready copy drafts.',
   metadataBase: new URL('https://marketing-tool-production.up.railway.app'),
   openGraph: {
-    title: 'Marketing Tool — Vibe Marketing Brief Generator',
+    title: 'LaunchKit — AI Marketing Plans',
     description:
       'Paste any app or website URL → get a full marketing brief with AI copy and competitor research.',
     type: 'website',
-    siteName: 'Marketing Tool',
+    siteName: 'LaunchKit',
     locale: 'en_GB',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Marketing Tool — Vibe Marketing Brief Generator',
+    title: 'LaunchKit — AI Marketing Plans',
     description:
       'Paste any app or website URL → get a full marketing brief with AI copy and competitor research.',
   },

@@ -5,6 +5,7 @@ import { use, useCallback, useEffect, useMemo, useState } from 'react';
 import { PageSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
 import ErrorRetry from '@/components/ErrorRetry';
+import { Button } from '@/components/ui/button';
 
 type RatingFilter = 'all' | 'unrated' | 'great' | 'good' | 'ok' | 'poor';
 
@@ -290,16 +291,16 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   return (
     <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Performance Tracker</h1>
-          <p className="mt-1 text-slate-600 dark:text-slate-400">
+          <h1 className="text-2xl font-bold text-foreground">Performance Tracker</h1>
+          <p className="mt-1 text-muted-foreground">
             See which posts worked — rate your content to learn what resonates.
           </p>
         </div>
 
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-700 dark:border-slate-700/50 dark:bg-slate-800/30 dark:text-slate-200">
+          <div className="rounded-2xl border border-border bg-card p-6 text-muted-foreground">
             <div className="mb-2 text-lg font-semibold">No scheduled posts yet.</div>
-            <div className="mb-4 text-slate-500 dark:text-slate-400">
+            <div className="mb-4 text-muted-foreground">
               Generate a content schedule first, then come back here to track what worked.
             </div>
             <Link
@@ -312,29 +313,29 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
         ) : (
           <>
             {summaryVisible && (
-              <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 mb-8">
+              <div className="bg-card border border-border rounded-2xl p-6 mb-8">
                 <div className="flex flex-wrap gap-2 items-center text-sm">
-                  <span className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-200">
+                  <span className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground">
                     Total: {summary.total}
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-200">
+                  <span className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground">
                     Rated: {summary.rated}
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-200">
+                  <span className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground">
                     🔥 {summary.distribution.great}
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-200">
+                  <span className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground">
                     👍 {summary.distribution.good}
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-200">
+                  <span className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground">
                     😐 {summary.distribution.ok}
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-200">
+                  <span className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground">
                     👎 {summary.distribution.poor}
                   </span>
                 </div>
                 {summary.bestPlatform && (
-                  <div className="mt-3 text-sm text-slate-400">
+                  <div className="mt-3 text-sm text-muted-foreground">
                     Best platform:{' '}
                     <span className="text-indigo-400 font-medium">{titleCase(summary.bestPlatform)}</span>
                   </div>
@@ -345,7 +346,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
             {/* Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-slate-400 text-sm mr-1">Filters:</span>
+                <span className="text-muted-foreground text-sm mr-1">Filters:</span>
                 {(
                   [
                     { key: 'all', label: 'All' },
@@ -362,7 +363,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                     className={`px-3 py-1 rounded-full text-sm border transition-colors ${
                       ratingFilter === f.key
                         ? 'bg-indigo-600 border-indigo-500 text-white'
-                        : 'bg-slate-900/60 border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
+                        : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-border'
                     }`}
                   >
                     {f.label}
@@ -371,11 +372,11 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-slate-400 text-sm">Platform:</span>
+                <span className="text-muted-foreground text-sm">Platform:</span>
                 <select
                   value={platformFilter}
                   onChange={(e) => setPlatformFilter(e.target.value)}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                  className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 >
                   <option value="all">All</option>
                   {platforms.map((p) => (
@@ -395,9 +396,9 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                   {bestPerformers.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-4"
+                      className="bg-card border border-border rounded-2xl p-4"
                     >
-                      <div className="text-xs text-slate-400 mb-2 flex items-center gap-2">
+                      <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
                         <span>{PLATFORM_EMOJI[item.platform] || '📢'}</span>
                         <span className="capitalize">{item.platform}</span>
                         <span>•</span>
@@ -405,7 +406,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                         <span>•</span>
                         <span>{formatWhen(item.scheduled_at)}</span>
                       </div>
-                      <div className="text-slate-200 text-sm line-clamp-3">“{item.topic || 'Untitled post'}”</div>
+                      <div className="text-muted-foreground text-sm line-clamp-3">“{item.topic || 'Untitled post'}”</div>
                     </div>
                   ))}
                 </div>
@@ -422,9 +423,9 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                 return (
                   <div
                     key={item.id}
-                    className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6"
+                    className="bg-card border border-border rounded-2xl p-6"
                   >
-                    <div className="text-xs text-slate-400 mb-2 flex flex-wrap items-center gap-2">
+                    <div className="text-xs text-muted-foreground mb-2 flex flex-wrap items-center gap-2">
                       <span>{emoji}</span>
                       <span className="capitalize">{item.platform}</span>
                       <span>•</span>
@@ -435,7 +436,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                       <span className="capitalize">{item.status}</span>
                     </div>
 
-                    <div className="text-slate-200 mb-4">“{item.topic || 'Untitled post'}”</div>
+                    <div className="text-muted-foreground mb-4">“{item.topic || 'Untitled post'}”</div>
 
                     <div className="flex flex-wrap gap-2 mb-4">
                       {(Object.keys(RATING_META) as Array<Exclude<Rating, null>>).map((r) => {
@@ -448,7 +449,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                             className={`px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
                               active
                                 ? `${meta.color}`
-                                : 'bg-slate-900/40 border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
+                                : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-border'
                             }`}
                           >
                             {meta.emoji} {meta.label}
@@ -458,7 +459,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                     </div>
 
                     <div className="mb-4">
-                      <div className="text-xs text-slate-400 mb-2">Notes</div>
+                      <div className="text-xs text-muted-foreground mb-2">Notes</div>
                       <textarea
                         value={item.performance_notes || ''}
                         onChange={(e) => {
@@ -477,11 +478,11 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                         }}
                         placeholder="Add notes…"
                         rows={2}
-                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/50"
+                        className="w-full bg-muted border border-border rounded-xl px-3 py-2 text-sm text-muted-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-indigo-600/50"
                       />
                     </div>
 
-                    <div className="border-t border-slate-700/40 pt-4">
+                    <div className="border-t border-border pt-4">
                       <button
                         onClick={() =>
                           setMetricsOpen((prev) => ({ ...prev, [item.id]: !prev[item.id] }))
@@ -501,7 +502,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                             ] as const
                           ).map((f) => (
                             <div key={f.key}>
-                              <div className="text-xs text-slate-400 mb-1">{f.label}</div>
+                              <div className="text-xs text-muted-foreground mb-1">{f.label}</div>
                               <input
                                 type="number"
                                 inputMode="numeric"
@@ -529,7 +530,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                                   const latestMetrics = safeParseMetrics(latest?.performance_metrics ?? null);
                                   handleMetricsBlur(item, latestMetrics);
                                 }}
-                                className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/50"
+                                className="w-full bg-muted border border-border rounded-xl px-3 py-2 text-sm text-muted-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-indigo-600/50"
                                 placeholder="—"
                               />
                             </div>

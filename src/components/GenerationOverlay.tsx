@@ -212,8 +212,8 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
       <div className="h-full w-full flex items-center justify-center px-6">
         <div className="w-full max-w-xl">
           <div className="text-center">
-            <div className="text-xs text-slate-500">Processing</div>
-            <div className="mt-1 text-sm text-slate-300 font-mono" title={url}>
+            <div className="text-xs text-muted-foreground">Processing</div>
+            <div className="mt-1 text-sm text-muted-foreground font-mono" title={url}>
               {truncateMiddle(url, 64)}
             </div>
 
@@ -223,13 +223,13 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={appIcon} alt={appName || 'App icon'} className="h-10 w-10 rounded-xl" />
                 ) : (
-                  <div className="h-10 w-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400">
+                  <div className="h-10 w-10 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground">
                     <Circle className="h-5 w-5" />
                   </div>
                 )}
                 <div className="text-left min-w-0">
-                  <div className="text-xs text-slate-500">App</div>
-                  <div className="text-base font-semibold text-white truncate max-w-[20rem]">
+                  <div className="text-xs text-muted-foreground">App</div>
+                  <div className="text-base font-semibold text-foreground truncate max-w-[20rem]">
                     {appName || 'Detected'}
                   </div>
                 </div>
@@ -237,15 +237,15 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
             )}
           </div>
 
-          <div className="mt-10 bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+          <div className="mt-10 bg-card border border-border rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-xs text-slate-500">Progress</div>
+              <div className="text-xs text-muted-foreground">Progress</div>
               <button
                 type="button"
                 onClick={() => {
                   abortRef.current?.abort()
                 }}
-                className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
@@ -260,18 +260,18 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
                   ) : s.status === 'error' ? (
                     <Circle className="h-5 w-5 text-red-400" />
                   ) : (
-                    <Circle className="h-5 w-5 text-slate-600" />
+                    <Circle className="h-5 w-5 text-muted-foreground" />
                   )}
 
                   <div className={
                     'text-sm ' +
                     (s.status === 'complete'
-                      ? 'text-slate-200'
+                      ? 'text-muted-foreground'
                       : s.status === 'active'
-                        ? 'text-white'
+                        ? 'text-foreground'
                         : s.status === 'error'
                           ? 'text-red-300'
-                          : 'text-slate-400')
+                          : 'text-muted-foreground')
                   }>
                     {s.label}
                   </div>
@@ -279,7 +279,7 @@ export default function GenerationOverlay({ url, onComplete, onError }: Generati
               ))}
             </div>
 
-            <div className="mt-8 text-center text-sm text-slate-500">
+            <div className="mt-8 text-center text-sm text-muted-foreground">
               This usually takes 30–60 seconds
             </div>
           </div>

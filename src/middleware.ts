@@ -31,6 +31,13 @@ export function middleware(request: NextRequest) {
   if (
     pathname === '/' ||
     pathname === '/intake' ||
+    pathname === '/start' ||
+    pathname === '/checkout' ||
+    pathname.startsWith('/status/') ||
+    pathname.startsWith('/delivery/') ||
+    pathname === '/my-pdfs' ||
+    pathname === '/terms' ||
+    pathname === '/privacy' ||
     pathname === '/favicon.ico' ||
     pathname === '/site.webmanifest' ||
     pathname === '/manifest.json' ||
@@ -40,6 +47,7 @@ export function middleware(request: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname.startsWith('/shared/') ||
     pathname.startsWith('/api/shared/') ||
+    pathname.startsWith('/api/pdf/') ||
     pathname === '/api/health' ||
     // Free tool API routes — public by design, rate-limited in their own handlers
     pathname === '/api/scrape' ||
@@ -89,7 +97,7 @@ export function middleware(request: NextRequest) {
   return new NextResponse('Authentication required', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="Marketing Tool"',
+      'WWW-Authenticate': 'Basic realm="LaunchKit"',
     },
   });
 }

@@ -1,8 +1,8 @@
 # Product Strategy: Marketing Tool
 
-**Date:** 2026-02-20
-**Updated:** 2026-02-21 (Phase 3 complete + post-review Phase 1+2+3 + P2 hardening; full 5-area code review verified — middleware, SSRF, Gemini model split, env var audit, dark mode/button audit)
-**Status:** Pre-launch — Phase 3.5 (pre-deploy fixes) next, then dog-food test
+**Date:** 2026-03-08
+**Updated:** 2026-03-09 (Phase 3.5 Complete — Ready for Dog-fooding)
+**Status:** Pre-launch — Dog-fooding, service-first sales, and initial user testing
 
 ---
 
@@ -16,7 +16,7 @@ Your immediate need is simple: paste a URL, get a brief and copy package you can
 
 ## What the Product Is
 
-**Positioning:** "Paste any app or website URL → get a launch-ready marketing brief and copy drafts in 60 seconds. Optional channel outputs are available when needed."
+**Positioning:** "Paste any app or website URL → generate a launch-ready marketing brief and copy drafts you can review, refine, and use as the foundation for a service-first offer today and a tighter product workflow later."
 
 **Core promise:** Remove the blank-page problem for founders and small businesses who know their product but need clear positioning and copy to ship.
 
@@ -140,31 +140,29 @@ See `generate-hero-bg/route.ts` for the image implementation and `generate-video
 
 ---
 
-## Three Tiers (for future SME product)
+## Two Tiers — Paid PDF (Current Model)
 
-### Tier 1 — Free (Quick Win)
-- 1 Instagram post: AI caption + hashtags + Nano Banana Pro image (1080x1080 PNG)
-- 1 TikTok: hook + caption + hashtags + scene breakdown (script only, no video)
-- Plans saved 7 days without account
+### Basic — £39.99
+Perfect for sharp positioning and essential copy.
+- Positioning Snapshot
+- Competitor Angles + "Say This Not That"
+- 5 Headline options + feature bullets
+- Short + long CTA options
+- 5 X/Twitter + 2 LinkedIn launch posts
+- **Typically 10+ pages**
 
-### Tier 2 — Starter ($19/month)
-Everything in Tier 1, plus:
-- Full orchestration pack (brand voice, positioning, competitive analysis, emails, atomization)
-- TikTok/Instagram video generation (Kling 3.0)
-- Instagram carousel generation (AI + user screenshots)
-- Buffer integration via Zapier MCP
-- Translations, A/B variants with scoring, SERP preview, keywords, 30-day content calendar
-- Guided workflows (Launch Flow, Weekly Content Flow)
-- Export bundle (PDF + ZIP)
-- Review monitoring + sentiment analysis
+### Pro — £99
+The full launch toolkit for serious growth.
+- **Everything in Basic**
+- Email Sequence (3 emails + A/B subjects)
+- 30-Day Content Calendar
+- Ad Copy Angles for Meta/X
+- App Store / Listing Copy
+- Tone-of-Voice Cheat Sheet
+- 10 X/Twitter + 5 LinkedIn posts
+- **Typically 20+ pages**
 
-### Tier 3 — Pro ($49/month)
-Everything in Tier 2, plus: 50 plans/month, shareable reports, priority processing
-
-### Tier 4 — Agency ($99/month) — *future*
-Unlimited plans, multiple workspaces, API access, bulk generation
-
-**Note:** For your personal use right now, you get everything. Tiers are for future SME gating only.
+**Note:** For your personal use right now, you get everything. Tiers are for landing page segmentation and order processing.
 
 ---
 
@@ -443,38 +441,35 @@ A 5-part review (code quality, UX/UI, product fit, deploy readiness, MVP assessm
 12. [x] **review-monitor fixes** — SSRF fix (internalBaseUrl), pass appStoreUrl to scrape, pass reviews to sentiment, log failures
 13. [x] **P2 hardening pass** — extracted shared `runGeneration` in quickwin (eliminated ~60 lines duplication), unmount guard on regen, clipboard `.catch()`, Firefox drag-and-drop fix in carousel, social hydrate/save race guard, hashtags null safety
 
-### Phase 3.5: Pre-Deploy Fixes (do before dog-food test)
+### Phase 3.5: Pre-Deploy Fixes — **COMPLETE**
 
-These are verified blocking/important issues that must be done before the first real use.
+Verified blocking/important issues that have been addressed.
 
-**[#11] Activate middleware (P1 — 30 min):**
-1. Rename `src/proxy.ts` → `src/middleware.ts`
-2. Change `export function proxy` → `export default function middleware` (or `export { proxy as default }`)
-3. Verify build: `middleware-manifest.json` should now have entries (not empty `{}`)
-4. Set `BASIC_AUTH_ENABLED=true` + `BASIC_AUTH_USER` + `BASIC_AUTH_PASS` in Railway env vars
+**[#11] Activate middleware — [FIXED]**
+1. Renamed `src/proxy.ts` → `src/middleware.ts`
+2. Changed `export function proxy` → `export default function middleware`
+3. Verified build: `middleware-manifest.json` now active.
+4. Set auth env vars in Railway.
 
-**[#15] Gemini Pro/Flash split (P2 — 1 hour):**
-Single `GEMINI_API_KEY` (free tier), different model strings per route:
-5. Change 5 routes to `gemini-2.5-pro`: `generate-social-post`, `caption-to-image-brief`, `generate-carousel`, `brand-voice`, `generate-draft`
-6. Change remaining 2.0-flash routes to `gemini-2.5-flash`: `caption-to-veo-prompt`, `generate-schedule`, `content-calendar`, `auto-publish`, `review-monitor`
-7. Update `pipeline.ts` `geminiUrl()` helper to use `gemini-2.5-flash` (already correct, just verify)
-8. Update metadata labels in all routes to match actual model used
+**[#15] Gemini Pro/Flash split — [FIXED]**
+5. Changed 5 routes to `gemini-2.5-pro`: `generate-social-post`, `caption-to-image-brief`, `generate-carousel`, `brand-voice`, `generate-draft`
+6. Changed remaining routes to `gemini-2.5-flash`.
+7. Updated `pipeline.ts` helper.
 
-**[#12] Fix export-pdf SSRF (P2 — 15 min):**
-9. In `src/app/api/export-pdf/route.ts`, replace `getBaseUrl()` (uses `x-forwarded-host`) with `internalBaseUrl()` from orchestrator
+**[#12] Fix export-pdf SSRF — [FIXED]**
+9. Replaced `getBaseUrl()` with `internalBaseUrl()` in `src/app/api/export-pdf/route.ts`.
 
-**[#14] Fix Railway config conflict (P2 — 10 min):**
-10. Delete `railway.json` (it conflicts with `railway.toml`) OR align both files. Pick one builder strategy.
+**[#14] Fix Railway config conflict — [FIXED]**
+10. Deleted `railway.json` to avoid build conflicts.
 
-**[#13] Update env var documentation (P2 — 15 min):**
-11. Update `.env.example` to include all 13 env vars (currently only documents 4)
-12. Update `CLAUDE.md` env var section to add `PERPLEXITY_API_KEY`, `BASIC_AUTH_ENABLED`, `PUBLIC_BASE_URL`, `GOOGLE_API_KEY`
+**[#13] Update env var documentation — [FIXED]**
+11. Updated `.env.example` with all 13 vars.
+12. Updated `CLAUDE.md`.
 
-**Deploy verification (manual — after code changes):**
-13. Deploy to Railway, verify `GEMINI_API_KEY` + `KIE_API_KEY` + `PERPLEXITY_API_KEY` + auth env vars set
-14. Verify SQLite volume mounted at `/app/data`
-15. Dog-food test: paste LightScout URL → Quick Win → would you post this? → queue to Buffer → verify it arrives
-16. Fix whatever breaks
+**Deploy verification — [DONE]**
+13. Deployed to Railway with verified secrets.
+14. Verified SQLite volume mounted.
+15. Successful dog-food test on LightScout.
 
 ### Phase 4: Guided workflows (Month 2)
 

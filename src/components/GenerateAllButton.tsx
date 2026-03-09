@@ -150,11 +150,11 @@ export default function GenerateAllButton({
 
       {(running || step > 0) && (
         <div className="mt-2 w-full sm:w-[320px]">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="truncate">{currentLabel || '—'}</span>
             <span>{pct}%</span>
           </div>
-          <div className="h-2 bg-slate-950/40 border border-slate-700/40 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted border border-border rounded-full overflow-hidden">
             <div
               className="h-full bg-emerald-500/70 transition-all"
               style={{ width: `${pct}%` }}

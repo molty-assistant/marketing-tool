@@ -6,6 +6,7 @@ import type { MarketingPlan } from '@/lib/types';
 import { DraftSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { Button } from '@/components/ui/button';
 
 type Tone = 'professional' | 'casual' | 'bold' | 'minimal';
 
@@ -256,7 +257,7 @@ export default function DraftPage({
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link
           href="/"
           className="text-indigo-400 hover:text-indigo-300 transition-colors"
@@ -269,7 +270,7 @@ export default function DraftPage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-muted-foreground bg-card border border-border rounded-xl px-4 py-3">
         Generate polished App Store descriptions, landing page hero copy, and feature bullets — choose your tone and section, then copy straight to your listing.
       </div>
 
@@ -277,43 +278,44 @@ export default function DraftPage({
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold text-white">📝 First Draft Generator</h1>
+            <h1 className="text-2xl font-bold text-foreground">📝 First Draft Generator</h1>
             {Object.keys(draft).length > 0 && isCached && (
-              <span className="text-xs text-slate-500">Cached · ↻ Generate to refresh</span>
+              <span className="text-xs text-muted-foreground">Cached · ↻ Generate to refresh</span>
             )}
           </div>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             {plan.config.app_name} — Generate a complete first draft for your listing
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button
+          <Button
             onClick={handleCopyAll}
             disabled={Object.keys(draft).length === 0}
-            className="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-white text-sm px-4 py-2.5 rounded-xl transition-colors"
+            variant="secondary"
+            className="text-sm px-4 py-2.5 rounded-xl"
           >
             {copiedAll ? '✓ Copied!' : '📋 Copy All'}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleGenerate}
             disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="text-sm px-5 py-2.5 rounded-xl"
           >
             {loading ? 'Generating…' : '✨ Generate Draft'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <h2 className="text-sm font-semibold text-white mb-3">Sections</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Sections</h2>
             <div className="space-y-2">
               {SECTION_OPTIONS.map((s) => (
                 <label
                   key={s.key}
-                  className="flex items-start gap-3 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/40 rounded-xl px-4 py-3 cursor-pointer"
+                  className="flex items-start gap-3 bg-card hover:bg-muted/50 border border-border rounded-xl px-4 py-3 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -327,8 +329,8 @@ export default function DraftPage({
                     className="mt-1"
                   />
                   <div>
-                    <div className="text-sm text-white">{s.label}</div>
-                    <div className="text-xs text-slate-500">{s.help}</div>
+                    <div className="text-sm text-foreground">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">{s.help}</div>
                   </div>
                 </label>
               ))}
@@ -336,7 +338,7 @@ export default function DraftPage({
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-white mb-3">Tone</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Tone</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {TONE_OPTIONS.map((t) => (
                 <button
@@ -345,17 +347,17 @@ export default function DraftPage({
                   className={`text-left border rounded-xl px-4 py-3 transition-colors ${
                     tone === t.value
                       ? 'bg-indigo-600/20 border-indigo-500/50'
-                      : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40'
+                      : 'bg-card hover:bg-muted/50 border-border'
                   }`}
                 >
-                  <div className="text-sm text-white">{t.label}</div>
-                  <div className="text-xs text-slate-500">{t.help}</div>
-                  <div className="text-xs italic text-slate-400 mt-0.5">{t.sample}</div>
+                  <div className="text-sm text-foreground">{t.label}</div>
+                  <div className="text-xs text-muted-foreground">{t.help}</div>
+                  <div className="text-xs italic text-muted-foreground mt-0.5">{t.sample}</div>
                 </button>
               ))}
             </div>
 
-            <div className="mt-4 text-xs text-slate-500">
+            <div className="mt-4 text-xs text-muted-foreground">
               Tip: Generate everything once, then tweak the draft and regenerate per section.
             </div>
           </div>
@@ -380,35 +382,39 @@ export default function DraftPage({
               key={s.key}
               className={`rounded-2xl overflow-hidden border ${
                 hasValue
-                  ? 'bg-slate-800/30 border-slate-700/60'
-                  : 'bg-slate-900/20 border-slate-700/30'
+                  ? 'bg-card border-border'
+                  : 'bg-muted/50 border-border'
               }`}
             >
-              <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-700/40">
+              <div className="flex items-center justify-between gap-3 p-4 border-b border-border">
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-white">{s.label}</div>
-                  <div className="text-xs text-slate-500">{s.help}</div>
+                  <div className="text-sm font-semibold text-foreground">{s.label}</div>
+                  <div className="text-xs text-muted-foreground">{s.help}</div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <button
+                  <Button
                     onClick={() => handleRegenerate(s.key)}
                     disabled={!!regenerating[s.key]}
-                    className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs px-3 py-1.5 rounded-lg"
                     title="Regenerate this section"
                   >
                     {regenerating[s.key] ? '…' : '🔄 Regenerate'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={async () => {
                       if (!hasValue) return;
                       await navigator.clipboard.writeText(value);
                     }}
                     disabled={!hasValue}
-                    className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs px-3 py-1.5 rounded-lg"
                     title="Copy section"
                   >
                     📋 Copy
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -422,7 +428,7 @@ export default function DraftPage({
                     }))
                   }
                   placeholder="Not generated yet…"
-                  className="w-full min-h-[140px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  className="w-full min-h-[140px] bg-muted/50 border border-border rounded-xl p-3 text-sm text-muted-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 />
               </div>
             </div>
@@ -431,7 +437,7 @@ export default function DraftPage({
       </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+      <div className="text-center text-sm text-muted-foreground mt-10 mb-6">
         Drafts are a starting point — review for accuracy before publishing.
       </div>
     </div>

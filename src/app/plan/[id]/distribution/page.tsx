@@ -13,14 +13,14 @@ function StatusPill({
   selected: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/[0.06] dark:bg-slate-900/50">
-      <span className="text-xs text-slate-700 dark:text-slate-300">{label}</span>
+    <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2">
+      <span className="text-xs text-muted-foreground">{label}</span>
       <span
         className={
           'rounded-full border px-2 py-0.5 text-[11px] ' +
           (selected
             ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
-            : 'border-slate-300 bg-slate-100 text-slate-500 dark:border-white/[0.06] dark:bg-white/[0.04] dark:text-slate-400')
+            : 'border-border bg-muted text-muted-foreground')
         }
       >
         {selected ? 'Selected' : 'Not selected'}
@@ -69,15 +69,15 @@ export default async function DistributionHubPage({
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/15">
                 <Plus className="h-5 w-5 text-indigo-700 dark:text-indigo-300" />
               </div>
-              <div className="text-base font-semibold text-slate-900 dark:text-white">
+              <div className="text-base font-semibold text-foreground">
                 Create Social Post
               </div>
             </div>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            <p className="mt-2 text-sm text-muted-foreground">
               Generate captions, images, and video variations for your next campaign.
             </p>
           </div>
-          <Megaphone className="h-5 w-5 text-slate-500 transition-colors group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-300" />
+          <Megaphone className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
         </div>
 
         <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -86,7 +86,7 @@ export default async function DistributionHubPage({
           <StatusPill label="TikTok / Shorts" selected={selected.has('tiktok')} />
         </div>
 
-        <div className="mt-4 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">📸 Instagram</div>
           <div className="flex items-center gap-1.5">
             <Linkedin className="h-3.5 w-3.5" />

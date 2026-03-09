@@ -58,6 +58,10 @@ function loadPlan(planId: string) {
   return { row, config, scraped, stages, appContext: buildAppContext(config) };
 }
 
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+const MAX_RETRIES = 3;
+const INITIAL_DELAY_MS = 1000;
+
 async function callGemini(params: {
   apiKey: string;
   systemPrompt: string;
@@ -65,43 +69,71 @@ async function callGemini(params: {
   temperature: number;
   maxOutputTokens?: number;
 }): Promise<{ parsed: unknown; tokens: number | null }> {
-  const res = await fetch(geminiUrl(params.apiKey), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: params.systemPrompt }] },
-      contents: [{ parts: [{ text: params.userContent }] }],
-      generationConfig: {
-        temperature: params.temperature,
-        maxOutputTokens: params.maxOutputTokens ?? 8192,
-        responseMimeType: 'application/json',
-      },
-    }),
+  const body = JSON.stringify({
+    system_instruction: { parts: [{ text: params.systemPrompt }] },
+    contents: [{ parts: [{ text: params.userContent }] }],
+    generationConfig: {
+      temperature: params.temperature,
+      maxOutputTokens: params.maxOutputTokens ?? 8192,
+      responseMimeType: 'application/json',
+    },
   });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Gemini API error (${res.status}): ${errorText.slice(0, 300)}`);
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      const delay = INITIAL_DELAY_MS * Math.pow(2, attempt - 1);
+      console.log(`[pipeline] Gemini retry ${attempt}/${MAX_RETRIES} after ${delay}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+
+    try {
+      const res = await fetch(geminiUrl(params.apiKey), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        lastError = new Error(`Gemini API error (${res.status}): ${errorText.slice(0, 300)}`);
+        if (RETRYABLE_STATUS_CODES.has(res.status) && attempt < MAX_RETRIES) {
+          continue;
+        }
+        throw lastError;
+      }
+
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text || typeof text !== 'string') {
+        throw new Error('Unexpected Gemini response shape');
+      }
+
+      const parsed = parseGeminiJson(text);
+
+      const usage = data?.usageMetadata;
+      const tokens =
+        typeof usage?.totalTokenCount === 'number'
+          ? usage.totalTokenCount
+          : typeof usage?.promptTokenCount === 'number' &&
+              typeof usage?.candidatesTokenCount === 'number'
+            ? usage.promptTokenCount + usage.candidatesTokenCount
+            : null;
+
+      return { parsed, tokens };
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      // Only retry on network errors or retryable status codes
+      if (attempt < MAX_RETRIES && !lastError.message.includes('Gemini API error')) {
+        continue;
+      }
+      if (attempt >= MAX_RETRIES) break;
+      throw lastError;
+    }
   }
 
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text || typeof text !== 'string') {
-    throw new Error('Unexpected Gemini response shape');
-  }
-
-  const parsed = parseGeminiJson(text);
-
-  const usage = data?.usageMetadata;
-  const tokens =
-    typeof usage?.totalTokenCount === 'number'
-      ? usage.totalTokenCount
-      : typeof usage?.promptTokenCount === 'number' &&
-          typeof usage?.candidatesTokenCount === 'number'
-        ? usage.promptTokenCount + usage.candidatesTokenCount
-        : null;
-
-  return { parsed, tokens };
+  throw lastError ?? new Error('Gemini call failed after retries');
 }
 
 function userContentFor(p: ReturnType<typeof loadPlan>) {

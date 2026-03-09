@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export const metadata: Metadata = {
-  title: 'Marketing Tool — Vibe Marketing Brief Generator',
+  title: 'LaunchKit — AI Marketing Plans',
   description:
     'Paste any App Store, Google Play, or website URL and get a complete marketing brief with launch-ready copy drafts.',
 };
@@ -21,7 +21,7 @@ export default function MarketingLayout({
             href="/"
             className="flex items-center gap-2 text-lg font-bold text-slate-900 hover:text-indigo-600 transition-colors dark:text-white dark:hover:text-indigo-400"
           >
-            <span>Marketing Tool</span>
+            <span>LaunchKit</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4 text-sm">
             <Link

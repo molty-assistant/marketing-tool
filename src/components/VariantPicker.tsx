@@ -104,7 +104,7 @@ export default function VariantPicker({ text, appContext, onPick }: VariantPicke
         {variants && !loading && (
           <button
             onClick={handleGenerate}
-            className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
+            className="text-xs bg-muted hover:bg-muted/50 text-muted-foreground px-3 py-1.5 rounded-lg transition-colors"
           >
             Regenerate
           </button>
@@ -113,7 +113,7 @@ export default function VariantPicker({ text, appContext, onPick }: VariantPicke
         {(variants || error) && !loading && (
           <button
             onClick={dismiss}
-            className="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-4"
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
           >
             Cancel
           </button>
@@ -131,7 +131,7 @@ export default function VariantPicker({ text, appContext, onPick }: VariantPicke
           {variants.slice(0, 6).map((variant, idx) => (
             <div
               key={idx}
-              className="bg-slate-900/50 border border-slate-700/30 rounded-xl p-4 flex flex-col gap-3"
+              className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-semibold tracking-wide bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full">
@@ -139,7 +139,7 @@ export default function VariantPicker({ text, appContext, onPick }: VariantPicke
                 </span>
               </div>
 
-              <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">
+              <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                 {variant}
               </div>
 

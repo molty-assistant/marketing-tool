@@ -7,6 +7,7 @@ import { DraftSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
 import { usePlan } from '@/hooks/usePlan';
 import DismissableTip from '@/components/DismissableTip';
+import { Button } from '@/components/ui/button';
 
 type Competitor = {
   name: string;
@@ -32,19 +33,19 @@ type ContentRow = {
 };
 
 function CellList({ items, kind }: { items: string[]; kind: 'good' | 'bad' | 'neutral' }) {
-  if (!items?.length) return <span className="text-slate-500 text-sm">—</span>;
+  if (!items?.length) return <span className="text-muted-foreground text-sm">—</span>;
 
   const icon = kind === 'bad' ? '❌' : kind === 'good' ? '✅' : '•';
-  const color = kind === 'bad' ? 'text-red-200' : kind === 'good' ? 'text-emerald-200' : 'text-slate-200';
+  const color = kind === 'bad' ? 'text-red-200' : kind === 'good' ? 'text-emerald-200' : 'text-muted-foreground';
 
   return (
     <ul className={`space-y-1.5 text-sm ${color}`}>
       {items.slice(0, 8).map((it, i) => (
         <li key={`${it}-${i}`} className="flex items-start gap-2">
-          <span className={kind === 'bad' ? 'text-red-400 mt-0.5 shrink-0' : kind === 'good' ? 'text-emerald-400 mt-0.5 shrink-0' : 'text-slate-400 mt-0.5 shrink-0'}>
+          <span className={kind === 'bad' ? 'text-red-400 mt-0.5 shrink-0' : kind === 'good' ? 'text-emerald-400 mt-0.5 shrink-0' : 'text-muted-foreground mt-0.5 shrink-0'}>
             {icon}
           </span>
-          <span className="text-slate-200">{it}</span>
+          <span className="text-muted-foreground">{it}</span>
         </li>
       ))}
     </ul>
@@ -59,7 +60,7 @@ function PricingBadge({ text, highlight }: { text: string; highlight?: 'good' | 
   if (highlight === 'bad') {
     return <span className={`${base} bg-red-950/30 border-red-900/60 text-red-200`}>{text}</span>;
   }
-  return <span className={`${base} bg-slate-900/40 border-slate-700/50 text-slate-200`}>{text}</span>;
+  return <span className={`${base} bg-card border-border text-muted-foreground`}>{text}</span>;
 }
 
 function isFreeish(pricing?: string) {
@@ -70,12 +71,12 @@ function isFreeish(pricing?: string) {
 function CompetitiveSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-7 w-60 bg-slate-800 rounded mb-3" />
-      <div className="h-4 w-full bg-slate-900/50 rounded mb-6" />
-      <div className="border border-slate-700/50 rounded-2xl overflow-hidden">
-        <div className="h-12 bg-slate-800/40" />
+      <div className="h-7 w-60 bg-muted rounded mb-3" />
+      <div className="h-4 w-full bg-muted rounded mb-6" />
+      <div className="border border-border rounded-2xl overflow-hidden">
+        <div className="h-12 bg-muted/40" />
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-16 bg-slate-900/30 border-t border-slate-800/60" />
+          <div key={i} className="h-16 bg-card border-t border-border" />
         ))}
       </div>
     </div>
@@ -184,7 +185,7 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">← Start a new analysis</Link>
       </div>
     );
@@ -198,9 +199,9 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
       <div className="flex items-start justify-between gap-4 flex-wrap mb-8">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-white break-words">🏆 Competitors</h1>
-          <p className="text-slate-400 break-words">
-            Side-by-side comparison for <span className="text-slate-200 font-semibold">{plan.config.app_name}</span>.
+          <h1 className="text-2xl font-bold text-foreground break-words">🏆 Competitors</h1>
+          <p className="text-muted-foreground break-words">
+            Side-by-side comparison for <span className="text-muted-foreground font-semibold">{plan.config.app_name}</span>.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -217,7 +218,7 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
                 setCompetitive(null);
                 persistCached(null);
               }}
-              className="bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/50 text-slate-200 text-sm px-4 py-2.5 rounded-xl transition-colors"
+              className="bg-card hover:bg-muted/50 border border-border text-muted-foreground text-sm px-4 py-2.5 rounded-xl transition-colors"
             >
               Clear
             </button>
@@ -234,15 +235,15 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
       {(loadingCompetitive || loadingSaved) && !hasResults && <CompetitiveSkeleton />}
 
       {hasResults && (
-        <section className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6">
+        <section className="bg-card border border-border rounded-2xl p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-white">Comparison table</h2>
-              <p className="text-sm text-slate-500">
+              <h2 className="text-lg font-semibold text-foreground">Comparison table</h2>
+              <p className="text-sm text-muted-foreground">
                 Scroll horizontally on mobile. Strengths are highlighted in green; weaknesses in red.
               </p>
             </div>
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-muted-foreground">
               Showing {Math.min(cols.length, 6)} competitor{cols.length === 1 ? '' : 's'}
             </div>
           </div>
@@ -251,14 +252,14 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
             <table className="min-w-[900px] w-full border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <th className="sticky left-0 z-10 bg-slate-900/80 backdrop-blur border border-slate-700/60 rounded-tl-xl px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">
+                  <th className="sticky left-0 z-10 bg-muted backdrop-blur border border-border rounded-tl-xl px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Feature / Aspect
                   </th>
-                  <th className="bg-slate-900/40 border border-slate-700/60 px-4 py-3 text-left text-xs font-semibold text-white">
-                    {plan.config.app_name} <span className="text-slate-400 font-normal">(Our App)</span>
+                  <th className="bg-card border border-border px-4 py-3 text-left text-xs font-semibold text-foreground">
+                    {plan.config.app_name} <span className="text-muted-foreground font-normal">(Our App)</span>
                   </th>
                   {cols.map((c, idx) => (
-                    <th key={`${c.name}-${idx}`} className="bg-slate-900/40 border border-slate-700/60 px-4 py-3 text-left text-xs font-semibold text-white">
+                    <th key={`${c.name}-${idx}`} className="bg-card border border-border px-4 py-3 text-left text-xs font-semibold text-foreground">
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
                           <div className="truncate">{c.name}</div>
@@ -277,28 +278,28 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
               <tbody>
                 {/* Pricing */}
                 <tr>
-                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                  <td className="sticky left-0 z-10 bg-muted backdrop-blur border border-border px-4 py-4 text-sm font-semibold text-muted-foreground">
                     Pricing
                   </td>
-                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                  <td className="border border-border px-4 py-4 align-top">
                     {ourPricing ? (
                       <PricingBadge
                         text={ourPricing}
                         highlight={ourFree && !anyCompetitorFree ? 'good' : !ourFree && anyCompetitorFree ? 'bad' : undefined}
                       />
                     ) : (
-                      <span className="text-slate-500 text-sm">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </td>
                   {cols.map((c, idx) => (
-                    <td key={`pricing-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                    <td key={`pricing-${idx}`} className="border border-border px-4 py-4 align-top">
                       {c.pricing ? (
                         <PricingBadge
                           text={c.pricing}
                           highlight={!ourFree && isFreeish(c.pricing) ? 'good' : ourFree && !isFreeish(c.pricing) ? 'bad' : undefined}
                         />
                       ) : (
-                        <span className="text-slate-500 text-sm">—</span>
+                        <span className="text-muted-foreground text-sm">—</span>
                       )}
                     </td>
                   ))}
@@ -306,38 +307,38 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
                 {/* Rating */}
                 <tr>
-                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                  <td className="sticky left-0 z-10 bg-muted backdrop-blur border border-border px-4 py-4 text-sm font-semibold text-muted-foreground">
                     Rating
                   </td>
-                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                  <td className="border border-border px-4 py-4 align-top">
                     {ourRating !== null ? (
-                      <div className="text-sm text-slate-200">
+                      <div className="text-sm text-muted-foreground">
                         <span className="text-amber-300">★</span> {ourRating.toFixed(1)}
                         {typeof plan.scraped.ratingCount === 'number' && (
-                          <span className="text-slate-500 text-xs ml-2">({plan.scraped.ratingCount.toLocaleString()} ratings)</span>
+                          <span className="text-muted-foreground text-xs ml-2">({plan.scraped.ratingCount.toLocaleString()} ratings)</span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-slate-500 text-sm">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </td>
                   {cols.map((_, idx) => (
-                    <td key={`rating-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
-                      <span className="text-slate-500 text-sm">—</span>
+                    <td key={`rating-${idx}`} className="border border-border px-4 py-4 align-top">
+                      <span className="text-muted-foreground text-sm">—</span>
                     </td>
                   ))}
                 </tr>
 
                 {/* Key Features */}
                 <tr>
-                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                  <td className="sticky left-0 z-10 bg-muted backdrop-blur border border-border px-4 py-4 text-sm font-semibold text-muted-foreground">
                     Key Features
                   </td>
-                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                  <td className="border border-border px-4 py-4 align-top">
                     <CellList items={ourFeatures} kind="good" />
                   </td>
                   {cols.map((c, idx) => (
-                    <td key={`features-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                    <td key={`features-${idx}`} className="border border-border px-4 py-4 align-top">
                       <CellList items={c.keyMessaging || (c.positioning ? [c.positioning] : [])} kind="good" />
                     </td>
                   ))}
@@ -345,14 +346,14 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
                 {/* Strengths */}
                 <tr>
-                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 px-4 py-4 text-sm font-semibold text-slate-200">
+                  <td className="sticky left-0 z-10 bg-muted backdrop-blur border border-border px-4 py-4 text-sm font-semibold text-muted-foreground">
                     Strengths
                   </td>
-                  <td className="border border-slate-800/60 px-4 py-4 align-top">
+                  <td className="border border-border px-4 py-4 align-top">
                     <CellList items={plan.config.differentiators || []} kind="good" />
                   </td>
                   {cols.map((c, idx) => (
-                    <td key={`strengths-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                    <td key={`strengths-${idx}`} className="border border-border px-4 py-4 align-top">
                       <CellList items={c.strengths || []} kind="good" />
                     </td>
                   ))}
@@ -360,14 +361,14 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
                 {/* Weaknesses */}
                 <tr>
-                  <td className="sticky left-0 z-10 bg-slate-950/60 backdrop-blur border border-slate-800/60 rounded-bl-xl px-4 py-4 text-sm font-semibold text-slate-200">
+                  <td className="sticky left-0 z-10 bg-muted backdrop-blur border border-border rounded-bl-xl px-4 py-4 text-sm font-semibold text-muted-foreground">
                     Weaknesses
                   </td>
-                  <td className="border border-slate-800/60 px-4 py-4 align-top">
-                    <span className="text-slate-500 text-sm">—</span>
+                  <td className="border border-border px-4 py-4 align-top">
+                    <span className="text-muted-foreground text-sm">—</span>
                   </td>
                   {cols.map((c, idx) => (
-                    <td key={`weaknesses-${idx}`} className="border border-slate-800/60 px-4 py-4 align-top">
+                    <td key={`weaknesses-${idx}`} className="border border-border px-4 py-4 align-top">
                       <CellList items={c.weaknesses || []} kind="bad" />
                     </td>
                   ))}
@@ -380,11 +381,11 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
           {(competitive?.opportunities?.length || competitive?.gaps?.length) ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
               {competitive?.opportunities?.length ? (
-                <div className="bg-slate-900/40 border border-indigo-900/40 rounded-2xl p-4">
+                <div className="bg-card border border-indigo-900/40 rounded-2xl p-4">
                   <div className="text-sm font-semibold text-indigo-200 mb-2">💡 Opportunities</div>
                   <ul className="space-y-2">
                     {competitive.opportunities.slice(0, 8).map((o, i) => (
-                      <li key={`${o}-${i}`} className="text-sm text-slate-200 flex items-start gap-2">
+                      <li key={`${o}-${i}`} className="text-sm text-muted-foreground flex items-start gap-2">
                         <span className="text-indigo-400 mt-0.5 shrink-0">→</span>
                         <span>{o}</span>
                       </li>
@@ -394,11 +395,11 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
               ) : null}
 
               {competitive?.gaps?.length ? (
-                <div className="bg-slate-900/40 border border-blue-900/40 rounded-2xl p-4">
+                <div className="bg-card border border-blue-900/40 rounded-2xl p-4">
                   <div className="text-sm font-semibold text-blue-200 mb-2">🔍 Gaps</div>
                   <ul className="space-y-2">
                     {competitive.gaps.slice(0, 8).map((g, i) => (
-                      <li key={`${g}-${i}`} className="text-sm text-slate-200 flex items-start gap-2">
+                      <li key={`${g}-${i}`} className="text-sm text-muted-foreground flex items-start gap-2">
                         <span className="text-blue-400 mt-0.5 shrink-0">◇</span>
                         <span>{g}</span>
                       </li>
@@ -412,9 +413,9 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
       )}
 
       {!hasResults && !loadingCompetitive && !loadingSaved && (
-        <div className="text-center py-14 text-slate-500">
+        <div className="text-center py-14 text-muted-foreground">
           <div className="text-4xl mb-3">🏆</div>
-          <p className="text-sm">No competitor comparison yet. Click <span className="text-slate-200 font-medium">Analyze</span> to generate one.</p>
+          <p className="text-sm">No competitor comparison yet. Click <span className="text-muted-foreground font-medium">Analyze</span> to generate one.</p>
         </div>
       )}
 
@@ -422,7 +423,7 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
         <div className="inline-flex gap-3">
           <a
             href={`/plan/${id}`}
-            className="bg-slate-800 hover:bg-slate-700 text-white text-sm px-5 py-2.5 rounded-lg transition-colors"
+            className="bg-muted hover:bg-muted text-foreground text-sm px-5 py-2.5 rounded-lg transition-colors"
           >
             ← Back to Plan
           </a>

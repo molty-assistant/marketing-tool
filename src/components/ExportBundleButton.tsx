@@ -113,10 +113,10 @@ export default function ExportBundleButton({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-slate-900 border-slate-700 sm:max-w-2xl" showCloseButton={!exporting}>
+      <DialogContent className="bg-card border-border sm:max-w-2xl" showCloseButton={!exporting}>
         <DialogHeader>
-          <DialogTitle className="text-white">Download Full Pack</DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogTitle className="text-foreground">Download Full Pack</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Includes your brief, tone variants, translations, and assets (PNG).
           </DialogDescription>
         </DialogHeader>
@@ -126,8 +126,8 @@ export default function ExportBundleButton({
           <div>
             <div className="flex items-center justify-between gap-3 mb-3">
               <div>
-                <div className="text-sm font-semibold text-white">Tones</div>
-                <div className="text-xs text-slate-400">Default: all</div>
+                <div className="text-sm font-semibold text-foreground">Tones</div>
+                <div className="text-xs text-muted-foreground">Default: all</div>
               </div>
               <Button
                 type="button"
@@ -147,7 +147,7 @@ export default function ExportBundleButton({
               {TONES.map((tone) => (
                 <label
                   key={tone}
-                  className="flex items-center gap-2 bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/60 rounded-lg px-3 py-2 cursor-pointer"
+                  className="flex items-center gap-2 bg-card hover:bg-muted border border-border rounded-lg px-3 py-2 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -155,7 +155,7 @@ export default function ExportBundleButton({
                     onChange={() => toggleTone(tone)}
                     disabled={exporting}
                   />
-                  <span className="text-sm text-slate-200 capitalize">{tone}</span>
+                  <span className="text-sm text-muted-foreground capitalize">{tone}</span>
                 </label>
               ))}
             </div>
@@ -164,15 +164,15 @@ export default function ExportBundleButton({
           {/* Languages */}
           <div>
             <div className="mb-3">
-              <div className="text-sm font-semibold text-white">Translations</div>
-              <div className="text-xs text-slate-400">Default: none</div>
+              <div className="text-sm font-semibold text-foreground">Translations</div>
+              <div className="text-xs text-muted-foreground">Default: none</div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {LANGUAGES.map((lang) => (
                 <label
                   key={lang.code}
-                  className="flex items-center gap-2 bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/60 rounded-lg px-3 py-2 cursor-pointer"
+                  className="flex items-center gap-2 bg-card hover:bg-muted border border-border rounded-lg px-3 py-2 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -180,17 +180,17 @@ export default function ExportBundleButton({
                     onChange={() => toggleLanguage(lang.code)}
                     disabled={exporting}
                   />
-                  <span className="text-sm text-slate-200">{lang.label}</span>
+                  <span className="text-sm text-muted-foreground">{lang.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
           {/* Assets */}
-          <div className="flex items-center justify-between gap-3 bg-slate-800/30 border border-slate-700/60 rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between gap-3 bg-card border border-border rounded-xl px-4 py-3">
             <div>
-              <div className="text-sm font-semibold text-white">Include assets</div>
-              <div className="text-xs text-slate-400">Generates PNG visual assets (default: off)</div>
+              <div className="text-sm font-semibold text-foreground">Include assets</div>
+              <div className="text-xs text-muted-foreground">Generates PNG visual assets (default: off)</div>
             </div>
             <label className="inline-flex items-center gap-2">
               <input
@@ -199,7 +199,7 @@ export default function ExportBundleButton({
                 onChange={() => setIncludeAssets((v) => !v)}
                 disabled={exporting}
               />
-              <span className="text-sm text-slate-200">Yes</span>
+              <span className="text-sm text-muted-foreground">Yes</span>
             </label>
           </div>
 
@@ -211,7 +211,7 @@ export default function ExportBundleButton({
         </div>
 
         <DialogFooter className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-muted-foreground">
             {exporting ? (
               <span className="inline-flex items-center gap-2">
                 <span className="inline-block h-4 w-4 rounded-full border-2 border-indigo-500/40 border-t-indigo-400 animate-spin" />

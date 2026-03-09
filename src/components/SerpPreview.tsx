@@ -76,13 +76,13 @@ export function SerpPreview({
     <div className="space-y-6">
       {/* Editable fields */}
       {editable && (
-        <div className="space-y-4 bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+        <div className="space-y-4 bg-card border border-border rounded-xl p-5">
           <div>
             <Label className="block mb-2">
               Title
               <span
                 className={`ml-2 text-xs ${
-                  titleLength > 60 ? 'text-red-400' : 'text-slate-500'
+                  titleLength > 60 ? 'text-red-400' : 'text-muted-foreground'
                 }`}
               >
                 {titleLength} / 60 chars
@@ -93,7 +93,7 @@ export function SerpPreview({
               type="text"
               value={localTitle}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="bg-slate-900 border-slate-600 rounded-lg px-4"
+              className="bg-muted border-border rounded-lg px-4"
               placeholder="Enter page title..."
             />
           </div>
@@ -106,7 +106,7 @@ export function SerpPreview({
               type="text"
               value={localUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
-              className="bg-slate-900 border-slate-600 rounded-lg px-4"
+              className="bg-muted border-border rounded-lg px-4"
               placeholder="https://example.com"
             />
           </div>
@@ -116,7 +116,7 @@ export function SerpPreview({
               Description
               <span
                 className={`ml-2 text-xs ${
-                  descriptionLength > 160 ? 'text-red-400' : 'text-slate-500'
+                  descriptionLength > 160 ? 'text-red-400' : 'text-muted-foreground'
                 }`}
               >
                 {descriptionLength} / 160 chars
@@ -127,7 +127,7 @@ export function SerpPreview({
               value={localDescription}
               onChange={(e) => handleDescriptionChange(e.target.value)}
               rows={3}
-              className="bg-slate-900 border-slate-600 rounded-lg px-4 resize-none"
+              className="bg-muted border-border rounded-lg px-4 resize-none"
               placeholder="Enter meta description..."
             />
           </div>
@@ -190,18 +190,18 @@ export function SerpPreview({
       {!editable && (
         <div className="flex gap-4 text-sm">
           <div>
-            <span className="text-slate-400">Title: </span>
+            <span className="text-muted-foreground">Title: </span>
             <span
-              className={titleLength > 60 ? 'text-red-400 font-medium' : 'text-slate-300'}
+              className={titleLength > 60 ? 'text-red-400 font-medium' : 'text-muted-foreground'}
             >
               {titleLength} / 60
             </span>
           </div>
           <div>
-            <span className="text-slate-400">Description: </span>
+            <span className="text-muted-foreground">Description: </span>
             <span
               className={
-                descriptionLength > 160 ? 'text-red-400 font-medium' : 'text-slate-300'
+                descriptionLength > 160 ? 'text-red-400 font-medium' : 'text-muted-foreground'
               }
             >
               {descriptionLength} / 160

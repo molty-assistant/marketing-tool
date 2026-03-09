@@ -6,6 +6,7 @@ import type { MarketingPlan } from '@/lib/types';
 import { DraftSkeleton } from '@/components/Skeleton';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { Button } from '@/components/ui/button';
 
 type TranslationSection =
   | 'app_store_description'
@@ -276,7 +277,7 @@ export default function TranslatePage({
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </Link>
@@ -288,7 +289,7 @@ export default function TranslatePage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-muted-foreground bg-card border border-border rounded-xl px-4 py-3">
         Translate your App Store copy into 10 languages — ready to paste directly into your store listing without any editing.
       </div>
 
@@ -296,37 +297,37 @@ export default function TranslatePage({
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold text-white">🌍 Translate / Localise</h1>
+            <h1 className="text-2xl font-bold text-foreground">🌍 Translate / Localise</h1>
             {hasResults && isCached && (
-              <span className="text-xs text-slate-500">Cached · Generate to refresh</span>
+              <span className="text-xs text-muted-foreground">Cached · Generate to refresh</span>
             )}
           </div>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             {plan.config.app_name} — Generate localised app store copy in multiple languages
           </p>
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          <button
+          <Button
             onClick={handleGenerate}
             disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="text-sm px-5 py-2.5 rounded-xl"
           >
             {loading ? 'Generating…' : '✨ Generate Translations'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <h2 className="text-sm font-semibold text-white mb-3">Languages</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Languages</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {LANGUAGE_OPTIONS.map((l) => (
                 <label
                   key={l.code}
-                  className="flex items-start gap-3 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/40 rounded-xl px-4 py-3 cursor-pointer"
+                  className="flex items-start gap-3 bg-card hover:bg-muted/50 border border-border rounded-xl px-4 py-3 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -340,10 +341,10 @@ export default function TranslatePage({
                     className="mt-1"
                   />
                   <div>
-                    <div className="text-sm text-white">
+                    <div className="text-sm text-foreground">
                       {l.flag} {l.label}
                     </div>
-                    {l.help && <div className="text-xs text-slate-500">{l.help}</div>}
+                    {l.help && <div className="text-xs text-muted-foreground">{l.help}</div>}
                   </div>
                 </label>
               ))}
@@ -351,12 +352,12 @@ export default function TranslatePage({
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-white mb-3">Sections</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Sections</h2>
             <div className="space-y-2">
               {SECTION_OPTIONS.map((s) => (
                 <label
                   key={s.key}
-                  className="flex items-start gap-3 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/40 rounded-xl px-4 py-3 cursor-pointer"
+                  className="flex items-start gap-3 bg-card hover:bg-muted/50 border border-border rounded-xl px-4 py-3 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -370,14 +371,14 @@ export default function TranslatePage({
                     className="mt-1"
                   />
                   <div>
-                    <div className="text-sm text-white">{s.label}</div>
-                    <div className="text-xs text-slate-500">{s.help}</div>
+                    <div className="text-sm text-foreground">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">{s.help}</div>
                   </div>
                 </label>
               ))}
             </div>
 
-            <div className="mt-4 text-xs text-slate-500">
+            <div className="mt-4 text-xs text-muted-foreground">
               Tip: Choose just a couple of languages first to keep generation fast.
             </div>
           </div>
@@ -402,8 +403,8 @@ export default function TranslatePage({
                   onClick={() => setActiveLang(lang)}
                   className={`text-sm border rounded-xl px-3 py-2 transition-colors ${
                     activeLang === lang
-                      ? 'bg-indigo-600/20 border-indigo-500/50 text-white'
-                      : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40 text-slate-200'
+                      ? 'bg-indigo-600/20 border-indigo-500/50 text-foreground'
+                      : 'bg-card hover:bg-muted/50 border-border text-muted-foreground'
                   }`}
                 >
                   {languageToTitle(lang)}
@@ -411,14 +412,15 @@ export default function TranslatePage({
               ))}
             </div>
 
-            <button
+            <Button
               onClick={() => handleCopyAllForLanguage(activeLang)}
               disabled={!translations[activeLang] || Object.keys(translations[activeLang] || {}).length === 0}
-              className="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-white text-sm px-4 py-2.5 rounded-xl transition-colors"
+              variant="secondary"
+              className="text-sm px-4 py-2.5 rounded-xl"
               title={`Copy all sections for ${activeLang}`}
             >
               {copiedAll ? `✓ Copied!` : `📋 Copy All for ${languageToTitle(activeLang)}`}
-            </button>
+            </Button>
           </div>
 
           {SECTION_OPTIONS.map((s) => {
@@ -430,27 +432,29 @@ export default function TranslatePage({
                 key={s.key}
                 className={`rounded-2xl overflow-hidden border ${
                   hasValue
-                    ? 'bg-slate-800/30 border-slate-700/60'
-                    : 'bg-slate-900/20 border-slate-700/30'
+                    ? 'bg-card border-border'
+                    : 'bg-muted/50 border-border'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3 p-4 border-b border-slate-700/40">
+                <div className="flex items-center justify-between gap-3 p-4 border-b border-border">
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white">{s.label}</div>
-                    <div className="text-xs text-slate-500">{s.help}</div>
+                    <div className="text-sm font-semibold text-foreground">{s.label}</div>
+                    <div className="text-xs text-muted-foreground">{s.help}</div>
                   </div>
 
-                  <button
+                  <Button
                     onClick={async () => {
                       if (!hasValue) return;
                       await navigator.clipboard.writeText(value);
                     }}
                     disabled={!hasValue}
-                    className="text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 disabled:cursor-not-allowed text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs px-3 py-1.5 rounded-lg"
                     title="Copy section"
                   >
                     📋 Copy
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="p-4">
@@ -470,7 +474,7 @@ export default function TranslatePage({
                         ? 'Not generated yet…'
                         : 'Not requested…'
                     }
-                    className="w-full min-h-[140px] bg-slate-950/40 border border-slate-700/50 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full min-h-[140px] bg-muted/50 border border-border rounded-xl p-3 text-sm text-muted-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   />
                 </div>
               </div>
@@ -480,12 +484,12 @@ export default function TranslatePage({
       )}
 
       {!hasResults && (
-        <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+        <div className="text-center text-sm text-muted-foreground mt-10 mb-6">
           Select languages + sections, then generate.
         </div>
       )}
 
-      <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+      <div className="text-center text-sm text-muted-foreground mt-10 mb-6">
         Localised copy is a starting point — review for accuracy before publishing.
       </div>
     </div>

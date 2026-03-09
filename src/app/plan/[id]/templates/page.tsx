@@ -5,6 +5,7 @@ import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { PageSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
+import { Button } from '@/components/ui/button';
 
 type Template = {
   id:
@@ -129,7 +130,7 @@ function fillTemplate(template: string, plan: MarketingPlan | null) {
 
 function CharBadge({ value }: { value: number }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800/50 px-2 py-1 text-xs text-slate-300">
+    <span className="inline-flex items-center rounded-full border border-border bg-card px-2 py-1 text-xs text-muted-foreground">
       {value.toLocaleString()} chars
     </span>
   );
@@ -313,15 +314,15 @@ export default function TemplatesPage({
   return (
     <div className="px-4 pb-8">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+        <div className="mb-8 text-sm text-muted-foreground bg-card border border-border rounded-xl px-4 py-3">
           Ready-to-copy marketing templates pre-filled with your app&apos;s details — App Store blurbs, social bios, Product Hunt taglines, and more.
         </div>
 
         <div className="mb-8">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold text-white mb-2">Templates</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Templates</h1>
             {cachedPopulated && isCached && (
-              <span className="text-xs text-slate-500">Cached</span>
+              <span className="text-xs text-muted-foreground">Cached</span>
             )}
             <button
               onClick={handleSaveChanges}
@@ -331,7 +332,7 @@ export default function TemplatesPage({
               {saving ? 'Saving…' : 'Save changes'}
             </button>
           </div>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             Browse ready-to-use marketing copy templates. We&apos;ll auto-fill placeholders
             from your plan.
           </p>
@@ -352,15 +353,15 @@ export default function TemplatesPage({
             return (
               <div
                 key={t.id}
-                className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6"
+                className="bg-card border border-border rounded-2xl p-6"
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-lg font-semibold text-white">{t.name}</h2>
+                      <h2 className="text-lg font-semibold text-foreground">{t.name}</h2>
                       <CharBadge value={t.charLimit} />
                     </div>
-                    <p className="text-sm text-slate-400">{t.description}</p>
+                    <p className="text-sm text-muted-foreground">{t.description}</p>
                   </div>
 
                   <button
@@ -372,7 +373,7 @@ export default function TemplatesPage({
                 </div>
 
                 <div className="mb-3">
-                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                     <span>
                       {charCount.toLocaleString()} / {t.charLimit.toLocaleString()} chars
                     </span>
@@ -381,16 +382,16 @@ export default function TemplatesPage({
                     )}
                   </div>
 
-                  <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-2">
+                  <div className="rounded-xl border border-border bg-card p-2">
                     <textarea
                       value={current}
                       onChange={(e) => setEdited((prev) => ({ ...prev, [t.id]: e.target.value }))}
-                      className="w-full min-h-[160px] bg-transparent p-2 text-sm text-slate-200 font-sans whitespace-pre-wrap focus:outline-none"
+                      className="w-full min-h-[160px] bg-transparent p-2 text-sm text-muted-foreground font-sans whitespace-pre-wrap focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-muted-foreground">
                   Preview: {clamp(current.replace(/\s+/g, ' ').trim(), 140)}
                 </div>
               </div>

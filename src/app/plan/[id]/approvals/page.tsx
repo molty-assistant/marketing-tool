@@ -190,7 +190,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </Link>
@@ -205,8 +205,8 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">✅ Approvals</h1>
-          <p className="text-slate-400">Approve, reject, and edit content before export.</p>
+          <h1 className="text-2xl font-bold text-foreground">✅ Approvals</h1>
+          <p className="text-muted-foreground">Approve, reject, and edit content before export.</p>
         </div>
         <Button
           onClick={loadQueue}
@@ -219,59 +219,59 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
 
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
-          <div className="text-xs text-slate-400">Total</div>
-          <div className="text-2xl font-semibold text-white mt-1">{stats.total}</div>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="text-xs text-muted-foreground">Total</div>
+          <div className="text-2xl font-semibold text-foreground mt-1">{stats.total}</div>
         </div>
-        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
-          <div className="text-xs text-slate-400">Pending</div>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="text-xs text-muted-foreground">Pending</div>
           <div className="text-2xl font-semibold text-amber-200 mt-1">{stats.pending}</div>
         </div>
-        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
-          <div className="text-xs text-slate-400">Approved</div>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="text-xs text-muted-foreground">Approved</div>
           <div className="text-2xl font-semibold text-emerald-200 mt-1">{stats.approved}</div>
         </div>
-        <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4">
-          <div className="text-xs text-slate-400">Rejected</div>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="text-xs text-muted-foreground">Rejected</div>
           <div className="text-2xl font-semibold text-red-200 mt-1">{stats.rejected}</div>
         </div>
       </div>
 
       {/* Create */}
-      <div className="bg-slate-800/30 border border-slate-700/60 rounded-2xl p-6 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div>
-            <div className="text-sm font-semibold text-white">Add to approval queue</div>
-            <div className="text-xs text-slate-500">Tip: use sectionType like draft:professional, draft:bold, translation:es, etc.</div>
+            <div className="text-sm font-semibold text-foreground">Add to approval queue</div>
+            <div className="text-xs text-muted-foreground">Tip: use sectionType like draft:professional, draft:bold, translation:es, etc.</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <Label className="block text-xs text-slate-400 mb-1">Section type</Label>
+            <Label className="block text-xs text-muted-foreground mb-1">Section type</Label>
             <Input
               value={newItem.sectionType}
               onChange={(e) => setNewItem((p) => ({ ...p, sectionType: e.target.value }))}
-              className="bg-slate-950/40 border-slate-700/60 text-slate-200 focus-visible:ring-indigo-500/40"
+              className="bg-muted/50 border-border text-muted-foreground focus-visible:ring-indigo-500/40"
             />
           </div>
           <div>
-            <Label className="block text-xs text-slate-400 mb-1">Section label</Label>
+            <Label className="block text-xs text-muted-foreground mb-1">Section label</Label>
             <Input
               value={newItem.sectionLabel}
               onChange={(e) => setNewItem((p) => ({ ...p, sectionLabel: e.target.value }))}
-              className="bg-slate-950/40 border-slate-700/60 text-slate-200 focus-visible:ring-indigo-500/40"
+              className="bg-muted/50 border-border text-muted-foreground focus-visible:ring-indigo-500/40"
             />
           </div>
         </div>
 
         <div className="mt-4">
-          <Label className="block text-xs text-slate-400 mb-1">Content</Label>
+          <Label className="block text-xs text-muted-foreground mb-1">Content</Label>
           <Textarea
             value={newItem.content}
             onChange={(e) => setNewItem((p) => ({ ...p, content: e.target.value }))}
             placeholder="Paste generated content here…"
-            className="min-h-[110px] bg-slate-950/40 border-slate-700/60 p-3 text-slate-200 placeholder:text-slate-600 focus-visible:ring-indigo-500/40"
+            className="min-h-[110px] bg-muted/50 border-border p-3 text-muted-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500/40"
           />
         </div>
 
@@ -294,9 +294,9 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
       )}
 
       {loadingQueue ? (
-        <div className="text-slate-400">Loading queue…</div>
+        <div className="text-muted-foreground">Loading queue…</div>
       ) : sortedItems.length === 0 ? (
-        <div className="bg-slate-900/20 border border-slate-700/40 rounded-2xl p-8 text-center text-slate-400">
+        <div className="bg-muted/50 border border-border rounded-2xl p-8 text-center text-muted-foreground">
           No items yet. Add content above, then approve it for export.
         </div>
       ) : (
@@ -310,21 +310,21 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
             return (
               <div
                 key={item.id}
-                className="rounded-2xl overflow-hidden border bg-slate-800/30 border-slate-700/60"
+                className="rounded-2xl overflow-hidden border bg-card border-border"
               >
-                <div className="p-4 border-b border-slate-700/40 flex items-start justify-between gap-3">
+                <div className="p-4 border-b border-border flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <div className="text-sm font-semibold text-white truncate">{item.section_label}</div>
+                      <div className="text-sm font-semibold text-foreground truncate">{item.section_label}</div>
                       <span
                         className={`text-xs px-2 py-1 rounded-full border ${badgeClasses(item.status)}`}
                       >
                         {item.status}
                       </span>
-                      <span className="text-xs text-slate-500">{item.section_type}</span>
+                      <span className="text-xs text-muted-foreground">{item.section_type}</span>
                     </div>
                     {item.edited_content && (
-                      <div className="text-xs text-slate-500 mt-1">Edited version set</div>
+                      <div className="text-xs text-muted-foreground mt-1">Edited version set</div>
                     )}
                   </div>
 
@@ -355,7 +355,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
                       disabled={isBusy}
                       variant="secondary"
                       size="sm"
-                      className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
+                      className="h-auto text-muted-foreground px-3 py-1.5 rounded-lg"
                     >
                       {isEditing ? 'Close' : '✏️ Edit'}
                     </Button>
@@ -364,7 +364,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
                       disabled={isBusy}
                       variant="secondary"
                       size="sm"
-                      className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
+                      className="h-auto text-muted-foreground px-3 py-1.5 rounded-lg"
                       title="Delete"
                     >
                       🗑
@@ -378,7 +378,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
                       <Textarea
                         value={currentEditValue}
                         onChange={(e) => setEditDraft((p) => ({ ...p, [item.id]: e.target.value }))}
-                        className="min-h-[140px] bg-slate-950/40 border-slate-700/50 p-3 text-slate-200 focus-visible:ring-indigo-500/40"
+                        className="min-h-[140px] bg-muted/50 border-border p-3 text-muted-foreground focus-visible:ring-indigo-500/40"
                       />
                       <div className="flex justify-between items-center gap-3 mt-3 flex-wrap">
                         <Button
@@ -388,7 +388,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
                           }}
                           variant="secondary"
                           size="sm"
-                          className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
+                          className="h-auto text-muted-foreground px-3 py-1.5 rounded-lg"
                         >
                           📋 Copy
                         </Button>
@@ -401,7 +401,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
                             disabled={isBusy}
                             variant="secondary"
                             size="sm"
-                            className="h-auto text-slate-200 px-3 py-1.5 rounded-lg"
+                            className="h-auto text-muted-foreground px-3 py-1.5 rounded-lg"
                           >
                             Cancel
                           </Button>
@@ -417,8 +417,8 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
                       </div>
                     </>
                   ) : (
-                    <div className="text-sm text-slate-200 whitespace-pre-wrap break-words">
-                      {displayValue || <span className="text-slate-500">(Empty)</span>}
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+                      {displayValue || <span className="text-muted-foreground">(Empty)</span>}
                     </div>
                   )}
                 </div>
@@ -428,7 +428,7 @@ export default function ApprovalsPage({ params }: { params: Promise<{ id: string
         </div>
       )}
 
-      <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+      <div className="text-center text-sm text-muted-foreground mt-10 mb-6">
         Export only includes approved items (plus brief/assets).
       </div>
     </div>

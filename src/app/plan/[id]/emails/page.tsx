@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { MarketingPlan } from '@/lib/types';
 import ErrorRetry from '@/components/ErrorRetry';
 import { useToast } from '@/components/Toast';
+import { Button } from '@/components/ui/button';
 
 type SequenceType = 'welcome' | 'launch' | 'nurture';
 
@@ -147,7 +148,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
   if (planLoading) {
     return (
       <div className="max-w-5xl mx-auto py-20">
-        <div className="text-slate-400">Loading…</div>
+        <div className="text-muted-foreground">Loading…</div>
       </div>
     );
   }
@@ -163,7 +164,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </Link>
@@ -175,33 +176,33 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-muted-foreground bg-card border border-border rounded-xl px-4 py-3">
         Generate a welcome email sequence, launch announcement series, or nurture drip campaign — tailored to your app&apos;s tone and audience.
       </div>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">✉️ Email Sequence</h1>
-          <p className="text-slate-400">{plan.config.app_name} — Generate a direct-response sequence</p>
+          <h1 className="text-2xl font-bold text-foreground">✉️ Email Sequence</h1>
+          <p className="text-muted-foreground">{plan.config.app_name} — Generate a direct-response sequence</p>
         </div>
         <div className="flex items-center gap-3">
           {data && isCached && (
-            <span className="text-xs text-slate-500">Cached · ↻ Generate to refresh</span>
+            <span className="text-xs text-muted-foreground">Cached · ↻ Generate to refresh</span>
           )}
-          <button
+          <Button
             onClick={handleGenerate}
             disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="text-sm"
           >
             {loading ? 'Generating…' : '✨ Generate'}
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <div className="text-sm font-semibold text-white mb-2">Sequence type</div>
+            <div className="text-sm font-semibold text-foreground mb-2">Sequence type</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {SEQUENCE_OPTIONS.map((opt) => (
                 <button
@@ -210,18 +211,18 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
                   className={`text-left border rounded-xl px-4 py-3 transition-colors ${
                     sequenceType === opt.value
                       ? 'bg-indigo-600/20 border-indigo-500/50'
-                      : 'bg-slate-900/40 hover:bg-slate-900/60 border-slate-700/40'
+                      : 'bg-card hover:bg-muted/50 border-border'
                   }`}
                 >
-                  <div className="text-sm text-white">{opt.label}</div>
-                  <div className="text-xs text-slate-500">{opt.help}</div>
+                  <div className="text-sm text-foreground">{opt.label}</div>
+                  <div className="text-xs text-muted-foreground">{opt.help}</div>
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <div className="text-sm font-semibold text-white mb-2">Email count</div>
+            <div className="text-sm font-semibold text-foreground mb-2">Email count</div>
             <div className="flex items-center gap-3">
               <input
                 type="number"
@@ -229,15 +230,15 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
                 max={20}
                 value={emailCount}
                 onChange={(e) => setEmailCount(Math.max(1, Math.min(20, Number(e.target.value) || 7)))}
-                className="w-28 bg-slate-950/40 border border-slate-700/50 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="w-28 bg-muted border border-border rounded-xl px-3 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               />
-              <div className="text-xs text-slate-500">Default is 7 (welcome progression).</div>
+              <div className="text-xs text-muted-foreground">Default is 7 (welcome progression).</div>
             </div>
           </div>
         </div>
 
         {data?.metadata?.tokens != null && (
-          <div className="mt-4 text-xs text-slate-500">
+          <div className="mt-4 text-xs text-muted-foreground">
             Model: {data.metadata.model || 'gemini'} · Tokens: {String(data.metadata.tokens)}
           </div>
         )}
@@ -250,14 +251,14 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
       )}
 
       {!data && (
-        <div className="text-slate-500 text-sm">Click “Generate” to create your sequence.</div>
+        <div className="text-muted-foreground text-sm">Click &quot;Generate&quot; to create your sequence.</div>
       )}
 
       {data && (
         <div className="space-y-4">
-          <div className="bg-slate-900/20 border border-slate-700/30 rounded-2xl p-4">
-            <div className="text-sm font-semibold text-white">{data.sequence.type.toUpperCase()} sequence</div>
-            <div className="text-xs text-slate-500 mt-1">{data.sequence.description}</div>
+          <div className="bg-muted border border-border rounded-2xl p-4">
+            <div className="text-sm font-semibold text-foreground">{data.sequence.type.toUpperCase()} sequence</div>
+            <div className="text-xs text-muted-foreground mt-1">{data.sequence.description}</div>
           </div>
 
           {emails.map((email) => {
@@ -268,67 +269,69 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
             return (
               <div
                 key={email.number}
-                className="rounded-2xl overflow-hidden border bg-slate-800/30 border-slate-700/60"
+                className="rounded-2xl overflow-hidden border bg-card border-border"
               >
                 <button
                   onClick={() => setOpen((prev) => ({ ...prev, [email.number]: !prev[email.number] }))}
-                  className="w-full text-left p-4 flex items-center justify-between gap-4 hover:bg-slate-800/50 transition-colors"
+                  className="w-full text-left p-4 flex items-center justify-between gap-4 hover:bg-muted/50 transition-colors"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">
+                    <div className="text-sm font-semibold text-foreground truncate">
                       #{email.number} · {email.subjectLine}
                     </div>
-                    <div className="text-xs text-slate-500 mt-1 truncate">
+                    <div className="text-xs text-muted-foreground mt-1 truncate">
                       {email.purpose}{email.sendDelay ? ` · ${email.sendDelay}` : ''}
                     </div>
                   </div>
-                  <div className="text-slate-400 text-sm">{isOpen ? '▾' : '▸'}</div>
+                  <div className="text-muted-foreground text-sm">{isOpen ? '▾' : '▸'}</div>
                 </button>
 
                 {isOpen && (
-                  <div className="p-4 border-t border-slate-700/40 space-y-3">
+                  <div className="p-4 border-t border-border space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="bg-slate-950/30 border border-slate-700/40 rounded-xl p-3">
-                        <div className="text-xs text-slate-500">Subject</div>
-                        <div className="text-sm text-slate-100 mt-1">{email.subjectLine}</div>
+                      <div className="bg-muted border border-border rounded-xl p-3">
+                        <div className="text-xs text-muted-foreground">Subject</div>
+                        <div className="text-sm text-foreground mt-1">{email.subjectLine}</div>
                       </div>
-                      <div className="bg-slate-950/30 border border-slate-700/40 rounded-xl p-3">
-                        <div className="text-xs text-slate-500">Preview</div>
-                        <div className="text-sm text-slate-100 mt-1">{email.previewText}</div>
+                      <div className="bg-muted border border-border rounded-xl p-3">
+                        <div className="text-xs text-muted-foreground">Preview</div>
+                        <div className="text-sm text-foreground mt-1">{email.previewText}</div>
                       </div>
                     </div>
 
-                    <div className="bg-slate-950/30 border border-slate-700/40 rounded-xl p-3">
-                      <div className="text-xs text-slate-500 mb-2">Body (Markdown)</div>
+                    <div className="bg-muted border border-border rounded-xl p-3">
+                      <div className="text-xs text-muted-foreground mb-2">Body (Markdown)</div>
                       <textarea
                         value={email.body || ''}
                         readOnly
-                        className="w-full min-h-[220px] bg-transparent text-sm text-slate-200 focus:outline-none"
+                        className="w-full min-h-[220px] bg-transparent text-sm text-muted-foreground focus:outline-none"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="bg-slate-950/30 border border-slate-700/40 rounded-xl p-3">
-                        <div className="text-xs text-slate-500">CTA text</div>
-                        <div className="text-sm text-slate-100 mt-1">{ctaText || '—'}</div>
+                      <div className="bg-muted border border-border rounded-xl p-3">
+                        <div className="text-xs text-muted-foreground">CTA text</div>
+                        <div className="text-sm text-foreground mt-1">{ctaText || '—'}</div>
                       </div>
-                      <div className="md:col-span-2 bg-slate-950/30 border border-slate-700/40 rounded-xl p-3">
-                        <div className="text-xs text-slate-500">CTA action</div>
-                        <div className="text-sm text-slate-100 mt-1">{ctaAction || '—'}</div>
+                      <div className="md:col-span-2 bg-muted border border-border rounded-xl p-3">
+                        <div className="text-xs text-muted-foreground">CTA action</div>
+                        <div className="text-sm text-foreground mt-1">{ctaAction || '—'}</div>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <button
+                      <Button
                         onClick={async () => {
                           const text = `Subject: ${email.subjectLine}\nPreview: ${email.previewText}\nSend: ${email.sendDelay || ''}\nPurpose: ${email.purpose}\n\n${email.body}\n\nCTA: ${ctaText} (${ctaAction})`;
                           await navigator.clipboard.writeText(text);
                           toastSuccess(`Copied email #${email.number}`);
                         }}
-                        className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                        variant="secondary"
+                        size="sm"
+                        className="text-xs"
                       >
                         📋 Copy
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -338,7 +341,7 @@ export default function EmailsPage({ params }: { params: Promise<{ id: string }>
         </div>
       )}
 
-      <div className="text-center text-sm text-slate-600 mt-10 mb-6">
+      <div className="text-center text-sm text-muted-foreground mt-10 mb-6">
         Sequences are drafts — review for accuracy and compliance before sending.
       </div>
     </div>

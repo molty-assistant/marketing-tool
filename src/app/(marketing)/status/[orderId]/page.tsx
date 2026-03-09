@@ -150,14 +150,20 @@ export default function StatusPage() {
                 {orderStatus?.generation?.lastError ?? 'An unexpected error occurred.'}
               </p>
               <p className="text-xs text-slate-500">
-                Please contact us and we&apos;ll issue a full refund.
+                Email us at{' '}
+                <a href="mailto:moltychief@agentmail.to" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 underline">
+                  moltychief@agentmail.to
+                </a>{' '}
+                and we&apos;ll issue a full refund.
               </p>
             </div>
           )}
 
           {!isFailed && (
             <p className="text-xs text-slate-400">
-              This page refreshes automatically. Don&apos;t close it — your PDF will be ready in 1-3 minutes.
+              This page updates automatically. Your plan is generating in the background — feel free to close this tab and check back anytime via{' '}
+              <Link href="/my-pdfs" className="underline hover:text-slate-300">My Plans</Link>.
+              Usually ready in 1-3 minutes.
             </p>
           )}
 

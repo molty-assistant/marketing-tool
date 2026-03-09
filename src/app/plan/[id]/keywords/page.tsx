@@ -48,31 +48,31 @@ function RelevanceBadge({ value }: { value: number }) {
     value >= 80
       ? 'text-blue-400'
       : value >= 50
-        ? 'text-slate-300'
-        : 'text-slate-500';
+        ? 'text-muted-foreground'
+        : 'text-muted-foreground';
   return <span className={`font-medium ${color}`}>{value}%</span>;
 }
 
 function KeywordTable({ keywords, title }: { keywords: KeywordEntry[]; title: string }) {
   if (!keywords.length) return null;
   return (
-    <Card className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-      <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
+    <Card className="rounded-xl border border-border bg-card p-6">
+      <h2 className="mb-4 text-lg font-semibold text-foreground">{title}</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-700">
-              <th className="px-3 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Keyword</th>
-              <th className="px-3 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Volume</th>
-              <th className="px-3 py-3 text-center font-medium text-slate-500 dark:text-slate-400">Difficulty</th>
-              <th className="px-3 py-3 text-center font-medium text-slate-500 dark:text-slate-400">Relevance</th>
+            <tr className="border-b border-border">
+              <th className="px-3 py-3 text-left font-medium text-muted-foreground">Keyword</th>
+              <th className="px-3 py-3 text-right font-medium text-muted-foreground">Volume</th>
+              <th className="px-3 py-3 text-center font-medium text-muted-foreground">Difficulty</th>
+              <th className="px-3 py-3 text-center font-medium text-muted-foreground">Relevance</th>
             </tr>
           </thead>
           <tbody>
             {keywords.map((kw, i) => (
-              <tr key={i} className="border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-700/50 dark:hover:bg-slate-700/30">
-                <td className="px-3 py-3 text-slate-900 dark:text-white">{kw.keyword}</td>
-                <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-300">
+              <tr key={i} className="border-b border-border transition-colors hover:bg-muted/50">
+                <td className="px-3 py-3 text-foreground">{kw.keyword}</td>
+                <td className="px-3 py-3 text-right text-muted-foreground">
                   {(kw.volume ?? 0).toLocaleString()}
                 </td>
                 <td className="px-3 py-3 text-center">
@@ -93,14 +93,14 @@ function KeywordTable({ keywords, title }: { keywords: KeywordEntry[]; title: st
 function Skeleton() {
   return (
     <div className="space-y-4 animate-pulse">
-      <Card className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-        <div className="mb-4 h-5 w-48 rounded bg-slate-200 dark:bg-slate-700" />
+      <Card className="rounded-xl border border-border bg-card p-6">
+        <div className="mb-4 h-5 w-48 rounded bg-muted" />
         {[...Array(6)].map((_, i) => (
           <div key={i} className="flex gap-4 mb-3">
-            <div className="h-4 flex-1 rounded bg-slate-200 dark:bg-slate-700" />
-            <div className="h-4 w-16 rounded bg-slate-200 dark:bg-slate-700" />
-            <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-700" />
-            <div className="h-4 w-16 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-4 flex-1 rounded bg-muted" />
+            <div className="h-4 w-16 rounded bg-muted" />
+            <div className="h-4 w-20 rounded bg-muted" />
+            <div className="h-4 w-16 rounded bg-muted" />
           </div>
         ))}
       </Card>
@@ -181,20 +181,20 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6">
-      <div className="mb-8 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700/40 dark:bg-slate-800/30 dark:text-slate-300">
+      <div className="mb-8 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           Discover high-value ASO keywords for your app — filter by search volume, difficulty score, and relevance to find the terms that will boost your store ranking.
       </div>
 
       <div className="mb-6">
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">Keyword Research</h1>
+          <h1 className="mb-2 text-2xl font-bold text-foreground">Keyword Research</h1>
           {data && isCached && (
-            <span className="text-xs text-slate-500">Cached · Re-run research to refresh</span>
+            <span className="text-xs text-muted-foreground">Cached · Re-run research to refresh</span>
           )}
         </div>
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-muted-foreground">
           Discover high-value ASO/SEO keywords for{' '}
-          <span className="font-medium text-slate-900 dark:text-white">{appName || 'your app'}</span>.
+          <span className="font-medium text-foreground">{appName || 'your app'}</span>.
         </p>
       </div>
 
@@ -203,8 +203,8 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
       ) : (
         <>
           {!data && !loading && (
-            <Card className="rounded-xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800/50">
-              <p className="mb-4 text-slate-600 dark:text-slate-400">
+            <Card className="rounded-xl border border-border bg-card p-8 text-center">
+              <p className="mb-4 text-muted-foreground">
                 Click below to research relevant keywords using AI-powered analysis.
               </p>
               <Button onClick={runResearch} className="px-6 py-3">
@@ -216,7 +216,7 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
           {loading && <Skeleton />}
 
           {error && (
-            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-500 dark:text-red-400">
+            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-400">
               {error}
             </div>
           )}
@@ -227,9 +227,9 @@ export default function KeywordsPage({ params }: { params: Promise<{ id: string 
               <KeywordTable keywords={data.longTail} title="Long-Tail Keywords" />
 
               {data.suggestions && (
-                <Card className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800/50">
-                  <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Strategy Suggestions</h2>
-                  <p className="whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-300">{data.suggestions}</p>
+                <Card className="rounded-xl border border-border bg-card p-6">
+                  <h2 className="mb-3 text-lg font-semibold text-foreground">Strategy Suggestions</h2>
+                  <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{data.suggestions}</p>
                 </Card>
               )}
 

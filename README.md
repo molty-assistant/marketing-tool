@@ -1,6 +1,6 @@
 # Marketing Tool
 
-AI-powered brief + copy generator. Paste any App Store, Google Play, or website URL and get a structured marketing brief plus launch-ready copy drafts in about 60 seconds.
+AI-assisted brief + copy workspace. Current focus: paste an App Store, Google Play, or website URL and generate a structured marketing brief plus launch-ready copy drafts for dog-fooding and manual delivery. The live commercial offer is currently service-first, not instant self-serve.
 
 ## What It Does
 

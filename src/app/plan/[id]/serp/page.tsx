@@ -110,8 +110,8 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
-        <p className="text-sm text-slate-500 mb-4">This plan may have been deleted or doesn&apos;t exist.</p>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
+        <p className="text-sm text-muted-foreground mb-4">This plan may have been deleted or doesn&apos;t exist.</p>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </Link>
@@ -121,7 +121,7 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8 text-sm text-slate-400 bg-slate-800/30 border border-slate-700/40 rounded-xl px-4 py-3">
+      <div className="mb-8 text-sm text-muted-foreground bg-card border border-border rounded-xl px-4 py-3">
         Preview how your app appears in Google search results — tweak your title and meta description to maximise click-through from organic search.
       </div>
 
@@ -135,10 +135,10 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-bold text-white break-words">SERP Preview: {plan.config.app_name}</h1>
               {isCached && (
-                <span className="text-xs text-slate-500">Cached</span>
+                <span className="text-xs text-muted-foreground">Cached</span>
               )}
             </div>
-            <p className="text-slate-400 break-words">Preview how your site appears in Google search results</p>
+            <p className="text-muted-foreground break-words">Preview how your site appears in Google search results</p>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function SerpPage({ params }: { params: Promise<{ id: string }> }
         <div className="inline-flex gap-3">
           <a
             href={`/plan/${id}`}
-            className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-5 py-2.5 rounded-lg transition-colors"
+            className="bg-muted hover:bg-muted text-foreground text-sm px-5 py-2.5 rounded-lg transition-colors"
           >
             ← Back to Plan
           </a>

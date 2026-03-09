@@ -95,7 +95,7 @@ export default function LandingPage() {
           {/* Pricing pills */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-slate-600 dark:text-slate-400">
             <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 dark:border-slate-700 dark:bg-slate-900">
-              Basic — <strong className="text-slate-900 dark:text-white">£39.99</strong>
+              Basic — <strong className="text-slate-900 dark:text-white">£39</strong>
             </span>
             <span className="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
               Pro — <strong>£99</strong>
@@ -125,7 +125,7 @@ export default function LandingPage() {
             {
               step: '02',
               title: 'Pay once',
-              desc: 'Basic (£39.99) or Pro (£99) — secure Stripe checkout, no subscription.',
+              desc: 'Basic (£39) or Pro (£99) — secure Stripe checkout, no subscription.',
             },
             {
               step: '03',
@@ -174,7 +174,7 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <Link
-                  href="https://marketing-tool-production.up.railway.app/shared/6e540e90-748f-4be4-a139-e42f36e923cd"
+                  href="/shared/6e540e90-748f-4be4-a139-e42f36e923cd"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
@@ -198,7 +198,7 @@ export default function LandingPage() {
             <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900/40">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-lg font-bold text-slate-900 dark:text-white">Basic</span>
-                <span className="text-2xl font-bold text-indigo-600">£39.99</span>
+                <span className="text-2xl font-bold text-indigo-600">£39</span>
               </div>
               <p className="text-sm text-slate-500 mb-4">Sharp positioning and landing page copy — typically 10+ pages depending on your product.</p>
               <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
@@ -216,7 +216,7 @@ export default function LandingPage() {
                 href="/start?tier=basic"
                 className="mt-6 flex items-center justify-center rounded-xl border-2 border-indigo-500 px-6 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
               >
-                Get Basic — £39.99
+                Get Basic — £39
               </Link>
             </div>
 
@@ -270,7 +270,7 @@ export default function LandingPage() {
       <footer className="mt-14 border-t border-slate-200 pt-8 pb-10 dark:border-slate-800">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <div className="text-sm font-semibold text-slate-900 dark:text-white">Marketing Toolkit</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-white">LaunchKit</div>
             <div className="mt-1 text-sm text-slate-500">Instant AI-generated marketing plans.</div>
           </div>
 
@@ -284,11 +284,20 @@ export default function LandingPage() {
             <Link href="/my-pdfs" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
               My plans
             </Link>
+            <Link href="/terms" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+              Terms
+            </Link>
+            <Link href="/privacy" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+              Privacy
+            </Link>
           </div>
         </div>
 
-        <div className="mt-8 text-xs text-slate-600">
-          © {new Date().getFullYear()} Marketing Toolkit. All rights reserved.
+        <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-500">
+          <span>© {new Date().getFullYear()} LaunchKit. All rights reserved.</span>
+          <a href="mailto:moltychief@agentmail.to" className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+            moltychief@agentmail.to
+          </a>
         </div>
       </footer>
     </div>

@@ -89,7 +89,7 @@ export default function EnhanceButton({ text, appContext, onTextChange }: Enhanc
         value={tone}
         onChange={(e) => setTone(e.target.value as Tone)}
         disabled={loading}
-        className="w-auto h-auto text-xs bg-slate-700 text-slate-300 border-slate-600 rounded-lg px-2 py-1.5 focus-visible:ring-1 disabled:opacity-50"
+        className="w-auto h-auto text-xs bg-muted text-muted-foreground border-border rounded-lg px-2 py-1.5 focus-visible:ring-1 disabled:opacity-50"
       >
         {TONE_OPTIONS.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -138,7 +138,7 @@ export default function EnhanceButton({ text, appContext, onTextChange }: Enhanc
           onClick={handleRevert}
           variant="secondary"
           size="sm"
-          className="h-auto text-xs text-slate-300 px-3 py-1.5 rounded-lg"
+          className="h-auto text-xs text-muted-foreground px-3 py-1.5 rounded-lg"
         >
           ↩️ Revert
         </Button>

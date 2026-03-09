@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast';
 import { usePlan } from '@/hooks/usePlan';
 import { PageSkeleton } from '@/components/Skeleton';
 import DismissableTip from '@/components/DismissableTip';
+import { Button } from '@/components/ui/button';
 
 type Priority = 'high' | 'medium' | 'low';
 
@@ -20,7 +21,7 @@ interface WeeklyDigest {
 }
 
 function SkeletonLine({ w = 'w-full' }: { w?: string }) {
-  return <div className={`h-4 ${w} rounded bg-slate-800/70 animate-pulse`} />;
+  return <div className={`h-4 ${w} rounded bg-muted animate-pulse`} />;
 }
 
 function priorityBadge(p: Priority): string {
@@ -107,7 +108,7 @@ export default function DigestPage({ params }: { params: Promise<{ id: string }>
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← Start a new analysis
         </Link>
@@ -121,17 +122,17 @@ export default function DigestPage({ params }: { params: Promise<{ id: string }>
 
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">📊 Weekly Digest</h1>
-          <p className="text-slate-400">{plan.config.app_name} — Summary & next steps for the week</p>
+          <h1 className="text-2xl font-bold text-foreground">📊 Weekly Digest</h1>
+          <p className="text-muted-foreground">{plan.config.app_name} — Summary & next steps for the week</p>
         </div>
 
-        <button
+        <Button
           onClick={handleGenerate}
           disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white text-sm px-5 py-2.5 rounded-xl transition-colors"
+          className="text-sm px-5 py-2.5 rounded-xl"
         >
           {loading ? 'Generating…' : '✨ Generate Digest'}
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -141,19 +142,19 @@ export default function DigestPage({ params }: { params: Promise<{ id: string }>
       )}
 
       {loading && !digest ? (
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="bg-muted border border-border rounded-2xl p-6 space-y-4">
           <div className="space-y-2">
             <SkeletonLine w="w-2/3" />
             <SkeletonLine />
             <SkeletonLine w="w-5/6" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-slate-950/30 border border-slate-800/60 rounded-2xl p-4 space-y-2">
+            <div className="bg-muted border border-border rounded-2xl p-4 space-y-2">
               <SkeletonLine w="w-1/2" />
               <SkeletonLine />
               <SkeletonLine w="w-5/6" />
             </div>
-            <div className="bg-slate-950/30 border border-slate-800/60 rounded-2xl p-4 space-y-2">
+            <div className="bg-muted border border-border rounded-2xl p-4 space-y-2">
               <SkeletonLine w="w-1/2" />
               <SkeletonLine />
               <SkeletonLine w="w-4/6" />
@@ -161,64 +162,64 @@ export default function DigestPage({ params }: { params: Promise<{ id: string }>
           </div>
         </div>
       ) : !digest ? (
-        <div className="bg-slate-900/40 border border-slate-800/70 rounded-2xl p-10 text-center">
-          <div className="text-slate-200 font-medium mb-2">No digest yet</div>
-          <div className="text-slate-500 text-sm">Click “Generate Digest” to summarise the last 7 days of work.</div>
+        <div className="bg-card border border-border rounded-2xl p-10 text-center">
+          <div className="text-muted-foreground font-medium mb-2">No digest yet</div>
+          <div className="text-muted-foreground text-sm">Click “Generate Digest” to summarise the last 7 days of work.</div>
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+          <div className="bg-muted border border-border rounded-2xl p-6">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-white font-semibold">Summary</h2>
-              <div className="text-xs text-slate-500">Generated: {new Date(digest.generatedAt).toLocaleString()}</div>
+              <h2 className="text-foreground font-semibold">Summary</h2>
+              <div className="text-xs text-muted-foreground">Generated: {new Date(digest.generatedAt).toLocaleString()}</div>
             </div>
-            <div className="text-slate-200 mt-3 whitespace-pre-wrap">{digest.summary}</div>
+            <div className="text-muted-foreground mt-3 whitespace-pre-wrap">{digest.summary}</div>
           </div>
 
           {digest.competitiveLandscape && (
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-              <h2 className="text-white font-semibold">Competitive landscape</h2>
-              <div className="text-slate-200 mt-3 whitespace-pre-wrap">{digest.competitiveLandscape}</div>
+            <div className="bg-muted border border-border rounded-2xl p-6">
+              <h2 className="text-foreground font-semibold">Competitive landscape</h2>
+              <div className="text-muted-foreground mt-3 whitespace-pre-wrap">{digest.competitiveLandscape}</div>
             </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-              <h2 className="text-white font-semibold">Content created</h2>
-              <div className="text-xs text-slate-500 mt-1">From the last 7 days of saved artefacts</div>
+            <div className="bg-muted border border-border rounded-2xl p-6">
+              <h2 className="text-foreground font-semibold">Content created</h2>
+              <div className="text-xs text-muted-foreground mt-1">From the last 7 days of saved artefacts</div>
 
               {digest.contentCreated.length === 0 ? (
-                <div className="text-slate-400 text-sm mt-4">No recent saved content found.</div>
+                <div className="text-muted-foreground text-sm mt-4">No recent saved content found.</div>
               ) : (
                 <div className="mt-4 space-y-3">
                   {digest.contentCreated.map((item, idx) => (
-                    <div key={idx} className="bg-slate-950/30 border border-slate-800/60 rounded-xl p-4">
+                    <div key={idx} className="bg-muted border border-border rounded-xl p-4">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="text-sm text-white font-medium">
+                        <div className="text-sm text-foreground font-medium">
                           {item.type}
-                          {item.key ? <span className="text-slate-400 font-normal"> • {item.key}</span> : null}
+                          {item.key ? <span className="text-muted-foreground font-normal"> • {item.key}</span> : null}
                         </div>
                         {item.updatedAt ? (
-                          <div className="text-[11px] text-slate-500">{new Date(item.updatedAt).toLocaleDateString()}</div>
+                          <div className="text-[11px] text-muted-foreground">{new Date(item.updatedAt).toLocaleDateString()}</div>
                         ) : null}
                       </div>
-                      <div className="text-sm text-slate-200 mt-2 whitespace-pre-wrap">{item.description}</div>
+                      <div className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{item.description}</div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-              <h2 className="text-white font-semibold">Recommendations</h2>
+            <div className="bg-muted border border-border rounded-2xl p-6">
+              <h2 className="text-foreground font-semibold">Recommendations</h2>
               {digest.recommendations.length === 0 ? (
-                <div className="text-slate-400 text-sm mt-4">No recommendations returned.</div>
+                <div className="text-muted-foreground text-sm mt-4">No recommendations returned.</div>
               ) : (
                 <div className="mt-4 space-y-3">
                   {digest.recommendations.map((rec, idx) => (
-                    <div key={idx} className="bg-slate-950/30 border border-slate-800/60 rounded-xl p-4">
-                      <div className="text-sm text-white font-semibold">{rec.title}</div>
-                      <div className="text-sm text-slate-200 mt-2 whitespace-pre-wrap">{rec.detail}</div>
+                    <div key={idx} className="bg-muted border border-border rounded-xl p-4">
+                      <div className="text-sm text-foreground font-semibold">{rec.title}</div>
+                      <div className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{rec.detail}</div>
                     </div>
                   ))}
                 </div>
@@ -226,21 +227,21 @@ export default function DigestPage({ params }: { params: Promise<{ id: string }>
             </div>
           </div>
 
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-            <h2 className="text-white font-semibold">Next actions</h2>
+          <div className="bg-muted border border-border rounded-2xl p-6">
+            <h2 className="text-foreground font-semibold">Next actions</h2>
             {digest.nextActions.length === 0 ? (
-              <div className="text-slate-400 text-sm mt-4">No next actions returned.</div>
+              <div className="text-muted-foreground text-sm mt-4">No next actions returned.</div>
             ) : (
               <div className="mt-4 space-y-3">
                 {digest.nextActions.map((a, idx) => (
-                  <div key={idx} className="bg-slate-950/30 border border-slate-800/60 rounded-xl p-4">
+                  <div key={idx} className="bg-muted border border-border rounded-xl p-4">
                     <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div className="text-sm text-white font-semibold">{a.action}</div>
+                      <div className="text-sm text-foreground font-semibold">{a.action}</div>
                       <div className={`text-[11px] px-2 py-1 rounded-lg border ${priorityBadge(a.priority)}`}>
                         {a.priority.toUpperCase()}
                       </div>
                     </div>
-                    <div className="text-sm text-slate-200 mt-2 whitespace-pre-wrap">{a.why}</div>
+                    <div className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{a.why}</div>
                   </div>
                 ))}
               </div>

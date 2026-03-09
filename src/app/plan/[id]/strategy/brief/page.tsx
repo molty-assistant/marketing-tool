@@ -10,6 +10,7 @@ import ErrorRetry from '@/components/ErrorRetry';
 import ExportBundleButton from '@/components/ExportBundleButton';
 import { useToast } from '@/components/Toast';
 import { usePlan } from '@/hooks/usePlan';
+import { Button } from '@/components/ui/button';
 
 const markdownComponents: Components = {
   a: ({ href, children }) => (
@@ -34,12 +35,14 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   };
 
   return (
-    <button
+    <Button
       onClick={handleCopy}
-      className="text-sm sm:text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 sm:py-1.5 rounded-lg transition-colors flex items-center gap-1"
+      variant="secondary"
+      size="sm"
+      className="text-sm sm:text-xs px-3 py-2 sm:py-1.5 rounded-lg flex items-center gap-1"
     >
       {copied ? '✓ Copied' : `📋 ${label || 'Copy'}`}
-    </button>
+    </Button>
   );
 }
 
@@ -69,7 +72,7 @@ export default function StrategyBriefPage({
   if (!plan) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
-        <div className="text-slate-400 mb-4">Plan not found</div>
+        <div className="text-muted-foreground mb-4">Plan not found</div>
         <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300 transition-colors">
           ← All Plans
         </Link>
@@ -128,15 +131,15 @@ export default function StrategyBriefPage({
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <Link href={`/plan/${id}`} className="text-xs text-slate-500 hover:text-slate-300">
+        <Link href={`/plan/${id}`} className="text-xs text-muted-foreground hover:text-foreground">
           ← Overview
         </Link>
-        <Link href="/dashboard" className="text-xs text-slate-500 hover:text-slate-300">
+        <Link href="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">
           All Plans
         </Link>
       </div>
 
-      <div className="bg-slate-900/40 border border-white/[0.06] rounded-2xl p-6 mb-8">
+      <div className="bg-card border border-border rounded-2xl p-6 mb-8">
         <div className="flex items-start gap-4">
           {(plan.scraped?.icon || plan.config?.icon) && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -148,32 +151,34 @@ export default function StrategyBriefPage({
           )}
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold text-white break-words">{plan.config.app_name}</h1>
-            <p className="text-sm text-slate-400 mt-1 break-words">
+            <p className="text-sm text-muted-foreground mt-1 break-words">
               {plan.config.one_liner || plan.scraped?.description}
             </p>
 
             <div className="flex flex-wrap gap-2 mt-4">
               <ExportBundleButton planId={id} appName={plan.config.app_name} />
-              <button
+              <Button
                 onClick={handleExportMarkdown}
-                className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+                variant="secondary"
+                className="text-sm px-4 py-2 rounded-lg"
               >
                 📥 Export .md
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleExportPdf}
                 disabled={pdfExporting}
-                className="bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
+                variant="secondary"
+                className="text-sm px-4 py-2 rounded-lg"
               >
                 {pdfExporting ? 'Preparing…' : '📄 Export PDF'}
-              </button>
+              </Button>
               <CopyButton text={plan.generated} label="Copy brief" />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-slate-900/30 border border-white/[0.06] rounded-2xl p-6">
+      <div className="bg-card border border-border rounded-2xl p-6">
         <div className="markdown-content text-sm">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
             {plan.generated}
