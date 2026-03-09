@@ -32,6 +32,12 @@ export default function PricingPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Launch Pack</p>
             <p className="mt-2 text-4xl font-bold text-slate-900 dark:text-white">£99 one-time</p>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No subscription. Pay once and start generating immediately.</p>
+            <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 px-4 py-2 text-xs text-emerald-700 dark:text-emerald-200">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium">30-day money-back guarantee</span>
+            </div>
             <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href={STRIPE_LAUNCH_PACK_URL}
@@ -48,6 +54,22 @@ export default function PricingPage() {
                 Try with your URL first
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-indigo-200 bg-indigo-50 p-6 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600/10">
+            <svg className="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">30-day money-back guarantee</h2>
+            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+              Try the Launch Pack risk-free. If it doesn&apos;t help you launch faster or clearer, email us within 30 days for a full refund. No questions asked.
+            </p>
           </div>
         </div>
       </section>
