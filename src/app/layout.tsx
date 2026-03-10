@@ -6,35 +6,36 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeScript } from '@/components/theme/ThemeScript';
 
 export const metadata: Metadata = {
-  title: 'LaunchKit — AI Marketing Plans',
+  title: 'LaunchKit — £99 Launch Brief + Copy Pack',
   description:
-    'Paste any App Store, Google Play, or website URL and get a complete marketing brief with launch-ready copy drafts.',
+    'Done-for-you positioning, copy, and launch comms for indie makers — £99 one-time, delivered in 48 hours.',
   metadataBase: new URL('https://marketing-tool-production.up.railway.app'),
   openGraph: {
-    title: 'LaunchKit — AI Marketing Plans',
+    title: 'LaunchKit — £99 Launch Brief + Copy Pack',
     description:
-      'Paste any app or website URL → get a full marketing brief with AI copy and competitor research.',
+      'Done-for-you positioning, copy, and launch comms for indie makers. £99 one-time, delivered in 48 hours.',
     type: 'website',
     siteName: 'LaunchKit',
     locale: 'en_GB',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'LaunchKit — AI Marketing Plans',
+    title: 'LaunchKit — £99 Launch Brief + Copy Pack',
     description:
-      'Paste any app or website URL → get a full marketing brief with AI copy and competitor research.',
+      'Done-for-you positioning, copy, and launch comms for indie makers. £99 one-time, delivered in 48 hours.',
   },
   robots: {
     index: true,
     follow: true,
   },
   keywords: [
-    'marketing brief generator',
-    'vibe marketing',
-    'app store marketing',
-    'AI copywriting',
-    'competitive analysis',
-    'launch copy',
+    'launch brief and copy pack',
+    'done-for-you launch copy',
+    'indie maker marketing',
+    'product positioning service',
+    'launch comms',
+    '48 hour delivery',
+    '99 one-time offer',
   ],
 };
 
