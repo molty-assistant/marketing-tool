@@ -31,7 +31,10 @@ export default function PricingPage() {
           <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6 dark:border-slate-700/60 dark:bg-slate-900/60">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Launch Pack</p>
             <p className="mt-2 text-4xl font-bold text-slate-900 dark:text-white">£99 one-time</p>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No subscription. Pay once and start generating immediately.</p>
+            <p className="mt-3 inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-200">
+              30-day money-back guarantee
+            </p>
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">No subscription. Pay once and start generating immediately.</p>
             <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href={STRIPE_LAUNCH_PACK_URL}
@@ -50,6 +53,13 @@ export default function PricingPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-50/70 p-6 dark:border-emerald-500/25 dark:bg-emerald-900/10">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Your purchase is protected for 30 days.</h2>
+        <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+          Try the £99 Launch Pack risk-free. If it doesn&apos;t help you clarify your messaging and ship faster, contact us within 30 days of purchase for a full refund.
+        </p>
       </section>
 
       <section className="mt-10 grid gap-4 sm:grid-cols-2">
