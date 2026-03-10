@@ -1,183 +1,272 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { Check, ArrowRight, FileText, Zap } from 'lucide-react';
+
+const STRIPE_LAUNCH_PACK_URL = 'https://buy.stripe.com/6oU28t1uwbKY0lx8vt0Ny00';
+const SAMPLE_PACK_URL = '/shared/6e540e90-748f-4be4-a139-e42f36e923cd';
+const INTAKE_PAGE_URL = '/intake';
+const INTAKE_EMAIL = 'moltychief@agentmail.to';
+const FIT_CHECK_MAILTO = `mailto:${INTAKE_EMAIL}?subject=${encodeURIComponent('Launch Pack fit check')}`;
 
 const FAQ_ITEMS = [
   {
     question: 'How long does delivery take?',
-    answer: 'Your PDF is generated within 2-5 minutes after payment. No waiting for a human to get back to you.',
+    answer: 'Your Launch Brief + Copy Pack is delivered within 48 hours after you submit your intake details.',
   },
   {
     question: 'Is this AI-generated?',
-    answer: 'Yes, but you\'re not paying for raw AI output. You\'re paying for a structured framework based on what actually converts. We\'ve tested this with real indie makers.',
+    answer: "It is AI-assisted, but edited for clarity and conversion. You are paying for a finished pack, not raw AI output.",
   },
   {
     question: 'What if I don\'t like the results?',
-    answer: 'This is a one-time delivery product. Think of it as a strong starting foundation you can iterate on. You can always purchase another pack as your product evolves.',
+    answer: 'Reply with what feels off (tone, audience, or promises) and you get one revision included.',
+  },
+  {
+    question: 'What do you need from me?',
+    answer: `Your URL, who it is for, your deadline, 3 competitors, and preferred tone. Send details via ${INTAKE_PAGE_URL} or by email.`,
+  },
+  {
+    question: 'Do I get access to the tool?',
+    answer: 'Not yet. This is a service-first founding batch.',
   },
   {
     question: 'Can I see a sample first?',
-    answer: 'Absolutely — check out the LightScout sample above. It shows you exactly what you\'ll get before you buy.',
-  },
-  {
-    question: 'Do I need an account?',
-    answer: 'No. Paste your URL, answer 5 questions, pay once, and download your PDF. No sign-up, no subscription.',
+    answer: 'Yes. View the LightScout sample pack above to see the framing and depth before you buy.',
   },
 ];
 
-function FAQAccordion() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+const PACK_INCLUDES = [
+  'Positioning snapshot: customer, pain, value prop, and support points',
+  'Landing / website copy: headline options, hero subheads, feature bullets, CTAs',
+  'App Store / listing copy (if relevant): subtitle, short + long descriptions, keyword ideas',
+  'Launch comms starter set: 5 X posts, 2 LinkedIn drafts, and a 3-email sequence',
+];
 
-  return (
-    <div className="space-y-3">
-      {FAQ_ITEMS.map((item, index) => (
-        <div
-          key={index}
-          className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/40"
-        >
-          <button
-            onClick={() => setOpenIndex(openIndex === index ? null : index)}
-            className="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            aria-expanded={openIndex === index}
-          >
-            <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400">
-              {openIndex === index ? '−' : '+'}
-            </span>
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">
-              {item.question}
-            </span>
-          </button>
-          {openIndex === index && (
-            <div className="px-12 pb-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                {item.answer}
-              </p>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
+const PACK_TERMS = [
+  '£99 one-time payment',
+  'Done-for-you delivery within 48 hours of intake',
+  'One revision included',
+  `Intake via ${INTAKE_PAGE_URL} or ${INTAKE_EMAIL}`,
+];
 
 export default function LandingPage() {
   return (
     <div className="w-full">
-      {/* HERO — Paid PDF product */}
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 dark:border-slate-800 dark:bg-[#0d1117]">
+
+      {/* ─── HERO ─── */}
+      <section className="relative overflow-hidden py-20 sm:py-28 lg:py-36 noise-overlay">
+        {/* Gradient mesh background */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
-          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-violet-600/10 blur-3xl" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/3 h-[700px] w-[700px] rounded-full bg-indigo-600/12 blur-[140px]" />
+          <div className="absolute bottom-0 right-[-10%] h-[500px] w-[500px] rounded-full bg-violet-600/8 blur-[120px]" />
+          <div className="absolute bottom-0 left-[-10%] h-[400px] w-[400px] rounded-full bg-blue-700/8 blur-[100px]" />
         </div>
 
-        <div className="relative mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-slate-700 dark:text-slate-300">
-            Instant PDF · No agency · No waiting
+        <div className="relative mx-auto max-w-4xl text-center px-4">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/8 px-4 py-1.5 text-xs font-medium text-indigo-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+            £99 one-time · Done-for-you · 48h delivery
           </div>
 
-          <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Your complete marketing plan — generated in minutes
+          {/* Headline */}
+          <h1 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
+            <span className="bg-gradient-to-b from-white via-white to-white/60 bg-clip-text text-transparent">
+              Launch Brief + Copy Pack —{' '}
+            </span>
+            <span className="bg-gradient-to-r from-indigo-300 to-violet-300 bg-clip-text text-transparent">
+              done for you in 48 hours
+            </span>
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
-            Answer 5 questions about your product. Pay once. Download a PDF full of ready-to-use copy, positioning, and a 30-day content plan.
+
+          {/* Subheading */}
+          <p className="mt-6 text-base sm:text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
+            Get clear positioning, sharper landing/listing copy, and launch comms you can ship fast. This is a service-first offer for indie makers who want their first customers.
           </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/start"
-              className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-8 py-4 text-base font-semibold text-white hover:bg-indigo-500 transition-colors"
+          {/* CTA */}
+          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <a
+              href={STRIPE_LAUNCH_PACK_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="group inline-flex items-center justify-center rounded-xl bg-gradient-to-b from-indigo-400 to-indigo-600 px-8 py-4 text-base font-semibold text-white shadow-[0_0_32px_rgba(99,102,241,0.35)] border border-indigo-400/20 hover:shadow-[0_0_40px_rgba(99,102,241,0.5)] hover:scale-[1.02] transition-all duration-200"
             >
-              Get my marketing plan →
-            </Link>
+              Pay £99 and start
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </a>
+            <a
+              href={FIT_CHECK_MAILTO}
+              className="inline-flex items-center justify-center rounded-xl border border-indigo-500/30 px-8 py-4 text-base font-semibold text-indigo-300 hover:bg-indigo-500/8 hover:border-indigo-400/50 transition-all duration-200"
+            >
+              Check fit first
+            </a>
           </div>
 
+          <p className="mt-4 text-sm text-white/35">
+            Already paid? Send intake via{' '}
+            <Link href={INTAKE_PAGE_URL} className="text-indigo-300 hover:text-indigo-200 transition-colors">
+              {INTAKE_PAGE_URL}
+            </Link>{' '}
+            or email{' '}
+            <a href={`mailto:${INTAKE_EMAIL}`} className="text-indigo-300 hover:text-indigo-200 transition-colors">
+              {INTAKE_EMAIL}
+            </a>
+            .
+          </p>
+
           {/* Pricing pills */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-slate-600 dark:text-slate-400">
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 dark:border-slate-700 dark:bg-slate-900">
-              Basic — <strong className="text-slate-900 dark:text-white">£39</strong>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm">
+            <span className="rounded-full border border-indigo-500/20 bg-indigo-500/8 px-4 py-1.5 text-indigo-300">
+              Launch Pack — <strong>£99</strong>
             </span>
-            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300">
-              Pro — <strong>£99</strong>
+            <span className="rounded-full border border-white/8 bg-white/4 px-4 py-1.5 text-white/40">
+              Positioning + landing/listing copy + launch comms
             </span>
-            <span className="text-slate-400">·</span>
-            <span>No revisions · No account needed</span>
+            <span className="text-white/20">·</span>
+            <span className="text-white/35">One revision included</span>
+          </div>
+
+          {/* PDF Mockup */}
+          <div className="mt-16 mx-auto max-w-2xl">
+            <div className="relative">
+              {/* Glow behind mockup */}
+              <div className="absolute inset-x-12 bottom-0 h-24 bg-indigo-600/20 blur-3xl rounded-full" />
+              {/* Stacked pages effect */}
+              <div className="relative">
+                {/* Back page (page 4 - exec summary) */}
+                <div
+                  className="absolute inset-x-4 top-3 bottom-0 rounded-xl border border-white/6 bg-white/[0.02] overflow-hidden"
+                  style={{ transform: 'perspective(1200px) rotateX(3deg) rotateY(3deg) translateY(8px)', zIndex: 0 }}
+                >
+                  <Image
+                    src="/sample/pdf-page4.png"
+                    alt=""
+                    width={800}
+                    height={600}
+                    className="w-full object-cover object-top opacity-40"
+                    aria-hidden="true"
+                  />
+                </div>
+                {/* Front page (page 10 - landing copy) */}
+                <div
+                  className="relative rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm p-1.5 shadow-2xl overflow-hidden"
+                  style={{ transform: 'perspective(1200px) rotateX(3deg) rotateY(-1deg)', zIndex: 1 }}
+                >
+                  <Image
+                    src="/sample/pdf-page10.png"
+                    alt="Sample Launch Brief + Copy Pack showing landing and listing copy direction"
+                    width={900}
+                    height={700}
+                    className="w-full rounded-xl"
+                    priority
+                  />
+                  {/* Overlay shimmer */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.10_0.008_270)]/40 via-transparent to-transparent rounded-2xl pointer-events-none" />
+                </div>
+              </div>
+              {/* View sample link */}
+              <div className="mt-5 text-center">
+                <Link
+                  href={SAMPLE_PACK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-white/40 hover:text-indigo-300 transition-colors"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  View full sample pack →
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how" className="mt-12 scroll-mt-24">
+      {/* ─── HOW IT WORKS ─── */}
+      <section id="how" className="mt-20 sm:mt-28 scroll-mt-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">How it works</h2>
-          <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            From your product URL to a PDF you can act on — in under 3 minutes.
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">How it works</h2>
+          <p className="mt-2 text-sm sm:text-base text-white/40">
+            Fast, scoped service: pay, send intake, get your pack in 48 hours.
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 relative">
+          {/* Connecting lines (desktop) */}
+          <div className="hidden sm:block absolute top-8 left-[33%] right-[33%] h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent pointer-events-none" />
+
           {[
             {
               step: '01',
-              title: 'Answer 5 questions',
-              desc: 'Tell us your product URL, tone, audience, channel focus, and goal.',
+              icon: <Zap className="h-4 w-4 text-indigo-400" />,
+              title: 'Pay £99',
+              desc: 'Secure your Launch Brief + Copy Pack via Stripe with a one-time payment.',
             },
             {
               step: '02',
-              title: 'Pay once',
-              desc: 'Basic (£39) or Pro (£99) — secure Stripe checkout, no subscription.',
+              icon: <FileText className="h-4 w-4 text-indigo-400" />,
+              title: 'Send intake details',
+              desc: `Share your URL, deadline, competitors, and tone via ${INTAKE_PAGE_URL} or email.`,
             },
             {
               step: '03',
-              title: 'Download your PDF',
-              desc: 'AI-generated positioning, copy, and a content plan ready to paste and ship.',
+              icon: <ArrowRight className="h-4 w-4 text-indigo-400" />,
+              title: 'Receive your pack in 48h',
+              desc: 'Get done-for-you positioning, landing/listing copy, launch comms, and one revision.',
             },
           ].map((s) => (
             <div
               key={s.step}
-              className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900/40"
+              className="rounded-2xl border border-white/6 bg-white/[0.03] backdrop-blur-sm p-6 relative"
             >
               <div className="flex items-center justify-between">
-                <div className="text-xs font-semibold tracking-wider text-indigo-600 dark:text-indigo-300">STEP {s.step}</div>
-                <div className="h-2 w-2 rounded-full bg-indigo-400/70" />
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500/12 border border-indigo-500/20">
+                    {s.icon}
+                  </div>
+                  <span className="text-xs font-bold tracking-widest text-indigo-400">STEP {s.step}</span>
+                </div>
               </div>
-              <div className="mt-3 text-lg font-semibold text-slate-900 dark:text-white">{s.title}</div>
-              <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.desc}</div>
+              <div className="mt-4 text-base font-semibold text-white">{s.title}</div>
+              <div className="mt-1.5 text-sm text-white/40 leading-relaxed">{s.desc}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* SOCIAL PROOF */}
-      <section className="mt-12">
+      {/* ─── SOCIAL PROOF ─── */}
+      <section className="mt-20 sm:mt-28">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">See it in action</h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
-              Here’s what a real Launch Pack looks like
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">See it in action</h2>
+            <p className="mt-2 text-sm sm:text-base text-white/40">
+              Here&apos;s what a real Launch Pack looks like
             </p>
           </div>
 
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-700 dark:bg-slate-900/40">
+          <div className="rounded-2xl border border-white/6 bg-white/[0.02] p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/15">
+                <FileText className="h-6 w-6 text-indigo-400" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">LightScout AI</h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">AI-powered photography location finder</p>
-                <div className="mt-4 rounded-lg bg-slate-50 p-4 dark:bg-slate-800/50">
-                  <p className="text-sm text-slate-700 dark:text-slate-300">
-                    <span className="font-semibold">Delivered:</span> Complete positioning strategy, landing page copy, 30-day content calendar, social posts, and Reddit drafts
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold text-white">LightScout AI</h3>
+                <p className="mt-0.5 text-sm text-white/40">AI-powered photography location finder</p>
+                <div className="mt-4 rounded-xl bg-white/[0.03] border border-white/5 p-4">
+                  <p className="text-sm text-white/60">
+                    <span className="font-semibold text-white/80">Delivered:</span> positioning snapshot, landing/listing copy direction, launch comms starter set, and conversion guidance.
                   </p>
                 </div>
+                <p className="mt-3 text-sm text-white/45">
+                  This sample shows the exact framing of the £99 done-for-you pack.
+                </p>
                 <Link
-                  href="/shared/6e540e90-748f-4be4-a139-e42f36e923cd"
+                  href={SAMPLE_PACK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
                 >
                   View full sample pack →
                 </Link>
@@ -187,116 +276,160 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TIER COMPARISON */}
-      <section id="pricing" className="mt-12 scroll-mt-24">
+      {/* ─── PRICING ─── */}
+      <section id="pricing" className="mt-20 sm:mt-28 scroll-mt-24">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">What you get</h2>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">What you get for £99</h2>
+            <p className="mt-2 text-sm text-white/40">Done-for-you scope, delivered within 48 hours of intake.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Basic */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900/40">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-bold text-slate-900 dark:text-white">Basic</span>
-                <span className="text-2xl font-bold text-indigo-600">£39</span>
+
+            {/* Inclusions */}
+            <div className="rounded-2xl border border-white/6 bg-white/[0.02] p-6">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <span className="text-base font-bold text-white">Launch Brief + Copy Pack</span>
+                  <p className="mt-1 text-xs text-white/35">Paste-ready messaging for your launch</p>
+                </div>
               </div>
-              <p className="text-sm text-slate-500 mb-4">Sharp positioning and landing page copy — typically 10+ pages depending on your product.</p>
-              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                {[
-                  'Positioning Snapshot',
-                  'Competitor Angles + Say This Not That',
-                  '5 headline options + feature bullets',
-                  'Short + long CTA options',
-                  '5 X/Twitter + 2 LinkedIn launch posts',
-                ].map((f) => (
-                  <li key={f} className="flex gap-2"><span className="text-emerald-500 flex-shrink-0">✓</span>{f}</li>
+              <p className="text-sm text-white/40 mb-5">Built for indie makers who need sharper positioning and copy to win first customers.</p>
+              <ul className="space-y-2.5 text-sm text-white/60 mb-6">
+                {PACK_INCLUDES.map((f) => (
+                  <li key={f} className="flex gap-2.5 items-start">
+                    <Check className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    {f}
+                  </li>
                 ))}
               </ul>
               <Link
-                href="/start?tier=basic"
-                className="mt-6 flex items-center justify-center rounded-xl border-2 border-indigo-500 px-6 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+                href={SAMPLE_PACK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center rounded-xl border border-indigo-500/30 px-6 py-3 text-sm font-semibold text-indigo-300 hover:bg-indigo-500/8 hover:border-indigo-400/50 transition-all"
               >
-                Get Basic — £39
+                View LightScout sample
               </Link>
             </div>
 
-            {/* Pro */}
-            <div className="rounded-2xl border-2 border-indigo-500 bg-white p-6 dark:bg-[#0d1117] relative overflow-hidden">
-              <div className="absolute top-4 right-4 rounded-full bg-indigo-500 px-2.5 py-0.5 text-xs font-bold text-white">Popular</div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-bold text-slate-900 dark:text-white">Pro</span>
-                <span className="text-2xl font-bold text-indigo-600">£99</span>
+            {/* Offer terms */}
+            <div className="rounded-[17px] bg-gradient-to-b from-indigo-500/35 to-violet-500/15 p-[1px]">
+              <div className="rounded-2xl bg-[oklch(0.12_0.01_270)] p-6 relative overflow-hidden h-full">
+                {/* Ambient glow */}
+                <div className="absolute top-0 right-0 h-40 w-40 bg-indigo-500/8 blur-3xl rounded-full pointer-events-none" />
+
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-bold text-white">Founding batch offer</span>
+                      <span className="rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">£99</span>
+                    </div>
+                    <p className="mt-1 text-xs text-white/35">One-time payment</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-3xl font-bold bg-gradient-to-r from-indigo-300 to-violet-300 bg-clip-text text-transparent">£99</span>
+                    <p className="text-xs text-white/35">one-time</p>
+                  </div>
+                </div>
+                <p className="text-sm text-white/40 mb-5">Clear deliverables, clear deadline, no retainer.</p>
+                <ul className="space-y-2.5 text-sm text-white/60 mb-6">
+                  {PACK_TERMS.map((f) => (
+                    <li key={f} className="flex gap-2.5 items-start">
+                      <Check className="h-4 w-4 text-indigo-400 flex-shrink-0 mt-0.5" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href={STRIPE_LAUNCH_PACK_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center rounded-xl bg-gradient-to-b from-indigo-400 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] border border-indigo-400/20 hover:shadow-[0_0_28px_rgba(99,102,241,0.45)] hover:scale-[1.01] transition-all"
+                >
+                  Pay £99 now
+                </a>
+                <Link
+                  href={INTAKE_PAGE_URL}
+                  className="mt-3 flex items-center justify-center rounded-xl border border-indigo-500/30 px-6 py-3 text-sm font-semibold text-indigo-300 hover:bg-indigo-500/8 hover:border-indigo-400/50 transition-all"
+                >
+                  Already paid? Send intake
+                </Link>
               </div>
-              <p className="text-sm text-slate-500 mb-4">Everything in Basic plus the full launch toolkit — typically 20+ pages depending on your product.</p>
-              <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                {[
-                  'Everything in Basic',
-                  'Email Sequence (3 emails + A/B subjects)',
-                  '30-Day Content Calendar',
-                  'Ad Copy Angles for Meta/X',
-                  'App Store / Listing Copy',
-                  'Tone-of-Voice Cheat Sheet',
-                  '10 X/Twitter + 5 LinkedIn posts',
-                ].map((f) => (
-                  <li key={f} className="flex gap-2"><span className="text-emerald-500 flex-shrink-0">✓</span>{f}</li>
-                ))}
-              </ul>
-              <Link
-                href="/start?tier=pro"
-                className="mt-6 flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
-              >
-                Get Pro — £99
-              </Link>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="mt-12">
+      {/* ─── FAQ ─── */}
+      <section className="mt-20 sm:mt-28">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Questions?</h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">Questions?</h2>
+            <p className="mt-2 text-sm sm:text-base text-white/40">
               Everything you need to know before you start
             </p>
           </div>
 
-          <FAQAccordion />
+          <div className="rounded-2xl border border-white/6 bg-white/[0.02] divide-y divide-white/5 overflow-hidden">
+            {FAQ_ITEMS.map((item) => (
+              <details key={item.question} className="px-6 py-5">
+                <summary className="cursor-pointer text-sm font-semibold text-white/80 marker:text-white/30 hover:text-white">
+                  {item.question}
+                </summary>
+                <p className="pt-3 text-sm text-white/45 leading-relaxed">
+                  {item.answer}
+                </p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="mt-14 border-t border-slate-200 pt-8 pb-10 dark:border-slate-800">
+      {/* ─── FOOTER ─── */}
+      <footer className="mt-20 border-t border-white/5 pt-8 pb-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <div className="text-sm font-semibold text-slate-900 dark:text-white">LaunchKit</div>
-            <div className="mt-1 text-sm text-slate-500">Instant AI-generated marketing plans.</div>
+            <div className="text-sm font-semibold text-white">LaunchKit</div>
+            <div className="mt-1 text-sm text-white/30">Done-for-you launch messaging packs for indie makers.</div>
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">
-            <Link href="/start" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Get a plan
-            </Link>
-            <a href="#pricing" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Pricing
-            </a>
-            <Link href="/my-pdfs" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              My plans
-            </Link>
-            <Link href="/terms" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Terms
-            </Link>
-            <Link href="/privacy" className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-              Privacy
-            </Link>
+            {[
+              { href: STRIPE_LAUNCH_PACK_URL, label: 'Pay £99', external: true },
+              { href: '/#pricing', label: 'Pricing' },
+              { href: INTAKE_PAGE_URL, label: 'Intake' },
+              { href: SAMPLE_PACK_URL, label: 'Sample pack' },
+              { href: '/terms', label: 'Terms' },
+              { href: '/privacy', label: 'Privacy' },
+            ].map(({ href, label, external }) => (
+              external ? (
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-white/30 transition-colors hover:text-white/70"
+                >
+                  {label}
+                </a>
+              ) : (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-white/30 transition-colors hover:text-white/70"
+                >
+                  {label}
+                </Link>
+              )
+            ))}
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-500">
+        <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-white/20">
           <span>© {new Date().getFullYear()} LaunchKit. All rights reserved.</span>
-          <a href="mailto:moltychief@agentmail.to" className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-            moltychief@agentmail.to
+          <a href={`mailto:${INTAKE_EMAIL}`} className="hover:text-white/40 transition-colors">
+            {INTAKE_EMAIL}
           </a>
         </div>
       </footer>
