@@ -1,9 +1,13 @@
 import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ToastProvider } from '@/components/Toast';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeScript } from '@/components/theme/ThemeScript';
+
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
 
 export const metadata: Metadata = {
   title: 'LaunchKit — AI Marketing Plans',
@@ -40,7 +44,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`dark ${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>
