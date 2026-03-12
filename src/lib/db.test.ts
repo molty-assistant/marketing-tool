@@ -1,23 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Database from 'better-sqlite3';
-import { createTestDb } from '../test/db-helper';
-
-// Mock getDb to use in-memory database
-let testDb: Database.Database;
-
-vi.mock('@/lib/db', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/lib/db')>();
-
-  // We need to intercept getDb calls. The module uses getDb() internally.
-  // We'll re-export everything but override getDb to return our test instance.
-  return {
-    ...original,
-    getDb: () => testDb,
-  };
-});
-
-// Import after mock setup
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
+  getDb,
   savePlan,
   getPlan,
   getAllPlans,
@@ -41,11 +24,23 @@ import {
   tryIncrementDownloadCount,
 } from './db';
 
+// Use the real getDb() singleton. Clean all tables before each test for isolation.
 beforeEach(() => {
-  testDb = createTestDb();
+  const db = getDb();
+  db.exec('DELETE FROM pdf_download_tokens');
+  db.exec('DELETE FROM pdf_documents');
+  db.exec('DELETE FROM pdf_generation_runs');
+  db.exec('DELETE FROM pdf_orders');
+  db.exec('DELETE FROM orchestration_runs');
+  db.exec('DELETE FROM plan_content');
+  db.exec('DELETE FROM content_schedule');
+  db.exec('DELETE FROM social_posts');
+  db.exec('DELETE FROM approval_queue');
+  db.exec('DELETE FROM api_usage_daily');
+  db.exec('DELETE FROM api_rate_limits');
+  db.exec('DELETE FROM plans');
 });
 
-// Helper to seed a plan for FK-dependent tests
 function seedPlan(id = 'plan-1') {
   savePlan({
     id,
@@ -149,7 +144,6 @@ describe('Content CRUD', () => {
     seedPlan('p1');
     saveContent('p1', 'brand-voice', null, '"first"');
     saveContent('p1', 'brand-voice', undefined, '"second"');
-    // Both null and undefined should map to '' → upsert
     const result = getContent('p1', 'brand-voice', null);
     expect(result).toBe('second');
   });
@@ -159,6 +153,7 @@ describe('Content CRUD', () => {
     saveContent('p1', 'draft', 'bold', JSON.stringify({ tone: 'bold' }));
     saveContent('p1', 'draft', 'casual', JSON.stringify({ tone: 'casual' }));
     const result = getContent('p1', 'draft') as Array<{ contentKey: string; content: unknown }>;
+    expect(Array.isArray(result)).toBe(true);
     expect(result).toHaveLength(2);
   });
 
@@ -238,7 +233,6 @@ describe('consumeApiRateLimit', () => {
     consumeApiRateLimit(baseInput);
     consumeApiRateLimit(baseInput);
 
-    // Move to next window (60s later)
     const nextWindow = consumeApiRateLimit({ ...baseInput, nowMs: baseInput.nowMs + 61_000 });
     expect(nextWindow.allowed).toBe(true);
     expect(nextWindow.remaining).toBe(2);
@@ -248,15 +242,16 @@ describe('consumeApiRateLimit', () => {
 describe('trackApiUsage', () => {
   it('creates a new daily row', () => {
     trackApiUsage({
-      endpoint: '/api/test',
+      endpoint: '/api/track-test',
       actorType: 'ip',
       actorKey: '1.2.3.4',
       blocked: false,
       nowMs: 1700000000000,
     });
 
-    const row = testDb.prepare(
-      "SELECT * FROM api_usage_daily WHERE endpoint = '/api/test'"
+    const db = getDb();
+    const row = db.prepare(
+      "SELECT * FROM api_usage_daily WHERE endpoint = '/api/track-test'"
     ).get() as { request_count: number; blocked_count: number } | undefined;
 
     expect(row).toBeDefined();
@@ -266,7 +261,7 @@ describe('trackApiUsage', () => {
 
   it('increments existing row', () => {
     const input = {
-      endpoint: '/api/test',
+      endpoint: '/api/track-test-2',
       actorType: 'ip' as const,
       actorKey: '1.2.3.4',
       blocked: false,
@@ -275,8 +270,9 @@ describe('trackApiUsage', () => {
     trackApiUsage(input);
     trackApiUsage(input);
 
-    const row = testDb.prepare(
-      "SELECT * FROM api_usage_daily WHERE endpoint = '/api/test'"
+    const db = getDb();
+    const row = db.prepare(
+      "SELECT * FROM api_usage_daily WHERE endpoint = '/api/track-test-2'"
     ).get() as { request_count: number };
 
     expect(row.request_count).toBe(2);
@@ -284,15 +280,16 @@ describe('trackApiUsage', () => {
 
   it('increments blocked_count when blocked', () => {
     trackApiUsage({
-      endpoint: '/api/test',
+      endpoint: '/api/track-test-3',
       actorType: 'ip',
       actorKey: '1.2.3.4',
       blocked: true,
       nowMs: 1700000000000,
     });
 
-    const row = testDb.prepare(
-      "SELECT * FROM api_usage_daily WHERE endpoint = '/api/test'"
+    const db = getDb();
+    const row = db.prepare(
+      "SELECT * FROM api_usage_daily WHERE endpoint = '/api/track-test-3'"
     ).get() as { blocked_count: number };
 
     expect(row.blocked_count).toBe(1);
@@ -340,7 +337,8 @@ describe('Orchestration runs', () => {
 
 describe('PDF order status transitions', () => {
   function seedPdfOrder(id: string, status = 'draft') {
-    testDb.prepare(
+    const db = getDb();
+    db.prepare(
       `INSERT INTO pdf_orders (id, email, product_url, tier, status, intake_json) VALUES (?, ?, ?, ?, ?, ?)`
     ).run(id, 'test@test.com', 'https://example.com', 'basic', status, '{}');
   }
@@ -369,17 +367,17 @@ describe('PDF order status transitions', () => {
 
 describe('PDF download tokens', () => {
   function seedOrderAndToken(maxDownloads = 3) {
-    testDb.prepare(
+    const db = getDb();
+    db.prepare(
       `INSERT INTO pdf_orders (id, email, product_url, tier, status) VALUES (?, ?, ?, ?, ?)`
     ).run('o1', 'test@test.com', 'https://example.com', 'basic', 'ready');
 
-    const token = createPdfDownloadToken({
+    return createPdfDownloadToken({
       orderId: 'o1',
       tokenHash: 'hash123',
       expiresAt: new Date(Date.now() + 86400000).toISOString(),
       maxDownloads,
     });
-    return token;
   }
 
   it('creates and retrieves a download token', () => {

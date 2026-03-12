@@ -60,11 +60,12 @@ describe('generateAssets', () => {
     }
   });
 
-  it('substitutes {{url}} in HTML', () => {
+  it('substitutes {{url}} in templates that use it', () => {
     const assets = generateAssets(testConfig);
-    for (const asset of assets) {
-      expect(asset.html).toContain('https://testapp.com');
-    }
+    const og = assets.find((a) => a.type === 'og-image')!;
+    const github = assets.find((a) => a.type === 'github-social')!;
+    expect(og.html).toContain('https://testapp.com');
+    expect(github.html).toContain('https://testapp.com');
   });
 
   it('substitutes color tokens', () => {
@@ -77,12 +78,14 @@ describe('generateAssets', () => {
     }
   });
 
-  it('substitutes feature placeholders', () => {
+  it('substitutes feature placeholders in templates that use them', () => {
     const assets = generateAssets(testConfig);
-    for (const asset of assets) {
-      expect(asset.html).toContain('Lightning fast');
-      expect(asset.html).not.toContain('{{feature_1}}');
-    }
+    const social = assets.find((a) => a.type === 'social-card')!;
+    const github = assets.find((a) => a.type === 'github-social')!;
+    expect(social.html).toContain('Lightning fast');
+    expect(github.html).toContain('Lightning fast');
+    expect(social.html).not.toContain('{{feature_1}}');
+    expect(github.html).not.toContain('{{feature_1}}');
   });
 
   it('uses fallback for missing features', () => {

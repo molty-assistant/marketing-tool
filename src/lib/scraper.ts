@@ -3,11 +3,19 @@ import dns from 'dns/promises';
 import { isIPv4, isIPv6 } from 'net';
 
 // Helper to normalize IPv4-mapped IPv6 addresses (e.g. ::ffff:127.0.0.1 -> 127.0.0.1)
+// Also handles compact hex form (e.g. ::ffff:7f00:1 -> 127.0.0.1) which Node's URL parser produces
 function normalizeIp(ip: string): string {
   const lower = ip.toLowerCase();
   if (lower.startsWith('::ffff:')) {
     const v4Part = lower.substring(7);
     if (isIPv4(v4Part)) return v4Part;
+    // Handle compact hex form: ::ffff:AABB:CCDD -> A.B.C.D
+    const hexMatch = v4Part.match(/^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+    if (hexMatch) {
+      const hi = parseInt(hexMatch[1], 16);
+      const lo = parseInt(hexMatch[2], 16);
+      return `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+    }
   }
   return lower;
 }

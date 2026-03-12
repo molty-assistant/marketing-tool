@@ -51,7 +51,8 @@ export function middleware(request: NextRequest) {
     pathname === '/api/health' ||
     // Free tool API routes — public by design, rate-limited in their own handlers
     pathname === '/api/scrape' ||
-    pathname === '/api/generate-plan'
+    pathname === '/api/generate-plan' ||
+    pathname === '/tiktok'
   ) {
     return NextResponse.next();
   }
