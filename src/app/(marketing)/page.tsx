@@ -17,6 +17,10 @@ const FAQ_ITEMS = [
     answer: 'Your Launch Brief + Copy Pack is delivered within 48 hours after you submit your intake details.',
   },
   {
+    question: 'Is this for me?',
+    answer: 'If you\'re an indie maker, product person, or busy founder who needs clear positioning and copy to win first customers, yes. Not for enterprises, complex compliance projects, or those wanting unlimited revisions.',
+  },
+  {
     question: 'Is this AI-generated?',
     answer: "It is AI-assisted, but edited for clarity and conversion. You are paying for a finished pack, not raw AI output.",
   },
@@ -50,6 +54,35 @@ const PACK_TERMS = [
   'Done-for-you delivery within 48 hours of intake',
   'One revision included',
   `Intake via ${INTAKE_PAGE_URL} or ${INTAKE_EMAIL}`,
+];
+
+const WHO_FOR_ITEMS = [
+  {
+    title: 'Solo indie makers',
+    desc: 'Building your first or second product. Need clear positioning and copy that converts.',
+    icon: '🚀',
+  },
+  {
+    title: 'Product people',
+    desc: 'You ship great features but struggle with messaging. Want sharper landing pages and launch comms.',
+    icon: '🎯',
+  },
+  {
+    title: 'Busy founders',
+    desc: 'Time-poor and need done-for-you delivery. Don\'t want to learn marketing frameworks from scratch.',
+    icon: '⚡',
+  },
+  {
+    title: 'Pre-launch builders',
+    desc: 'Nearing launch and need positioning and copy ready for the big day.',
+    icon: '🚦',
+  },
+];
+
+const WHO_NOT_FOR_ITEMS = [
+  'Enterprises or agencies',
+  'Projects with complex compliance requirements',
+  'Those wanting unlimited revisions',
 ];
 
 export default function LandingPage() {
@@ -130,6 +163,13 @@ export default function LandingPage() {
             <span className="text-white/35">One revision included</span>
           </div>
 
+          {/* Quick links */}
+          <div className="mt-4 text-sm">
+            <Link href="#who-for" className="text-white/30 hover:text-white/60 transition-colors">
+              Who is this for? →
+            </Link>
+          </div>
+
           {/* PDF Mockup */}
           <div className="mt-16 mx-auto max-w-2xl">
             <div className="relative">
@@ -181,6 +221,50 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── WHO THIS IS FOR ─── */}
+      <section id="who-for" className="mt-20 sm:mt-28 scroll-mt-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">Who this is for</h2>
+          <p className="mt-2 text-sm sm:text-base text-white/40">
+            Built for indie makers who want to ship with confidence.
+          </p>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {WHO_FOR_ITEMS.map((item, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-white/6 bg-white/[0.02] p-6 hover:border-indigo-500/20 transition-colors"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/15 text-2xl">
+                  {item.icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-white">{item.title}</h3>
+                  <p className="mt-1.5 text-sm text-white/40 leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Who this is NOT for */}
+        <div className="mt-8 max-w-2xl mx-auto">
+          <div className="rounded-2xl border border-white/4 bg-white/[0.01] p-6">
+            <h4 className="text-sm font-semibold text-white/60 mb-3">Not for you if:</h4>
+            <ul className="space-y-2">
+              {WHO_NOT_FOR_ITEMS.map((item, index) => (
+                <li key={index} className="flex items-start gap-2.5 text-sm text-white/40">
+                  <span className="text-white/20 mt-0.5">—</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
