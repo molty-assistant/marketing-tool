@@ -52,7 +52,7 @@ export function middleware(request: NextRequest) {
     // Free tool API routes — public by design, rate-limited in their own handlers
     pathname === '/api/scrape' ||
     pathname === '/api/generate-plan' ||
-    pathname === '/tiktok'
+    pathname === '/tiktok/tiktokK6k2GcLQ168JtZpLVwwQ8VAPr4KFYLra.txt'
   ) {
     return NextResponse.next();
   }

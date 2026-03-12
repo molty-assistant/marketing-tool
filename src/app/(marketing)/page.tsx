@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Check, ArrowRight, FileText, Zap } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const STRIPE_LAUNCH_PACK_URL = 'https://buy.stripe.com/6oU28t1uwbKY0lx8vt0Ny00';
 const SAMPLE_PACK_URL = '/shared/6e540e90-748f-4be4-a139-e42f36e923cd';
@@ -41,7 +42,7 @@ const PACK_INCLUDES = [
   'Positioning snapshot: customer, pain, value prop, and support points',
   'Landing / website copy: headline options, hero subheads, feature bullets, CTAs',
   'App Store / listing copy (if relevant): subtitle, short + long descriptions, keyword ideas',
-  'Launch comms starter set: 5 X posts, 2 LinkedIn drafts, and a 3-email sequence',
+  'Launch comms starter set: 5 X posts / launch messaging angles',
 ];
 
 const PACK_TERMS = [
@@ -83,7 +84,7 @@ export default function LandingPage() {
 
           {/* Subheading */}
           <p className="mt-6 text-base sm:text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
-            Get clear positioning, sharper landing/listing copy, and launch comms you can ship fast. This is a service-first offer for indie makers who want their first customers.
+            Get clear positioning, sharper landing/listing copy, and launch comms (5 X posts / launch messaging angles) you can ship fast. This is a service-first offer for indie makers who want their first customers.
           </p>
 
           {/* CTA */}
@@ -123,7 +124,7 @@ export default function LandingPage() {
               Launch Pack — <strong>£99</strong>
             </span>
             <span className="rounded-full border border-white/8 bg-white/4 px-4 py-1.5 text-white/40">
-              Positioning + landing/listing copy + launch comms
+              Positioning + landing/listing copy + launch comms (5 X posts / launch messaging angles)
             </span>
             <span className="text-white/20">·</span>
             <span className="text-white/35">One revision included</span>
@@ -214,7 +215,7 @@ export default function LandingPage() {
               step: '03',
               icon: <ArrowRight className="h-4 w-4 text-indigo-400" />,
               title: 'Receive your pack in 48h',
-              desc: 'Get done-for-you positioning, landing/listing copy, launch comms, and one revision.',
+              desc: 'Get done-for-you positioning, landing/listing copy, launch comms (5 X posts / launch messaging angles), and one revision.',
             },
           ].map((s) => (
             <div
@@ -256,7 +257,7 @@ export default function LandingPage() {
                 <p className="mt-0.5 text-sm text-white/40">AI-powered photography location finder</p>
                 <div className="mt-4 rounded-xl bg-white/[0.03] border border-white/5 p-4">
                   <p className="text-sm text-white/60">
-                    <span className="font-semibold text-white/80">Delivered:</span> positioning snapshot, landing/listing copy direction, launch comms starter set, and conversion guidance.
+                    <span className="font-semibold text-white/80">Delivered:</span> positioning snapshot, landing/listing copy direction, launch comms starter set (5 X posts / launch messaging angles), and conversion guidance.
                   </p>
                 </div>
                 <p className="mt-3 text-sm text-white/45">
@@ -372,16 +373,18 @@ export default function LandingPage() {
           </div>
 
           <div className="rounded-2xl border border-white/6 bg-white/[0.02] divide-y divide-white/5 overflow-hidden">
-            {FAQ_ITEMS.map((item) => (
-              <details key={item.question} className="px-6 py-5">
-                <summary className="cursor-pointer text-sm font-semibold text-white/80 marker:text-white/30 hover:text-white">
-                  {item.question}
-                </summary>
-                <p className="pt-3 text-sm text-white/45 leading-relaxed">
-                  {item.answer}
-                </p>
-              </details>
-            ))}
+            <Accordion type="single" collapsible>
+              {FAQ_ITEMS.map((item, index) => (
+                <AccordionItem key={index} value={`item-${index}`} className="border-0 px-6">
+                  <AccordionTrigger className="text-sm font-semibold text-white/80 hover:text-white hover:no-underline py-5">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-white/45 leading-relaxed pb-5">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>
@@ -391,7 +394,7 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
             <div className="text-sm font-semibold text-white">LaunchKit</div>
-            <div className="mt-1 text-sm text-white/30">Done-for-you launch messaging packs for indie makers.</div>
+            <div className="mt-1 text-sm text-white/30">Done-for-you launch messaging packs (5 X posts / launch messaging angles) for indie makers.</div>
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">

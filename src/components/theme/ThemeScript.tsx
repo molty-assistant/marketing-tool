@@ -5,7 +5,7 @@ const THEME_INIT_SCRIPT = `(() => {
     const saved = localStorage.getItem('${THEME_STORAGE_KEY}');
     const preference = saved === 'light' || saved === 'dark' || saved === 'system'
       ? saved
-      : 'system';
+      : 'dark';
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const resolved = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
     const root = document.documentElement;

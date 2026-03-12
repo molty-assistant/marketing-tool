@@ -140,29 +140,35 @@ See `generate-hero-bg/route.ts` for the image implementation and `generate-video
 
 ---
 
-## Two Tiers — Paid PDF (Current Model)
+## Current commercial model — service-first
 
-### Basic — £39.99
-Perfect for sharp positioning and essential copy.
-- Positioning Snapshot
-- Competitor Angles + "Say This Not That"
-- 5 Headline options + feature bullets
-- Short + long CTA options
-- 5 X/Twitter + 2 LinkedIn launch posts
-- **Typically 10+ pages**
+### Live offer: Launch Brief + Copy Pack — £99
+This is the **current monetisation path**.
+The Marketing Tool runs behind the scenes, but the thing being sold right now is a **done-for-you service**, not a public paid-PDF product.
 
-### Pro — £99
-The full launch toolkit for serious growth.
-- **Everything in Basic**
-- Email Sequence (3 emails + A/B subjects)
-- 30-Day Content Calendar
-- Ad Copy Angles for Meta/X
-- App Store / Listing Copy
-- Tone-of-Voice Cheat Sheet
-- 10 X/Twitter + 5 LinkedIn posts
-- **Typically 20+ pages**
+**Delivery:** within 48 hours of complete intake
 
-**Note:** For your personal use right now, you get everything. Tiers are for landing page segmentation and order processing.
+**Included in the current offer:**
+- **Positioning snapshot**
+- **Landing / website copy**
+- **App Store / listing copy** *(if relevant)*
+- **Launch comms starter set** *(currently 5 X posts)*
+- **One revision**
+
+### Why this is the current model
+- fastest path to first revenue
+- lets you dogfood the pipeline on real products
+- keeps model/API usage under control
+- creates proof assets and customer language before productising further
+
+### What is *not* the current model
+- no public self-serve checkout for a paid PDF
+- no £39.99 / £99 automated product tiers
+- no promise of instant generation without manual review
+
+### Product path later
+Once the service offer is validated with real sales and delivery signal, evolve toward a **lighter product-assisted workflow**.
+That may eventually become a tighter self-serve or semi-self-serve product, but that is **not** the live commercial posture today.
 
 ---
 

@@ -1,23 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Database from 'better-sqlite3';
 import { NextRequest } from 'next/server';
-import { createTestDb } from '../test/db-helper';
-
-let testDb: Database.Database;
-
-vi.mock('@/lib/db', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/lib/db')>();
-  return {
-    ...original,
-    getDb: () => testDb,
-  };
-});
-
+import { getDb } from './db';
 import { guardApiRoute } from './api-guard';
 
 beforeEach(() => {
-  testDb = createTestDb();
   vi.stubEnv('API_KEY', '');
+  // Clean rate limit tables
+  const db = getDb();
+  db.exec('DELETE FROM api_rate_limits');
+  db.exec('DELETE FROM api_usage_daily');
 });
 
 function makeRequest(path: string, headers?: Record<string, string>): NextRequest {
@@ -57,7 +48,6 @@ describe('guardApiRoute', () => {
   });
 
   it('tracks API key actors separately from IP', () => {
-    // Exhaust rate limit for IP actor
     for (let i = 0; i < 2; i++) {
       guardApiRoute(
         makeRequest('/api/test', { 'x-forwarded-for': '1.2.3.4' }),
@@ -70,7 +60,6 @@ describe('guardApiRoute', () => {
     );
     expect(ipBlocked).not.toBeNull();
 
-    // API key actor should still be allowed
     const apiKeyReq = makeRequest('/api/test', { 'x-api-key': 'some-key' });
     const result = guardApiRoute(apiKeyReq, { maxRequests: 2, windowSeconds: 60 });
     expect(result).toBeNull();
@@ -83,17 +72,14 @@ describe('guardApiRoute', () => {
   });
 
   it('falls back through IP header chain', () => {
-    // x-real-ip
     const req1 = makeRequest('/api/test', { 'x-real-ip': '3.3.3.3' });
     expect(guardApiRoute(req1, { maxRequests: 5, windowSeconds: 60 })).toBeNull();
 
-    // cf-connecting-ip
     const req2 = makeRequest('/api/test', { 'cf-connecting-ip': '4.4.4.4' });
     expect(guardApiRoute(req2, { maxRequests: 5, windowSeconds: 60 })).toBeNull();
   });
 
   it('uses endpoint option when provided', () => {
-    // Exhaust with custom endpoint
     for (let i = 0; i < 2; i++) {
       guardApiRoute(
         makeRequest('/api/test', { 'x-forwarded-for': '1.2.3.4' }),
@@ -101,7 +87,6 @@ describe('guardApiRoute', () => {
       );
     }
 
-    // Same path but default endpoint (pathname) should still work
     const result = guardApiRoute(
       makeRequest('/api/test', { 'x-forwarded-for': '1.2.3.4' }),
       { maxRequests: 2, windowSeconds: 60 }
