@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import { secureCompare, hasValidApiKey, hasValidBasicAuth, requireOrchestratorAuth } from './auth-guard';
 
 function makeRequest(url = 'http://localhost/api/test', init?: RequestInit): NextRequest {
-  return new NextRequest(url, init);
+  return new NextRequest(url, init as any);
 }
 
 describe('secureCompare', () => {

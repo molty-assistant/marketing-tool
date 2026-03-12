@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server';
 import { middleware } from './middleware';
 
 function makeRequest(path: string, init?: RequestInit): NextRequest {
-  return new NextRequest(`http://localhost${path}`, init);
+  return new NextRequest(`http://localhost${path}`, init as any);
 }
 
 describe('middleware', () => {
@@ -35,6 +35,7 @@ describe('middleware', () => {
       '/api/health',
       '/api/scrape',
       '/api/generate-plan',
+      '/tiktok',
     ];
 
     for (const path of publicPaths) {
