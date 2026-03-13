@@ -5,7 +5,7 @@ export default function TikTokVerification() {
     <div className="max-w-4xl mx-auto px-6 py-12 font-sans text-slate-800">
       <h1 className="text-3xl font-bold mb-8">TikTok Developer Verification</h1>
       
-      <section className="mb-12 p-6 bg-slate-50 rounded-xl border border-slate-200">
+      <section className="hidden" aria-hidden="true">
         <h2 className="text-xl font-semibold mb-4">Verification Code</h2>
         <p className="font-mono text-lg bg-white p-3 border border-slate-300 rounded shadow-sm inline-block">
           tiktokK6k2GcLQ168JtZpLVwwQ8VAPr4KFYLra
