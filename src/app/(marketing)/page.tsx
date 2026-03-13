@@ -321,6 +321,71 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── WHY LAUNCHKIT VS ALTERNATIVES ─── */}
+      <section className="mt-20 sm:mt-28">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">Why LaunchKit instead of…</h2>
+            <p className="mt-2 text-sm sm:text-base text-white/40">
+              The £99 Launch Pack gives you agency-grade results without the agency price tag
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              {
+                name: 'Hiring an agency',
+                cons: [
+                  '£2,000–£10,000+ per project',
+                  '2–4 week turnaround minimum',
+                  'Meetings, revisions, scope creep',
+                  'Overkill for indie launch',
+                ],
+                better: 'LaunchKit delivers in 48h for £99',
+              },
+              {
+                name: 'Doing it yourself',
+                cons: [
+                  'Weeks of research and writing',
+                  'Requires marketing expertise',
+                  'Endless iterations and doubt',
+                  'Time away from building',
+                ],
+                better: 'LaunchKit gives you paste-ready copy fast',
+              },
+              {
+                name: 'Raw AI tools',
+                cons: [
+                  'Generic outputs without strategy',
+                  'No positioning framework',
+                  'You still have to edit heavily',
+                  'No guidance on what matters',
+                ],
+                better: 'LaunchKit = AI + strategy + human curation',
+              },
+            ].map((alt) => (
+              <div
+                key={alt.name}
+                className="rounded-2xl border border-white/6 bg-white/[0.02] p-5 flex flex-col"
+              >
+                <h3 className="text-base font-bold text-white mb-3">{alt.name}</h3>
+                <ul className="space-y-2 text-sm text-white/40 mb-4 flex-1">
+                  {alt.cons.map((con, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-white/20 mt-0.5">—</span>
+                      {con}
+                    </li>
+                  ))}
+                </ul>
+                <div className="rounded-lg bg-emerald-500/8 border border-emerald-500/20 px-3 py-2 text-sm text-emerald-300 font-medium">
+                  ✓ {alt.better}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── SOCIAL PROOF ─── */}
       <section className="mt-20 sm:mt-28">
         <div className="max-w-4xl mx-auto">
