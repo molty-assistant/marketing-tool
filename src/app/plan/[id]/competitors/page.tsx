@@ -7,7 +7,6 @@ import { DraftSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
 import { usePlan } from '@/hooks/usePlan';
 import DismissableTip from '@/components/DismissableTip';
-import { Button } from '@/components/ui/button';
 
 type Competitor = {
   name: string;

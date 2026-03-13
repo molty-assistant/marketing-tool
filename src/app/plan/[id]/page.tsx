@@ -165,7 +165,7 @@ export default function PlanOverviewPage({
     const oneLiner = plan.config?.one_liner || plan.scraped?.description || '';
     const icon = plan.scraped?.icon || plan.config?.icon;
     return { appName, oneLiner, icon };
-  }, [plan, overview]);
+  }, [plan]);
 
   if (loading) {
     return (

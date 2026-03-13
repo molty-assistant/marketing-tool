@@ -5,7 +5,6 @@ import { use, useCallback, useEffect, useMemo, useState } from 'react';
 import { PageSkeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
 import ErrorRetry from '@/components/ErrorRetry';
-import { Button } from '@/components/ui/button';
 
 type RatingFilter = 'all' | 'unrated' | 'great' | 'good' | 'ok' | 'poor';
 

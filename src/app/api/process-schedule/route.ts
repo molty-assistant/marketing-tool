@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { internalBaseUrl } from '@/lib/orchestrator';
 
@@ -8,7 +8,7 @@ import { internalBaseUrl } from '@/lib/orchestrator';
  *
  * POST /api/process-schedule
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const db = getDb();
     const now = new Date().toISOString().replace('T', ' ').slice(0, 19);

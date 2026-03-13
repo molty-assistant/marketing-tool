@@ -2,7 +2,6 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 
 type Platform = 'instagram' | 'tiktok';
 
@@ -42,7 +41,6 @@ export default function SocialPage() {
     mimeType: string;
     base64Data?: string;
   }>>([]);
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Step 2
@@ -74,10 +72,6 @@ export default function SocialPage() {
 
   // Guard to prevent save effect from re-writing hydrated data on mount
   const hydrated = useRef(false);
-
-  // Visibility gates
-  const canShowStep2 = selectedPlatform !== null;
-  const canShowStep3AndStep4 = idea !== null;
 
   const hashtagsArray = useMemo(() => {
     if (!hashtagsInput.trim()) return [] as string[];
@@ -120,7 +114,8 @@ export default function SocialPage() {
     const timer = setTimeout(() => {
       try {
         // Strip base64/dataUrl from photos to avoid exceeding sessionStorage limits
-        const photosForStorage = uploadedPhotos.map(({ dataUrl: _d, base64Data: _b, ...rest }) => rest);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const photosForStorage = uploadedPhotos.map(({ dataUrl, base64Data, ...rest }) => rest);
         const snapshot = { selectedPlatform, topicInput, caption, hashtagsInput, imageMode, idea, image, uploadedPhotos: photosForStorage };
         sessionStorage.setItem(`social-${planId}`, JSON.stringify(snapshot));
       } catch { /* sessionStorage full or unavailable */ }
@@ -243,7 +238,6 @@ export default function SocialPage() {
       let photos = uploadedPhotos;
       const newPhotos = photos.filter((p) => !p.filename);
       if (newPhotos.length > 0) {
-        setUploading(true);
         try {
           const uploadRes = await fetch('/api/upload-photos', {
             method: 'POST',
@@ -266,7 +260,6 @@ export default function SocialPage() {
             setUploadedPhotos(photos);
           }
         } finally {
-          setUploading(false);
         }
       }
 

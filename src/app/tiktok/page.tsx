@@ -27,7 +27,7 @@ export default function TikTokVerification() {
           <div className="prose prose-slate text-slate-600 space-y-4">
             <p><strong>1. Acceptance of Terms:</strong> By connecting your TikTok account to Molty, you agree to these terms.</p>
             <p><strong>2. Service Description:</strong> Molty provides tools for content scheduling and automated posting to TikTok.</p>
-            <p><strong>3. User Conduct:</strong> You are responsible for all content posted via your Molty account. Content must comply with TikTok's Community Guidelines.</p>
+            <p><strong>3. User Conduct:</strong> You are responsible for all content posted via your Molty account. Content must comply with TikTok&apos;s Community Guidelines.</p>
             <p><strong>4. Limitations:</strong> We do not guarantee 100% uptime and are not liable for any missed posts or platform restrictions imposed by TikTok.</p>
           </div>
         </section>
