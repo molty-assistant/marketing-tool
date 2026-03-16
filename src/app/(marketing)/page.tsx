@@ -554,6 +554,8 @@ export default function LandingPage() {
               { href: SAMPLE_PACK_URL, label: 'Sample pack' },
               { href: '/terms', label: 'Terms' },
               { href: '/privacy', label: 'Privacy' },
+              { href: '/tiktok', label: 'TikTok Integration Terms' },
+              { href: '/tiktok', label: 'TikTok Integration Privacy' },
             ].map(({ href, label, external }) => (
               external ? (
                 <a
