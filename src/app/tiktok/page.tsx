@@ -1,9 +1,7 @@
-import React from 'react';
-
 export default function TikTokVerification() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12 font-sans text-slate-800">
-      <h1 className="text-3xl font-bold mb-8">TikTok Developer Verification</h1>
+      <h1 className="text-3xl font-bold mb-8">Molty — TikTok Integration Policies</h1>
       
       <section className="hidden" aria-hidden="true">
         <h2 className="text-xl font-semibold mb-4">Verification Code</h2>
@@ -22,7 +20,7 @@ export default function TikTokVerification() {
       </section>
 
       <div className="grid md:grid-cols-2 gap-12 border-t border-slate-200 pt-12">
-        <section>
+        <section id="terms">
           <h2 className="text-2xl font-semibold mb-6">Terms of Service</h2>
           <div className="prose prose-slate text-slate-600 space-y-4">
             <p><strong>1. Acceptance of Terms:</strong> By connecting your TikTok account to Molty, you agree to these terms.</p>
@@ -32,7 +30,7 @@ export default function TikTokVerification() {
           </div>
         </section>
 
-        <section>
+        <section id="privacy">
           <h2 className="text-2xl font-semibold mb-6">Privacy Policy</h2>
           <div className="prose prose-slate text-slate-600 space-y-4">
             <p><strong>1. Data Collection:</strong> We collect your TikTok account name and access tokens provided via OAuth for the sole purpose of publishing content.</p>
