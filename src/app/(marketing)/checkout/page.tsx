@@ -168,7 +168,15 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Secure payment via Stripe · PDF delivered within minutes · No refunds after generation
+        Secure payment via Stripe · Delivery within 48 hours · One revision included
+      </p>
+
+      <p className="text-center text-xs text-muted-foreground">
+        If we fail to deliver due to a technical issue, you are entitled to a full refund. See{' '}
+        <Link href="/terms" className="underline">
+          Terms
+        </Link>
+        .
       </p>
 
       <p className="text-center text-xs text-muted-foreground">

@@ -7,30 +7,32 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { ExampleShowcase } from '@/components/ExampleShowcase';
 import { TIERS, SAMPLE_PACK_URL } from '@/lib/pricing';
 
+const OFFER_PRICE = TIERS.pro.price;
+
 const FAQ_ITEMS = [
   {
     question: 'How does it work?',
-    answer: 'Answer 5 quick questions about your product, pay once, and your AI-generated marketing pack is ready to download as a PDF within minutes. No account needed.',
+    answer: `Share your product URL, answer 5 intake questions, and pay once. We deliver your done-for-you Launch Brief + Copy Pack within 48 hours.`,
   },
   {
     question: 'Is this a subscription?',
-    answer: 'No. You pay once and the pack is yours forever. No recurring charges, no hidden fees.',
+    answer: 'No. It is a one-time £99 service with no recurring fees.',
   },
   {
     question: 'What do I need before buying?',
-    answer: 'Just your product URL (website, App Store, or Google Play listing). We analyse it to personalise your brief, copy, and social posts.',
+    answer: 'Your product URL and a few details on audience, tone, and launch goal. The intake takes about 2 minutes.',
   },
   {
-    question: 'What\'s the difference between Entry and Pro?',
-    answer: 'Entry (£39) gives you positioning, landing page copy, and 5 social posts — everything to start shipping. Pro (£99) adds email sequences, a 30-day content calendar, ad copy angles, app store copy, and more social posts.',
+    question: 'What is included in the £99 pack?',
+    answer: 'Positioning snapshot, landing or website copy, listing copy where relevant, and launch comms starter copy. One revision is included.',
   },
   {
     question: 'Can I see a sample first?',
     answer: 'Yes — browse the example output above or view the full sample pack to see the depth and quality before you buy.',
   },
   {
-    question: 'What if I\'m not happy?',
-    answer: '30-day money-back guarantee. If the pack doesn\'t help you launch clearer or faster, email us for a full refund.',
+    question: 'How many revisions are included?',
+    answer: 'One revision is included so we can tighten messaging after your first draft review.',
   },
 ];
 
@@ -51,20 +53,20 @@ export default function LandingPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/8 px-4 py-1.5 text-xs font-medium text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            Pay once · Instant PDF delivery · No account needed
+            Done-for-you service · 48h turnaround · One revision included
           </div>
 
           {/* Headline */}
           <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-balance text-foreground">
-            Your entire launch marketing —{' '}
+            Your launch brief and copy —{' '}
             <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-              sorted in minutes
+              done for you in 48 hours
             </span>
           </h1>
 
           {/* Subheading */}
           <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Paste your product URL, answer 5 questions, and get a complete marketing pack — positioning, landing page copy, social posts, and more. From {TIERS.entry.price}.
+            We turn your product URL and intake into a clear positioning snapshot and launch-ready copy for your landing page, listings, and comms. Single pack: {OFFER_PRICE}.
           </p>
 
           {/* CTAs */}
@@ -73,7 +75,7 @@ export default function LandingPage() {
               href="/start?tier=pro"
               className="group inline-flex items-center justify-center rounded-xl bg-gradient-to-b from-indigo-400 to-indigo-600 px-8 py-4 text-base font-semibold text-white shadow-[0_0_32px_rgba(99,102,241,0.35)] border border-indigo-400/20 hover:shadow-[0_0_40px_rgba(99,102,241,0.5)] hover:scale-[1.02] transition-all duration-200"
             >
-              Get your pack — from {TIERS.entry.price}
+              Start your {OFFER_PRICE} intake
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
             <a
@@ -88,12 +90,12 @@ export default function LandingPage() {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-emerald-500" />
-              30-day money-back guarantee
+              Secure Stripe payment
             </span>
             <span className="hidden sm:inline text-border">·</span>
-            <span>One-time payment</span>
+            <span>48-hour turnaround</span>
             <span className="hidden sm:inline text-border">·</span>
-            <span>PDF ready in minutes</span>
+            <span>One revision included</span>
           </div>
 
           {/* PDF Mockup */}
@@ -174,13 +176,13 @@ export default function LandingPage() {
               },
               {
                 step: '02',
-                title: 'Pay once',
-                desc: `Entry (${TIERS.entry.price}) or Pro (${TIERS.pro.price}) — secure Stripe checkout. No subscription.`,
+                title: `Pay ${OFFER_PRICE} once`,
+                desc: 'Secure checkout locks your intake and delivery slot. No subscription.',
               },
               {
                 step: '03',
-                title: 'Download your PDF',
-                desc: 'AI-generated positioning, copy, and content plan — ready to paste and ship.',
+                title: 'Receive your pack in 48 hours',
+                desc: 'Done-for-you brief and launch copy, with one revision included.',
               },
             ].map((s) => (
               <div
@@ -200,79 +202,59 @@ export default function LandingPage() {
       <section id="pricing" className="mt-16 sm:mt-24 scroll-mt-24">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Choose your pack</h2>
-            <p className="mt-2 text-sm text-muted-foreground">One-time payment. Instant PDF delivery. No account required.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">One service, clear scope</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Done-for-you Launch Brief + Copy Pack. {OFFER_PRICE} one-time, delivered in 48 hours.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="max-w-2xl mx-auto rounded-[17px] bg-gradient-to-b from-indigo-500/35 to-violet-500/15 p-[1px]">
+            <div className="rounded-2xl bg-card p-6 sm:p-8 relative overflow-hidden h-full">
+              <div className="absolute top-0 right-0 h-40 w-40 bg-indigo-500/8 blur-3xl rounded-full pointer-events-none" />
 
-            {/* Entry */}
-            <div className="rounded-2xl border border-border bg-card p-6">
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-4">
                 <div>
-                  <span className="text-base font-bold text-foreground">{TIERS.entry.name}</span>
-                  <p className="mt-1 text-xs text-muted-foreground">Typically {TIERS.entry.pageCount} pages</p>
+                  <span className="text-base font-bold text-foreground">Launch Brief + Copy Pack</span>
+                  <p className="mt-1 text-xs text-muted-foreground">Done-for-you positioning and launch messaging</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-3xl font-bold text-foreground">{TIERS.entry.price}</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">{OFFER_PRICE}</span>
                   <p className="text-xs text-muted-foreground">one-time</p>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mb-5">{TIERS.entry.description}</p>
+
               <ul className="space-y-2.5 text-sm text-foreground/80 mb-6">
-                {TIERS.entry.shortFeatures.map((f) => (
+                {[
+                  'Positioning snapshot',
+                  'Landing / website copy',
+                  'App Store / listing copy (if relevant)',
+                  'Launch comms starter set',
+                  'Delivered within 48 hours',
+                  'One revision included',
+                ].map((f) => (
                   <li key={f} className="flex gap-2.5 items-start">
-                    <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <Check className="h-4 w-4 text-indigo-400 flex-shrink-0 mt-0.5" />
                     {f}
                   </li>
                 ))}
               </ul>
+
               <Link
-                href="/start?tier=entry"
-                className="flex items-center justify-center rounded-xl border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                href="/start?tier=pro"
+                className="flex items-center justify-center rounded-xl bg-gradient-to-b from-indigo-400 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] border border-indigo-400/20 hover:shadow-[0_0_28px_rgba(99,102,241,0.45)] hover:scale-[1.01] transition-all"
               >
-                Get {TIERS.entry.name} — {TIERS.entry.price}
+                Start £99 intake
               </Link>
             </div>
-
-            {/* Pro — gradient border */}
-            <div className="rounded-[17px] bg-gradient-to-b from-indigo-500/35 to-violet-500/15 p-[1px]">
-              <div className="rounded-2xl bg-card p-6 relative overflow-hidden h-full">
-                <div className="absolute top-0 right-0 h-40 w-40 bg-indigo-500/8 blur-3xl rounded-full pointer-events-none" />
-
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <span className="text-base font-bold text-foreground">{TIERS.pro.name}</span>
-                    <p className="mt-1 text-xs text-muted-foreground">Typically {TIERS.pro.pageCount} pages</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">{TIERS.pro.price}</span>
-                    <p className="text-xs text-muted-foreground">one-time</p>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground mb-5">{TIERS.pro.description}</p>
-                <ul className="space-y-2.5 text-sm text-foreground/80 mb-6">
-                  {TIERS.pro.shortFeatures.map((f) => (
-                    <li key={f} className="flex gap-2.5 items-start">
-                      <Check className="h-4 w-4 text-indigo-400 flex-shrink-0 mt-0.5" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/start?tier=pro"
-                  className="flex items-center justify-center rounded-xl bg-gradient-to-b from-indigo-400 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] border border-indigo-400/20 hover:shadow-[0_0_28px_rgba(99,102,241,0.45)] hover:scale-[1.01] transition-all"
-                >
-                  Get {TIERS.pro.name} — {TIERS.pro.price}
-                </Link>
-              </div>
-            </div>
-
           </div>
 
           {/* Guarantee */}
           <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Shield className="h-4 w-4 text-emerald-500" />
-            30-day money-back guarantee — no questions asked
+            <span>
+              One revision included. If we fail to deliver due to a technical issue, you are entitled to a full refund ({' '}
+              <Link href="/terms" className="underline">
+                Terms
+              </Link>
+              ).
+            </span>
           </div>
         </div>
       </section>
@@ -306,12 +288,12 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
             <div className="text-sm font-semibold text-foreground">LaunchKit</div>
-            <div className="mt-1 text-sm text-muted-foreground">Launch marketing packs for indie makers. Pay once, yours forever.</div>
+            <div className="mt-1 text-sm text-muted-foreground">Done-for-you launch brief + copy pack for indie makers.</div>
           </div>
 
           <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 text-sm">
             {[
-              { href: '/#pricing', label: 'Pricing' },
+              { href: '/#pricing', label: '£99 Offer' },
               { href: '/#examples', label: 'Examples' },
               { href: SAMPLE_PACK_URL, label: 'Sample pack' },
               { href: '/terms', label: 'Terms' },

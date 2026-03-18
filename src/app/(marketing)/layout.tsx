@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export const metadata: Metadata = {
-  title: 'LaunchKit — Launch Marketing Packs for Indie Makers',
+  title: 'LaunchKit — £99 Launch Brief + Copy Pack',
   description:
-    'Paste your product URL, answer 5 questions, get a complete marketing pack — positioning, copy, social posts, and more. From £39, pay once.',
+    'Done-for-you positioning and launch copy for indie makers. One £99 Launch Brief + Copy Pack, delivered in 48 hours with one revision.',
 };
 
 function LogoMark() {
@@ -50,13 +50,13 @@ export default function MarketingLayout({
               href="/#pricing"
               className="text-muted-foreground hover:text-foreground font-medium transition-colors"
             >
-              Pricing
+              £99 Offer
             </Link>
             <Link
-              href="/start"
+              href="/start?tier=pro"
               className="rounded-lg bg-gradient-to-b from-indigo-400 to-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-[0_0_16px_rgba(99,102,241,0.3)] border border-indigo-400/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all sm:text-sm"
             >
-              Get Started
+              Start £99 Intake
             </Link>
             <ThemeToggle />
           </div>
