@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { TIERS, normalizeTierId, type TierId } from '@/lib/pricing';
 
 const INTAKE_QUESTIONS = [
   {
@@ -59,20 +60,12 @@ const INTAKE_QUESTIONS = [
 
 type IntakeAnswers = Record<string, string>;
 
-function parseTierParam(value: string | null): 'basic' | 'pro' | null {
-  if (value === 'basic' || value === 'pro') {
-    return value;
-  }
-
-  return null;
-}
-
 const STORAGE_KEY = 'intake-form-draft';
 
 interface FormDraft {
   productUrl: string;
   email: string;
-  selectedTier: 'basic' | 'pro' | null;
+  selectedTier: TierId | null;
   answers: IntakeAnswers;
   extra: string;
 }
@@ -93,7 +86,7 @@ function StartPageContent() {
   const [step, setStep] = useState<'form' | 'submitting'>('form');
   const [productUrl, setProductUrl] = useState(draft.productUrl ?? '');
   const [email, setEmail] = useState(draft.email ?? '');
-  const [selectedTier, setSelectedTier] = useState<'basic' | 'pro' | null>(draft.selectedTier ?? null);
+  const [selectedTier, setSelectedTier] = useState<TierId | null>(draft.selectedTier ?? null);
   const [answers, setAnswers] = useState<IntakeAnswers>(draft.answers ?? {});
   const [extra, setExtra] = useState(draft.extra ?? '');
   const [error, setError] = useState('');
@@ -111,9 +104,14 @@ function StartPageContent() {
     saveDraft();
   }, [saveDraft]);
 
-  const tier = selectedTier ?? parseTierParam(searchParams.get('tier')) ?? 'basic';
+  const tier: TierId = selectedTier ?? normalizeTierId(searchParams.get('tier'));
   const allAnswered = INTAKE_QUESTIONS.every((q) => answers[q.id]);
   const canSubmit = productUrl.trim() && email.trim() && allAnswered;
+
+  // Count completed fields for progress
+  const totalFields = 2 + INTAKE_QUESTIONS.length; // URL + email + 5 questions
+  const completedFields = (productUrl.trim() ? 1 : 0) + (email.trim() ? 1 : 0) + INTAKE_QUESTIONS.filter((q) => answers[q.id]).length;
+  const progress = Math.round((completedFields / totalFields) * 100);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -127,13 +125,16 @@ function StartPageContent() {
     setStep('submitting');
 
     try {
+      // Map 'entry' back to 'basic' for API compatibility
+      const apiTier = tier === 'entry' ? 'basic' : tier;
+
       const res = await fetch('/api/pdf/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: email.trim(),
           productUrl: productUrl.trim(),
-          tier,
+          tier: apiTier,
           intake: { ...answers, extra: extra.trim() || undefined },
           honeypot,
         }),
@@ -159,35 +160,65 @@ function StartPageContent() {
     }
   }
 
+  const tierData = TIERS[tier];
+
   return (
     <div className="w-full">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 dark:border-slate-800 dark:bg-[#0d1117]">
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-10">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
           <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-violet-600/10 blur-3xl" />
         </div>
 
         <div className="relative mx-auto max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-slate-700 dark:text-slate-300">
+          {/* Tier selection first */}
+          <div className="mb-8">
+            <p className="text-sm font-semibold text-foreground mb-3">Your plan</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(['entry', 'pro'] as const).map((t) => {
+                const td = TIERS[t];
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setSelectedTier(t)}
+                    className={`text-left cursor-pointer rounded-2xl border-2 p-4 transition-colors ${
+                      tier === t
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
+                        : 'border-border bg-muted hover:border-indigo-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-foreground">{td.name}</span>
+                      <span className="text-sm font-bold text-indigo-500">{td.price}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{td.shortDescription}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs text-muted-foreground">
             5 questions · 2 minutes
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Tell us about your product
           </h1>
-          <p className="mt-2 text-base text-slate-600 dark:text-slate-300">
-            Answer 5 quick questions and we&apos;ll generate a custom marketing plan PDF — ready to download in minutes.
+          <p className="mt-2 text-base text-muted-foreground">
+            Answer 5 quick questions and we&apos;ll generate a custom {tierData.name} marketing pack PDF — ready to download in minutes.
           </p>
 
           {/* Progress indicator */}
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+          <div className="mt-6 rounded-xl border border-border bg-muted p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Step 1 of 2: Tell us about your product
+              <span className="text-sm font-medium text-foreground">
+                {completedFields === totalFields ? 'All done — ready to submit!' : `${completedFields} of ${totalFields} fields completed`}
               </span>
-              <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">50%</span>
+              <span className="text-sm font-semibold text-indigo-500">{progress}%</span>
             </div>
-            <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-              <div className="h-full w-1/2 rounded-full bg-indigo-500" />
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div className="h-full rounded-full bg-indigo-500 transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
           </div>
 
@@ -206,7 +237,7 @@ function StartPageContent() {
 
             {/* Product URL */}
             <div>
-              <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 Your product URL <span className="text-indigo-500">*</span>
               </label>
               <input
@@ -215,14 +246,14 @@ function StartPageContent() {
                 onChange={(e) => setProductUrl(e.target.value)}
                 placeholder="https://yourproduct.com"
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               />
-              <p className="mt-1 text-xs text-slate-500">We&apos;ll analyse this page to personalise your plan</p>
+              <p className="mt-1 text-xs text-muted-foreground">We&apos;ll analyse this page to personalise your plan</p>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 Your email <span className="text-indigo-500">*</span>
               </label>
               <input
@@ -231,15 +262,15 @@ function StartPageContent() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               />
-              <p className="mt-1 text-xs text-slate-500">Your download link will be tied to this email</p>
+              <p className="mt-1 text-xs text-muted-foreground">Your download link will be tied to this email</p>
             </div>
 
             {/* 5 intake questions */}
             {INTAKE_QUESTIONS.map((q, qi) => (
               <div key={q.id}>
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
+                <p className="text-sm font-semibold text-foreground mb-3">
                   {qi + 1}. {q.question} <span className="text-indigo-500">*</span>
                 </p>
                 <div className="space-y-2">
@@ -251,7 +282,7 @@ function StartPageContent() {
                         className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm transition-colors ${
                           selected
                             ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                            : 'border-border bg-muted text-muted-foreground hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20'
                         }`}
                       >
                         <input
@@ -262,7 +293,7 @@ function StartPageContent() {
                           onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: opt }))}
                           className="sr-only"
                         />
-                        <span className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 ${selected ? 'border-indigo-500' : 'border-slate-300'}`}>
+                        <span className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 ${selected ? 'border-indigo-500' : 'border-muted-foreground/30'}`}>
                           {selected && <span className="h-2 w-2 rounded-full bg-indigo-500" />}
                         </span>
                         {opt}
@@ -275,56 +306,21 @@ function StartPageContent() {
 
             {/* Optional extra context */}
             <div>
-              <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
-                Anything else we should know? <span className="text-slate-400 font-normal">(optional)</span>
+              <label className="block text-sm font-semibold text-foreground mb-2">
+                Anything else we should know? <span className="text-muted-foreground font-normal">(optional)</span>
               </label>
               <textarea
                 value={extra}
                 onChange={(e) => setExtra(e.target.value.slice(0, 280))}
-                placeholder="e.g. We&apos;re launching on Product Hunt next week, we&apos;re in the fintech space..."
+                placeholder="e.g. We're launching on Product Hunt next week, we're in the fintech space..."
                 rows={3}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white resize-none"
+                className="w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 resize-none"
               />
-              <p className="mt-1 text-xs text-slate-500">{extra.length}/280 characters</p>
-            </div>
-
-            {/* Tier selector */}
-            <div>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Choose your plan</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {(['basic', 'pro'] as const).map((t) => (
-                  <label
-                    key={t}
-                    className={`cursor-pointer rounded-2xl border-2 p-4 transition-colors ${
-                      tier === t
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
-                        : 'border-slate-200 bg-slate-50 hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-900'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="tier"
-                      value={t}
-                      checked={tier === t}
-                      onChange={() => setSelectedTier(t)}
-                      className="sr-only"
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-slate-900 dark:text-white capitalize">{t}</span>
-                      <span className="text-sm font-bold text-indigo-600">{t === 'basic' ? '£39' : '£99'}</span>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {t === 'basic'
-                        ? 'Positioning, copy & social posts — typically 10+ pages'
-                        : 'Everything + emails, ads & 30-day calendar — typically 20+ pages'}
-                    </p>
-                  </label>
-                ))}
-              </div>
+              <p className="mt-1 text-xs text-muted-foreground">{extra.length}/280 characters</p>
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <p className="text-sm text-destructive">{error}</p>
             )}
 
             <Button
@@ -332,10 +328,10 @@ function StartPageContent() {
               disabled={!canSubmit || step === 'submitting'}
               className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl"
             >
-              {step === 'submitting' ? 'Creating your order…' : 'Continue to payment →'}
+              {step === 'submitting' ? 'Creating your order…' : `Continue to payment — ${tierData.price} →`}
             </Button>
 
-            <p className="text-center text-xs text-slate-400">
+            <p className="text-center text-xs text-muted-foreground">
               No account needed · Instant PDF delivery · 100% automated
             </p>
           </form>
@@ -347,7 +343,7 @@ function StartPageContent() {
 
 export default function StartPage() {
   return (
-    <Suspense fallback={<p className="text-slate-500 animate-pulse">Loading…</p>}>
+    <Suspense fallback={<p className="text-muted-foreground animate-pulse">Loading…</p>}>
       <StartPageContent />
     </Suspense>
   );

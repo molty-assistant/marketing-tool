@@ -4,15 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Script from 'next/script';
 import Link from 'next/link';
-
-// Stripe Buy Button public config (not secrets — safe to commit)
-const STRIPE_PUBLISHABLE_KEY =
-  'pk_live_51T4QVYPUEJhRRSPi3jKOPAR3dwOgcnujKX8A5yM7u8svDIazrqFo3ZU9sYVIUVa0t12s8ycgJiACyYBvO3JiWdoc007PM4ioGe';
-
-const STRIPE_BUY_BUTTON_IDS: Record<'basic' | 'pro', string> = {
-  basic: 'buy_btn_1T6ATgPUEJhRRSPivmUqs75M',
-  pro:   'buy_btn_1T6AUTPUEJhRRSPiG6YUbZZw',
-};
+import { TIERS, STRIPE_PUBLISHABLE_KEY, normalizeTierId, type TierId } from '@/lib/pricing';
 
 // Typed wrapper for the Stripe Buy Button web component (avoids JSX namespace issues in React 19)
 function StripeBuyButton(props: {
@@ -29,38 +21,17 @@ function StripeBuyButton(props: {
 interface OrderData {
   id: string;
   status: string;
-  tier: 'basic' | 'pro';
+  tier: string;
   email: string;
   productUrl: string;
 }
-
-const TIER_FEATURES = {
-  basic: [
-    'Positioning Snapshot (2 pages)',
-    'Competitor Angles + Say This Not That',
-    'Landing Page Copy — 5 headlines, 8–10 bullets, CTAs',
-    '5 X/Twitter + 2 LinkedIn launch posts',
-    'Typically 10+ pages (varies by product)',
-  ],
-  pro: [
-    'Everything in Basic',
-    'Email Sequence (3 emails + A/B subjects)',
-    '30-Day Content Calendar (30 rows)',
-    'Ad Copy Angles (5 angles for Meta/X)',
-    'App Store / Listing Copy',
-    'Tone-of-Voice Cheat Sheet',
-    'Typically 20+ pages (varies by product)',
-  ],
-} as const;
-
-const TIER_PRICE = { basic: '£39', pro: '£99' };
 
 function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
 
   const [order, setOrder] = useState<OrderData | null>(null);
-  const [selectedTier, setSelectedTier] = useState<'basic' | 'pro'>('basic');
+  const [selectedTier, setSelectedTier] = useState<TierId>('entry');
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState('');
@@ -73,7 +44,7 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
       .then((r) => r.json())
       .then((data: OrderData) => {
         setOrder(data);
-        setSelectedTier(data.tier);
+        setSelectedTier(normalizeTierId(data.tier));
         setLoading(false);
       })
       .catch(() => {
@@ -82,9 +53,12 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
       });
   }, [orderId]);
 
-  // Sync selected tier to DB (fires on initial order load and on tier change)
+  // Sync selected tier to DB (fires on tier change only, not initial load)
   useEffect(() => {
     if (!orderId || !order) return;
+
+    // Map 'entry' back to 'basic' for API compatibility with existing DB records
+    const apiTier = selectedTier === 'entry' ? 'basic' : selectedTier;
 
     setSyncing(true);
     setError('');
@@ -92,7 +66,7 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
     fetch('/api/pdf/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId, tier: selectedTier }),
+      body: JSON.stringify({ orderId, tier: apiTier }),
     })
       .then((r) => r.json())
       .then((data: { tier?: string; error?: string }) => {
@@ -100,84 +74,87 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
       })
       .catch(() => setError('Could not update your plan. Please try again.'))
       .finally(() => setSyncing(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, order, selectedTier]);
 
   if (!orderId) {
     return (
-      <p className="text-slate-600 dark:text-slate-300">
+      <p className="text-muted-foreground">
         No order found. <Link href="/start" className="text-indigo-500 underline">Start here</Link>.
       </p>
     );
   }
 
   if (loading) {
-    return <p className="text-slate-500 animate-pulse">Loading your order…</p>;
+    return <p className="text-muted-foreground animate-pulse">Loading your order…</p>;
   }
 
   if (error && !order) {
-    return <p className="text-red-600">{error}</p>;
+    return <p className="text-destructive">{error}</p>;
   }
 
+  const tier = TIERS[selectedTier];
   const showButton = scriptReady && !syncing && !!orderId;
 
   return (
     <div className="space-y-6">
       {/* Order summary */}
       {order && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs text-slate-500 mb-1">Generating a plan for</p>
-          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{order.productUrl}</p>
-          <p className="text-xs text-slate-400 mt-1">{order.email}</p>
+        <div className="rounded-2xl border border-border bg-muted p-5">
+          <p className="text-xs text-muted-foreground mb-1">Generating a plan for</p>
+          <p className="text-sm font-semibold text-foreground truncate">{order.productUrl}</p>
+          <p className="text-xs text-muted-foreground mt-1">{order.email}</p>
         </div>
       )}
 
       {/* Tier toggle */}
       <div>
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Choose your plan</p>
+        <p className="text-sm font-semibold text-foreground mb-3">Choose your plan</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          {(['basic', 'pro'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setSelectedTier(t)}
-              disabled={syncing}
-              className={`text-left rounded-2xl border-2 p-4 transition-colors disabled:opacity-60 ${
-                selectedTier === t
-                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
-                  : 'border-slate-200 bg-white hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-900'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-bold text-slate-900 dark:text-white capitalize">{t}</span>
-                <span className="text-sm font-bold text-indigo-600">{TIER_PRICE[t]}</span>
-              </div>
-              <ul className="space-y-1">
-                {TIER_FEATURES[t].map((f) => (
-                  <li key={f} className="text-xs text-slate-500 flex gap-1.5">
-                    <span className="text-indigo-500 flex-shrink-0">✓</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </button>
-          ))}
+          {(['entry', 'pro'] as const).map((t) => {
+            const tierData = TIERS[t];
+            return (
+              <button
+                key={t}
+                onClick={() => setSelectedTier(t)}
+                disabled={syncing}
+                className={`text-left rounded-2xl border-2 p-4 transition-colors disabled:opacity-60 ${
+                  selectedTier === t
+                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
+                    : 'border-border bg-card hover:border-indigo-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-bold text-foreground">{tierData.name}</span>
+                  <span className="text-sm font-bold text-indigo-500">{tierData.price}</span>
+                </div>
+                <ul className="space-y-1">
+                  {tierData.features.map((f) => (
+                    <li key={f} className="text-xs text-muted-foreground flex gap-1.5">
+                      <span className="text-indigo-500 flex-shrink-0">✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       {/* Stripe Buy Button — remounts on tier change via key prop */}
       <div className="flex justify-center min-h-[52px] items-center">
         {syncing && (
-          <p className="text-slate-400 text-sm animate-pulse">Updating plan…</p>
+          <p className="text-muted-foreground text-sm animate-pulse">Updating plan…</p>
         )}
         {!scriptReady && !syncing && (
-          <p className="text-slate-400 text-sm animate-pulse">Loading payment…</p>
+          <p className="text-muted-foreground text-sm animate-pulse">Loading payment…</p>
         )}
         {showButton && (
           <StripeBuyButton
             key={selectedTier}
-            buy-button-id={STRIPE_BUY_BUTTON_IDS[selectedTier]}
+            buy-button-id={tier.stripeBuyButtonId}
             publishable-key={STRIPE_PUBLISHABLE_KEY}
             client-reference-id={orderId}
             success-url={`${typeof window !== 'undefined' ? window.location.origin : ''}/status/${orderId}`}
@@ -185,11 +162,11 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
         )}
       </div>
 
-      <p className="text-center text-xs text-slate-400">
+      <p className="text-center text-xs text-muted-foreground">
         Secure payment via Stripe · PDF delivered within minutes · No refunds after generation
       </p>
 
-      <p className="text-center text-xs text-slate-400">
+      <p className="text-center text-xs text-muted-foreground">
         <Link href="/start" className="underline">← Back and change answers</Link>
       </p>
     </div>
@@ -206,18 +183,18 @@ export default function CheckoutPage() {
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
       />
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 dark:border-slate-800 dark:bg-[#0d1117]">
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-10">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
         </div>
         <div className="relative mx-auto max-w-xl">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
             Review & pay
           </h1>
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-muted-foreground mb-6">
             You can still switch plans before paying.
           </p>
-          <Suspense fallback={<p className="text-slate-500 animate-pulse">Loading…</p>}>
+          <Suspense fallback={<p className="text-muted-foreground animate-pulse">Loading…</p>}>
             <CheckoutContent scriptReady={scriptReady} />
           </Suspense>
         </div>

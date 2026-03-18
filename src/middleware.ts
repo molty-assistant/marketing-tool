@@ -30,7 +30,6 @@ export function middleware(request: NextRequest) {
   // Keep public routes accessible even when basic auth is enabled.
   if (
     pathname === '/' ||
-    pathname === '/intake' ||
     pathname === '/start' ||
     pathname === '/checkout' ||
     pathname.startsWith('/status/') ||
@@ -54,7 +53,8 @@ export function middleware(request: NextRequest) {
     pathname === '/api/generate-plan' ||
     pathname === '/tiktok/tiktokK6k2GcLQ168JtZpLVwwQ8VAPr4KFYLra.txt' ||
     pathname === '/tiktok' ||
-    pathname === '/tiktok/'
+    pathname === '/tiktok/' ||
+    pathname === '/admin'
   ) {
     return NextResponse.next();
   }
