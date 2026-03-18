@@ -480,14 +480,10 @@ Exact counts required:
           subtitles: {
             type: 'ARRAY',
             items: { type: 'STRING', maxLength: 30 },
-            minItems: 3,
-            maxItems: 3,
           },
           shortDescriptions: {
             type: 'ARRAY',
             items: { type: 'STRING', maxLength: 80 },
-            minItems: 2,
-            maxItems: 2,
           },
           longDescription: { type: 'STRING' },
           keywords: { type: 'ARRAY', items: { type: 'STRING' } },

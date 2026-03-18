@@ -419,7 +419,7 @@ function charBadge(len: number, limit: number): string {
 }
 
 export function renderAppStoreCopy(copy: PdfProCopy, productName: string): string {
-  const as = copy.appStoreCopy;
+  const as = copy.appStoreCopy ?? { subtitles: [], shortDescriptions: [], longDescription: '', keywords: [] };
 
   const subtitles = (as.subtitles ?? [])
     .map((s) => trimToLimit(String(s), 30))
