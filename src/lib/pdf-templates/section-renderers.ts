@@ -406,6 +406,14 @@ export function renderAdCopy(copy: PdfProCopy, productName: string): string {
 
 // ─── Section 8 (Pro): App Store Copy ─────────────────────────────────────────
 
+/** Trim a string to at most `limit` chars, cutting at the last word boundary. */
+function trimToLimit(raw: string, limit: number): string {
+  const s = raw.trim();
+  if (s.length <= limit) return s;
+  const cut = s.slice(0, limit).replace(/\s+\S*$/, '');
+  return cut.length > 0 ? cut : s.slice(0, limit);
+}
+
 function charBadge(len: number, limit: number): string {
   return `<span class="char-ok">${len}/${limit} chars ✓</span>`;
 }
@@ -414,20 +422,20 @@ export function renderAppStoreCopy(copy: PdfProCopy, productName: string): strin
   const as = copy.appStoreCopy;
 
   const subtitles = (as.subtitles ?? [])
-    .filter((s) => String(s).length <= 30)
+    .map((s) => trimToLimit(String(s), 30))
     .map((s, i) => `
       <div class="copy-item avoid-break">
-        <div class="copy-item-number">Option ${i + 1} · ${charBadge(String(s).length, 30)}</div>
-        <div style="font-size:12pt; font-weight:600;">${escHtml(String(s))}</div>
+        <div class="copy-item-number">Option ${i + 1} · ${charBadge(s.length, 30)}</div>
+        <div style="font-size:12pt; font-weight:600;">${escHtml(s)}</div>
       </div>`)
     .join('');
 
   const shorts = (as.shortDescriptions ?? [])
-    .filter((s) => String(s).length <= 80)
+    .map((s) => trimToLimit(String(s), 80))
     .map((s, i) => `
       <div class="copy-item avoid-break">
-        <div class="copy-item-number">Option ${i + 1} · ${charBadge(String(s).length, 80)}</div>
-        <div style="font-size:11pt;">${escHtml(String(s))}</div>
+        <div class="copy-item-number">Option ${i + 1} · ${charBadge(s.length, 80)}</div>
+        <div style="font-size:11pt;">${escHtml(s)}</div>
       </div>`)
     .join('');
 
