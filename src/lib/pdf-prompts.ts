@@ -65,6 +65,7 @@ async function callGemini(params: {
   temperature: number;
   maxOutputTokens?: number;
   timeoutMs?: number;
+  responseSchema?: object;
 }): Promise<unknown> {
   let lastError: Error | null = null;
 
@@ -85,6 +86,7 @@ async function callGemini(params: {
           temperature: params.temperature,
           maxOutputTokens: params.maxOutputTokens ?? 8192,
           responseMimeType: 'application/json',
+          ...(params.responseSchema ? { responseSchema: params.responseSchema } : {}),
         },
       }),
     });
@@ -396,6 +398,113 @@ Exact counts required:
 - toneOfVoice.dos: exactly 5
 - toneOfVoice.donts: exactly 5`;
 
+  // Schema enforces maxLength at the API level — Gemini will not exceed these limits
+  const proExtensionsSchema = {
+    type: 'OBJECT',
+    properties: {
+      opportunityGaps: { type: 'ARRAY', items: { type: 'STRING' } },
+      socialProofSuggestions: { type: 'ARRAY', items: { type: 'STRING' } },
+      betaTesterScript: { type: 'STRING' },
+      visualDirection: {
+        type: 'OBJECT',
+        properties: {
+          colorPalette: { type: 'STRING' },
+          imageryStyle: { type: 'STRING' },
+        },
+      },
+      communityStrategy: {
+        type: 'OBJECT',
+        properties: {
+          subreddits: { type: 'ARRAY', items: { type: 'STRING' } },
+          discordFacebook: { type: 'ARRAY', items: { type: 'STRING' } },
+          postScript: { type: 'STRING' },
+        },
+      },
+      emails: {
+        type: 'ARRAY',
+        items: {
+          type: 'OBJECT',
+          properties: {
+            type: { type: 'STRING' },
+            subjectA: { type: 'STRING' },
+            subjectB: { type: 'STRING' },
+            previewText: { type: 'STRING' },
+            body: { type: 'STRING' },
+            ctaLabel: { type: 'STRING' },
+          },
+        },
+      },
+      contentPlan: {
+        type: 'OBJECT',
+        properties: {
+          weeklySprints: {
+            type: 'ARRAY',
+            items: {
+              type: 'OBJECT',
+              properties: {
+                week: { type: 'NUMBER' },
+                theme: { type: 'STRING' },
+                posts: {
+                  type: 'ARRAY',
+                  items: {
+                    type: 'OBJECT',
+                    properties: {
+                      title: { type: 'STRING' },
+                      postType: { type: 'STRING' },
+                      channel: { type: 'STRING' },
+                      intent: { type: 'STRING' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      adCopy: {
+        type: 'ARRAY',
+        items: {
+          type: 'OBJECT',
+          properties: {
+            angle: { type: 'STRING' },
+            emotion: { type: 'STRING' },
+            headline: { type: 'STRING', maxLength: 40 },
+            body: { type: 'STRING', maxLength: 125 },
+            cta: { type: 'STRING', maxLength: 20 },
+          },
+        },
+      },
+      appStoreCopy: {
+        type: 'OBJECT',
+        properties: {
+          subtitles: {
+            type: 'ARRAY',
+            items: { type: 'STRING', maxLength: 30 },
+            minItems: 3,
+            maxItems: 3,
+          },
+          shortDescriptions: {
+            type: 'ARRAY',
+            items: { type: 'STRING', maxLength: 80 },
+            minItems: 2,
+            maxItems: 2,
+          },
+          longDescription: { type: 'STRING' },
+          keywords: { type: 'ARRAY', items: { type: 'STRING' } },
+        },
+      },
+      toneOfVoice: {
+        type: 'OBJECT',
+        properties: {
+          summary: { type: 'STRING' },
+          dos: { type: 'ARRAY', items: { type: 'STRING' } },
+          donts: { type: 'ARRAY', items: { type: 'STRING' } },
+          sampleParagraph: { type: 'STRING' },
+        },
+      },
+    },
+  };
+
   const result = await callGemini({
     apiKey,
     systemPrompt,
@@ -403,6 +512,7 @@ Exact counts required:
     temperature: 0.6,
     maxOutputTokens: 12288,
     timeoutMs: 120_000,
+    responseSchema: proExtensionsSchema,
   });
 
   return result as Omit<PdfProCopy, keyof PdfBasicCopy>;
