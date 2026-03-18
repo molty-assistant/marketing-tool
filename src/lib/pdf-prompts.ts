@@ -49,6 +49,15 @@ function parseGeminiJson(text: string): unknown {
   }
 }
 
+// Retryable HTTP status codes from Gemini (transient overload / rate limit)
+const RETRYABLE_STATUSES = new Set([429, 503, 502, 504]);
+const MAX_RETRIES = 4;
+const RETRY_BASE_MS = 2_000; // 2s, 4s, 8s, 16s
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function callGemini(params: {
   apiKey: string;
   systemPrompt: string;
@@ -57,33 +66,49 @@ async function callGemini(params: {
   maxOutputTokens?: number;
   timeoutMs?: number;
 }): Promise<unknown> {
-  const res = await fetch(geminiUrl(params.apiKey), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    signal: AbortSignal.timeout(params.timeoutMs ?? 90_000),
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: params.systemPrompt }] },
-      contents: [{ parts: [{ text: params.userContent }] }],
-      generationConfig: {
-        temperature: params.temperature,
-        maxOutputTokens: params.maxOutputTokens ?? 8192,
-        responseMimeType: 'application/json',
-      },
-    }),
-  });
+  let lastError: Error | null = null;
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Gemini API error (${res.status}): ${errorText.slice(0, 300)}`);
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      const delayMs = RETRY_BASE_MS * Math.pow(2, attempt - 1);
+      await sleep(delayMs);
+    }
+
+    const res = await fetch(geminiUrl(params.apiKey), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(params.timeoutMs ?? 90_000),
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: params.systemPrompt }] },
+        contents: [{ parts: [{ text: params.userContent }] }],
+        generationConfig: {
+          temperature: params.temperature,
+          maxOutputTokens: params.maxOutputTokens ?? 8192,
+          responseMimeType: 'application/json',
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      const msg = `Gemini API error (${res.status}): ${errorText.slice(0, 300)}`;
+      if (RETRYABLE_STATUSES.has(res.status) && attempt < MAX_RETRIES) {
+        lastError = new Error(msg);
+        continue;
+      }
+      throw new Error(msg);
+    }
+
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text || typeof text !== 'string') {
+      throw new Error('Unexpected Gemini response shape');
+    }
+
+    return parseGeminiJson(text);
   }
 
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text || typeof text !== 'string') {
-    throw new Error('Unexpected Gemini response shape');
-  }
-
-  return parseGeminiJson(text);
+  throw lastError ?? new Error('Gemini API failed after retries');
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
