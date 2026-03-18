@@ -42,19 +42,6 @@ const FAQ_ITEMS = [
   },
 ];
 
-const PACK_INCLUDES = [
-  'Positioning snapshot: customer, pain, value prop, and support points',
-  'Landing / website copy: headline options, hero subheads, feature bullets, CTAs',
-  'App Store / listing copy (if relevant): subtitle, short + long descriptions, keyword ideas',
-  'Launch comms starter set: 5 X posts / launch messaging angles',
-];
-
-const PACK_TERMS = [
-  '£99 one-time payment',
-  'Done-for-you delivery within 48 hours of intake',
-  'One revision included',
-  `Intake via ${INTAKE_PAGE_URL} or ${INTAKE_EMAIL}`,
-];
 
 const WHO_FOR_ITEMS = [
   {
@@ -562,8 +549,8 @@ export default function LandingPage() {
               { href: SAMPLE_PACK_URL, label: 'Sample pack' },
               { href: '/terms', label: 'Terms' },
               { href: '/privacy', label: 'Privacy' },
-              { href: '/tiktok#terms', label: 'TikTok App — Terms' },
-              { href: '/tiktok#privacy', label: 'TikTok App — Privacy' },
+              { href: '/tiktok#terms', label: 'MoltyPostiz Terms of Service' },
+              { href: '/tiktok#privacy', label: 'MoltyPostiz Privacy Policy' },
             ].map(({ href, label, external }) => (
               external ? (
                 <a

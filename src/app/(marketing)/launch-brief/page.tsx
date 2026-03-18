@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { ArrowRight, Check, Clock, FileText, Zap } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -12,7 +11,7 @@ const included = [
   {
     title: 'Positioning & Messaging',
     description:
-      'Clear who it's for, what makes it different, and the core message to lead with across every channel.',
+      "Clear who it's for, what makes it different, and the core message to lead with across every channel.",
   },
   {
     title: 'App Store Optimisation',
