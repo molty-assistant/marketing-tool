@@ -4,7 +4,7 @@
  * All use the CSS classes defined in base-layout.ts.
  */
 
-import { escHtml } from './base-layout';
+import { escHtml, renderMarkdown } from './base-layout';
 import type { PdfPositioning, PdfBasicCopy, PdfProCopy } from '@/lib/pdf-prompts';
 
 // ─── Section 1: Positioning Snapshot ─────────────────────────────────────────
@@ -14,6 +14,7 @@ export function renderPositioning(pos: PdfPositioning, productName: string): str
     .map((b) => `<li>${escHtml(String(b))}</li>`)
     .join('');
 
+  // All content in one flowing div — avoids a near-empty second page for "Why Now"
   return `
     <div class="page">
       <div class="page-header">
@@ -23,22 +24,22 @@ export function renderPositioning(pos: PdfPositioning, productName: string): str
 
       <h2>Executive Summary & Positioning</h2>
 
-      <div class="card avoid-break">
+      <div class="card avoid-break" style="border-top:3pt solid var(--brand-primary);">
         <div class="card-label">App in 1 Sentence</div>
-        <p style="font-size:12pt; font-weight:600; color:var(--brand-primary);">${escHtml(pos.executiveSummary?.sentence ?? '')}</p>
-        <div style="margin-top:12pt; display:grid; grid-template-columns:1fr 1fr; gap:12pt;">
+        <p style="font-size:12pt; font-weight:600; color:var(--brand-primary); margin-bottom:10pt;">${escHtml(pos.executiveSummary?.sentence ?? '')}</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12pt;">
           <div>
             <div class="card-label">Ideal User</div>
-            <p style="font-weight:500;">${escHtml(pos.executiveSummary?.idealUser ?? '')}</p>
+            <p style="font-weight:500; margin-bottom:0;">${escHtml(pos.executiveSummary?.idealUser ?? '')}</p>
           </div>
           <div>
             <div class="card-label">Core Metric</div>
-            <p style="font-weight:500;">${escHtml(pos.executiveSummary?.coreMetric ?? '')}</p>
+            <p style="font-weight:500; margin-bottom:0;">${escHtml(pos.executiveSummary?.coreMetric ?? '')}</p>
           </div>
         </div>
       </div>
 
-      <h3 style="margin-top:16pt;">Positioning Statement</h3>
+      <h3 style="margin-top:14pt;">Positioning Statement</h3>
       <div class="callout avoid-break">
         <p>${escHtml(pos.statement ?? '')}</p>
       </div>
@@ -52,24 +53,17 @@ export function renderPositioning(pos: PdfPositioning, productName: string): str
         </tbody>
       </table>
 
-      <h3 style="margin-top:12pt;">Core Value Proposition</h3>
+      <h3 style="margin-top:10pt;">Core Value Proposition</h3>
       <div class="card avoid-break">
-        <p style="font-size:12pt; font-weight:500;">${escHtml(pos.valueProposition ?? '')}</p>
+        <p style="font-size:12pt; font-weight:500; margin-bottom:0;">${escHtml(pos.valueProposition ?? '')}</p>
       </div>
 
       <h3>Supporting Value Points</h3>
       <ul>${bullets}</ul>
-    </div>
-    <div class="page-break"></div>
-    <div class="page">
-      <div class="page-header">
-        <span class="page-header-product">${escHtml(productName)}</span>
-        <span class="page-header-section">§1 · Positioning Snapshot (cont.)</span>
-      </div>
 
-      <h3>Why Now</h3>
-      <div class="card">
-        <p>${escHtml(pos.whyNow ?? '')}</p>
+      <h3 style="margin-top:10pt;">Why Now</h3>
+      <div class="card avoid-break">
+        <p style="margin-bottom:0;">${escHtml(pos.whyNow ?? '')}</p>
       </div>
     </div>
     <div class="page-break"></div>
@@ -88,12 +82,12 @@ export function renderCompetitors(
       (c) => `
       <div class="card avoid-break">
         <div class="card-label">Competitor</div>
-        <h3>${escHtml(c.name)}</h3>
-        <table style="margin-top:6pt;">
+        <h3 style="margin-bottom:6pt;">${escHtml(c.name)}</h3>
+        <table style="margin-top:4pt;margin-bottom:0;">
           <tbody>
             <tr><th style="width:90pt;">What they lead with</th><td>${escHtml(c.emphasis)}</td></tr>
             <tr><th>Their gap</th><td>${escHtml(c.gap)}</td></tr>
-            <tr><th>Your angle</th><td><strong>${escHtml(c.angle)}</strong></td></tr>
+            <tr><th style="background:#DCFCE7;color:#166534;">Your angle</th><td style="background:#F0FDF4;"><strong>${escHtml(c.angle)}</strong></td></tr>
           </tbody>
         </table>
       </div>`
@@ -131,9 +125,9 @@ export function renderCompetitors(
 
       <h3 style="margin-top:14pt;">Say This, Not That</h3>
       <p style="color:#6B7280; font-size:9pt; margin-bottom:10pt;">
-        <span style="background:#DCFCE7; padding:2pt 6pt; border-radius:3pt;">SAY THIS</span>
+        <span style="background:#DCFCE7; padding:2pt 6pt; border-radius:3pt; font-weight:600; font-size:8pt;">SAY THIS</span>
         &nbsp; replaces &nbsp;
-        <span style="background:#FEE2E2; padding:2pt 6pt; border-radius:3pt;">NOT THAT</span>
+        <span style="background:#FEE2E2; padding:2pt 6pt; border-radius:3pt; font-weight:600; font-size:8pt;">NOT THAT</span>
       </p>
       ${swapRows}
 
@@ -152,8 +146,8 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
     .map((h, i) => `
       <div class="copy-item avoid-break">
         <div class="copy-item-number">Option ${i + 1}</div>
-        <div style="font-size:13pt; font-weight:600; margin-bottom:4pt;">${escHtml(h.text)}</div>
-        <div style="font-size:9pt; color:var(--brand-primary);">[Visual: ${escHtml(h.visualAssignment)}]</div>
+        <div style="font-size:13pt; font-weight:700; margin-bottom:5pt; color:var(--text-primary);">${escHtml(h.text)}</div>
+        <div style="font-size:9pt; color:var(--brand-primary); font-style:italic;">[Visual: ${escHtml(h.visualAssignment)}]</div>
       </div>`)
     .join('');
 
@@ -161,7 +155,7 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
     .map((h, i) => `
       <div class="copy-item avoid-break">
         <div class="copy-item-number">Option ${i + 1}</div>
-        <div>${escHtml(h)}</div>
+        <div style="font-size:11pt;">${escHtml(h)}</div>
       </div>`)
     .join('');
 
@@ -170,14 +164,14 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
     .join('');
 
   const shortCTAs = (lp.shortCTAs ?? [])
-    .map((c) => `<span class="tag">${escHtml(c)}</span>`)
+    .map((c) => `<span class="tag" style="font-weight:600;">${escHtml(c)}</span>`)
     .join(' ');
 
   const longCTAs = (lp.longCTAs ?? [])
     .map((c, i) => `
-      <div class="card avoid-break">
+      <div class="card avoid-break" style="border-left:3pt solid var(--brand-primary);">
         <div class="card-label">Option ${i + 1}</div>
-        <div style="font-size:12pt; font-weight:600; margin-bottom:4pt;">${escHtml(c.button)}</div>
+        <div style="font-size:12pt; font-weight:700; margin-bottom:4pt; color:var(--text-primary);">${escHtml(c.button)}</div>
         <div style="color:#6B7280; font-size:10pt;">${escHtml(c.supporting)}</div>
       </div>`)
     .join('');
@@ -201,7 +195,6 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
       </div>
 
       <h2>Landing Page Copy</h2>
-
       <h3>Hero Headlines</h3>
       <p style="color:#6B7280; font-size:9pt; margin-bottom:8pt;">Ranked most-direct first. Test option 1 first.</p>
       ${headlines}
@@ -218,16 +211,9 @@ export function renderLandingPageCopy(copy: PdfBasicCopy, productName: string, s
 
       <h3 style="margin-top:12pt;">Feature / Benefit Bullets</h3>
       <ul>${bullets}</ul>
-    </div>
-    <div class="page-break"></div>
-    <div class="page">
-      <div class="page-header">
-        <span class="page-header-product">${escHtml(productName)}</span>
-        <span class="page-header-section">§3 · Landing Page Copy (cont.)</span>
-      </div>
 
-      <h3>Short CTAs (Button Labels)</h3>
-      <div style="margin-bottom:12pt;">${shortCTAs}</div>
+      <h3 style="margin-top:12pt;">Short CTAs (Button Labels)</h3>
+      <div style="margin-bottom:14pt;">${shortCTAs}</div>
 
       <h3>Long CTAs (Button + Supporting Text)</h3>
       ${longCTAs}
@@ -249,7 +235,7 @@ export function renderSocialPosts(copy: PdfBasicCopy, productName: string): stri
       <div class="post-bubble avoid-break">
         <div class="post-platform">X / Twitter · Post ${i + 1}</div>
         <div style="white-space:pre-wrap;">${escHtml(String(p))}</div>
-        <div style="color:#9CA3AF; font-size:8pt; margin-top:4pt;">${String(p).length} chars</div>
+        <div class="post-char-count">${String(p).length} chars</div>
       </div>`)
     .join('');
 
@@ -302,13 +288,22 @@ export function renderEmails(copy: PdfProCopy, productName: string): string {
       <div class="email-card avoid-break">
         <div class="email-header">${escHtml(emailTypeLabel[e.type] ?? e.type)}</div>
         <div class="email-meta">
-          <div class="email-meta-row"><span class="email-meta-label">Subject A:</span><span>${escHtml(e.subjectA)}</span></div>
-          <div class="email-meta-row"><span class="email-meta-label">Subject B:</span><span style="color:#6B7280;">${escHtml(e.subjectB)}</span></div>
-          <div class="email-meta-row"><span class="email-meta-label">Preview:</span><span style="color:#6B7280; font-size:9pt;">${escHtml(e.previewText)}</span></div>
+          <div class="email-meta-row">
+            <span class="email-meta-label">Subject A:</span>
+            <span style="font-weight:600;">${escHtml(e.subjectA)}</span>
+          </div>
+          <div class="email-meta-row">
+            <span class="email-meta-label">Subject B:</span>
+            <span style="color:#6B7280;">${escHtml(e.subjectB)}</span>
+          </div>
+          <div class="email-meta-row">
+            <span class="email-meta-label">Preview:</span>
+            <span style="color:#6B7280; font-size:9pt; font-style:italic;">${escHtml(e.previewText)}</span>
+          </div>
         </div>
-        <div class="email-body">${escHtml(e.body)}</div>
-        <div style="padding:8pt 12pt; border-top:1px solid var(--border); background:var(--bg-subtle);">
-          <span class="tag">${escHtml(e.ctaLabel)}</span>
+        <div class="email-body">${renderMarkdown(e.body)}</div>
+        <div class="email-cta">
+          <span class="tag" style="font-weight:600;">${escHtml(e.ctaLabel)}</span>
         </div>
       </div>`)
     .join('');
@@ -320,7 +315,7 @@ export function renderEmails(copy: PdfProCopy, productName: string): string {
         <span class="page-header-section">§5 · Email Sequence</span>
       </div>
       <h2>Email Sequence</h2>
-      <p style="color:#6B7280; font-size:9pt; margin-bottom:12pt;">Three send-ready emails. Paste into any email tool. Send in order: launch → +3 days value → +7 days last-call.</p>
+      <p style="color:#6B7280; font-size:9pt; margin-bottom:14pt;">Three send-ready emails. Paste into any email tool. Send in order: launch → +3 days value → +7 days last-call.</p>
       ${emailCards}
     </div>
     <div class="page-break"></div>
@@ -335,14 +330,14 @@ export function renderContentPlan(copy: PdfProCopy, productName: string): string
       const postsHtml = (sprint.posts ?? []).map((post) => `
         <tr class="avoid-break">
           <td>${escHtml(post.title)}</td>
-          <td style="width:70pt;"><span class="tag">${escHtml(post.postType)}</span></td>
-          <td style="width:60pt;">${escHtml(post.channel)}</td>
+          <td style="width:72pt;"><span class="tag">${escHtml(post.postType)}</span></td>
+          <td style="width:62pt;color:#6B7280;">${escHtml(post.channel)}</td>
           <td style="color:#6B7280;">${escHtml(post.intent)}</td>
         </tr>
       `).join('');
 
       return `
-        <h3 style="margin-top:16pt; color:var(--brand-primary);">Week ${sprint.week}: ${escHtml(sprint.theme)}</h3>
+        <h3 style="margin-top:16pt;color:var(--brand-primary);">Week ${sprint.week}: ${escHtml(sprint.theme)}</h3>
         <table style="margin-top:8pt;">
           <thead>
             <tr><th>Hook / Title</th><th>Type</th><th>Channel</th><th>Intent</th></tr>
@@ -373,18 +368,24 @@ export function renderAdCopy(copy: PdfProCopy, productName: string): string {
   const adCards = (copy.adCopy ?? [])
     .map((ad, i) => `
       <div class="card avoid-break">
-        <div class="card-label">Angle ${i + 1} · ${escHtml(ad.angle)} · <em>${escHtml(ad.emotion)}</em></div>
-        <div style="margin-bottom:6pt;">
-          <div style="font-size:9pt; color:#6B7280; margin-bottom:2pt;">Headline (≤40 chars)</div>
-          <div style="font-weight:600; font-size:12pt;">${escHtml(ad.headline)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8pt;">
+          <div class="card-label" style="margin-bottom:0;">Angle ${i + 1}</div>
+          <div style="display:flex;gap:4pt;">
+            <span style="background:#EEF2FF;color:#4F46E5;padding:2pt 7pt;border-radius:20pt;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">${escHtml(ad.angle)}</span>
+            <span style="background:#FDF4FF;color:#7C3AED;padding:2pt 7pt;border-radius:20pt;font-size:7.5pt;font-weight:600;font-style:italic;">${escHtml(ad.emotion)}</span>
+          </div>
         </div>
         <div style="margin-bottom:6pt;">
-          <div style="font-size:9pt; color:#6B7280; margin-bottom:2pt;">Body (≤125 chars)</div>
-          <div>${escHtml(ad.body)}</div>
+          <div style="font-size:8.5pt; color:#6B7280; margin-bottom:2pt;">Headline <span style="color:var(--text-muted);">(≤40 chars)</span></div>
+          <div style="font-weight:700; font-size:13pt; color:var(--text-primary);">${escHtml(ad.headline)}</div>
+        </div>
+        <div style="margin-bottom:6pt;">
+          <div style="font-size:8.5pt; color:#6B7280; margin-bottom:2pt;">Body <span style="color:var(--text-muted);">(≤125 chars)</span></div>
+          <div style="font-size:10pt;">${escHtml(ad.body)}</div>
         </div>
         <div>
-          <div style="font-size:9pt; color:#6B7280; margin-bottom:2pt;">CTA (≤20 chars)</div>
-          <span class="tag">${escHtml(ad.cta)}</span>
+          <div style="font-size:8.5pt; color:#6B7280; margin-bottom:3pt;">CTA <span style="color:var(--text-muted);">(≤20 chars)</span></div>
+          <span class="tag" style="font-weight:700;">${escHtml(ad.cta)}</span>
         </div>
       </div>`)
     .join('');
@@ -405,22 +406,29 @@ export function renderAdCopy(copy: PdfProCopy, productName: string): string {
 
 // ─── Section 8 (Pro): App Store Copy ─────────────────────────────────────────
 
+function charBadge(len: number, limit: number): string {
+  const ok = len <= limit;
+  const cls = ok ? 'char-ok' : 'char-over';
+  const icon = ok ? '✓' : `✗ over by ${len - limit}`;
+  return `<span class="${cls}">${len} chars ${icon}</span>`;
+}
+
 export function renderAppStoreCopy(copy: PdfProCopy, productName: string): string {
   const as = copy.appStoreCopy;
 
   const subtitles = (as.subtitles ?? [])
     .map((s, i) => `
       <div class="copy-item avoid-break">
-        <div class="copy-item-number">Option ${i + 1} · ${String(s).length} chars</div>
-        <div>${escHtml(String(s))}</div>
+        <div class="copy-item-number">Option ${i + 1} · ${charBadge(String(s).length, 30)}</div>
+        <div style="font-size:12pt; font-weight:600;">${escHtml(String(s))}</div>
       </div>`)
     .join('');
 
   const shorts = (as.shortDescriptions ?? [])
     .map((s, i) => `
       <div class="copy-item avoid-break">
-        <div class="copy-item-number">Option ${i + 1} · ${String(s).length} chars</div>
-        <div>${escHtml(String(s))}</div>
+        <div class="copy-item-number">Option ${i + 1} · ${charBadge(String(s).length, 80)}</div>
+        <div style="font-size:11pt;">${escHtml(String(s))}</div>
       </div>`)
     .join('');
 
@@ -434,17 +442,17 @@ export function renderAppStoreCopy(copy: PdfProCopy, productName: string): strin
       </div>
       <h2>App Store / Listing Copy</h2>
 
-      <h3>Subtitle Options (≤30 chars)</h3>
+      <h3>Subtitle Options <span style="font-weight:400;color:#6B7280;font-size:10pt;">(≤30 chars)</span></h3>
       ${subtitles}
 
-      <h3 style="margin-top:12pt;">Short Descriptions (≤80 chars)</h3>
+      <h3 style="margin-top:12pt;">Short Descriptions <span style="font-weight:400;color:#6B7280;font-size:10pt;">(≤80 chars)</span></h3>
       ${shorts}
 
       <h3 style="margin-top:12pt;">Long Description</h3>
-      <div class="card" style="white-space:pre-wrap; font-size:9pt; line-height:1.5;">${escHtml(as.longDescription ?? '')}</div>
+      <div class="card" style="white-space:pre-wrap; font-size:9pt; line-height:1.6; color:#374151;">${escHtml(as.longDescription ?? '')}</div>
 
       <h3 style="margin-top:12pt;">Keyword Suggestions</h3>
-      <div>${keywords}</div>
+      <div style="margin-top:4pt;">${keywords}</div>
     </div>
     <div class="page-break"></div>
   `;
@@ -469,20 +477,20 @@ export function renderToneOfVoice(copy: PdfProCopy, productName: string): string
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12pt;">
-        <div class="card">
+        <div class="card" style="border-top:3pt solid #059669;">
           <div class="card-label" style="color:#059669;">Do ✓</div>
           <ul style="margin-top:6pt;">${dos}</ul>
         </div>
-        <div class="card">
+        <div class="card" style="border-top:3pt solid #DC2626;">
           <div class="card-label" style="color:#DC2626;">Don't ✗</div>
           <ul style="margin-top:6pt;">${donts}</ul>
         </div>
       </div>
 
       <h3 style="margin-top:14pt;">Sample Paragraph</h3>
-      <div class="card">
-        <div class="card-label">Example copy in your tone</div>
-        <p style="margin-top:6pt; font-size:11pt; line-height:1.7; white-space:pre-wrap;">${escHtml(copy.toneOfVoice?.sampleParagraph ?? '')}</p>
+      <div class="card" style="background:var(--brand-primary-light);border-color:#C7D2FE;">
+        <div class="card-label" style="color:#4338CA;">Example copy in your tone</div>
+        <p style="margin-top:6pt; font-size:11pt; line-height:1.7; white-space:pre-wrap; color:#1E1B4B;">${escHtml(copy.toneOfVoice?.sampleParagraph ?? '')}</p>
       </div>
     </div>
     <div class="page-break"></div>
@@ -503,24 +511,29 @@ export function renderCommunityStrategy(copy: PdfProCopy, productName: string): 
         <span class="page-header-section">§10 · Community & Growth Strategy</span>
       </div>
       <h2>Community & Growth Strategy</h2>
-      <p style="color:#6B7280; font-size:9pt; margin-bottom:12pt;">Where to find your first 100 users and how to talk to them.</p>
+      <p style="color:#6B7280; font-size:9pt; margin-bottom:14pt;">Where to find your first 100 users and how to talk to them.</p>
 
-      <h3>Target Subreddits</h3>
-      <ul>${subreddits}</ul>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12pt;margin-bottom:12pt;">
+        <div class="card">
+          <div class="card-label">Target Subreddits</div>
+          <ul style="margin-top:4pt;">${subreddits}</ul>
+        </div>
+        <div class="card">
+          <div class="card-label">Discord / Facebook Groups</div>
+          <ul style="margin-top:4pt;">${groups}</ul>
+        </div>
+      </div>
 
-      <h3>Discord / Facebook Groups</h3>
-      <ul>${groups}</ul>
-
-      <h3 style="margin-top:14pt;">Community Posting Script</h3>
-      <div class="card avoid-break">
+      <h3>Community Posting Script</h3>
+      <div class="card avoid-break" style="border-left:3pt solid var(--brand-primary);">
         <div class="card-label">How to post without sounding spammy</div>
-        <p style="font-size:10pt; line-height:1.6; white-space:pre-wrap;">${escHtml(c?.postScript ?? '')}</p>
+        <p style="font-size:10pt; line-height:1.6; white-space:pre-wrap; margin-top:4pt;">${escHtml(c?.postScript ?? '')}</p>
       </div>
 
       <h3 style="margin-top:14pt;">Beta-Tester Outreach</h3>
-      <div class="card avoid-break">
+      <div class="card avoid-break" style="border-left:3pt solid #7C3AED;">
         <div class="card-label">Email/DM Template to gather testimonials</div>
-        <p style="font-size:10pt; line-height:1.6; white-space:pre-wrap;">${escHtml(copy.betaTesterScript ?? '')}</p>
+        <p style="font-size:10pt; line-height:1.6; white-space:pre-wrap; margin-top:4pt;">${escHtml(copy.betaTesterScript ?? '')}</p>
       </div>
     </div>
     <div class="page-break"></div>
@@ -539,20 +552,20 @@ export function renderVisualDirection(copy: PdfProCopy, productName: string): st
         <span class="page-header-section">§11 · Visual Direction</span>
       </div>
       <h2>Visual Direction & Aesthetic Brief</h2>
-      <p style="color:#6B7280; font-size:9pt; margin-bottom:12pt;">The artistic foundation for your screenshots, ads, and social media.</p>
+      <p style="color:#6B7280; font-size:9pt; margin-bottom:14pt;">The artistic foundation for your screenshots, ads, and social media.</p>
 
-      <div class="card avoid-break">
+      <div class="card avoid-break" style="border-top:3pt solid var(--brand-primary);">
         <div class="card-label">Color Palette & Vibe</div>
-        <p style="font-size:11pt; font-weight:500;">${escHtml(v?.colorPalette ?? '')}</p>
+        <p style="font-size:11pt; font-weight:500; margin-bottom:0;">${escHtml(v?.colorPalette ?? '')}</p>
       </div>
 
-      <div class="card avoid-break" style="margin-top:12pt;">
+      <div class="card avoid-break" style="margin-top:10pt;border-top:3pt solid #7C3AED;">
         <div class="card-label">Imagery Style</div>
-        <p style="font-size:10pt; line-height:1.6;">${escHtml(v?.imageryStyle ?? '')}</p>
+        <p style="font-size:10pt; line-height:1.6; margin-bottom:0;">${escHtml(v?.imageryStyle ?? '')}</p>
       </div>
-      
-      <div class="callout avoid-break" style="margin-top:16pt;">
-        <p style="font-size:10pt;"><strong>Pro Tip:</strong> Use these exact descriptions as prompts if you are generating images with tools like Midjourney or Nano Banana Pro to ensure a consistent brand identity.</p>
+
+      <div class="callout avoid-break" style="margin-top:14pt;">
+        <p style="font-size:10pt;"><strong>Pro Tip:</strong> Use these exact descriptions as prompts in Midjourney or any AI image tool to generate on-brand assets with a consistent look and feel across all your channels.</p>
       </div>
     </div>
     <div class="page-break"></div>
