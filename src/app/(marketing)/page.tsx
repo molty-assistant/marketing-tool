@@ -274,7 +274,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white">How it works</h2>
           <p className="mt-2 text-sm sm:text-base text-white/40">
-            Fast, scoped service: pay, send intake, get your pack in 48 hours.
+            From your product URL to a PDF you can act on — in under 3 minutes.
           </p>
         </div>
 
@@ -285,21 +285,21 @@ export default function LandingPage() {
           {[
             {
               step: '01',
-              icon: <Zap className="h-4 w-4 text-indigo-400" />,
-              title: 'Pay £99',
-              desc: 'Secure your Launch Brief + Copy Pack via Stripe with a one-time payment.',
+              icon: <FileText className="h-4 w-4 text-indigo-400" />,
+              title: 'Answer 5 questions',
+              desc: 'Tell us your product URL, tone, audience, channel focus, and goal.',
             },
             {
               step: '02',
-              icon: <FileText className="h-4 w-4 text-indigo-400" />,
-              title: 'Send intake details',
-              desc: `Share your URL, deadline, competitors, and tone via ${INTAKE_PAGE_URL} or email.`,
+              icon: <Zap className="h-4 w-4 text-indigo-400" />,
+              title: 'Pay once',
+              desc: 'Basic (£39) or Pro (£99) — secure Stripe checkout, no subscription.',
             },
             {
               step: '03',
               icon: <ArrowRight className="h-4 w-4 text-indigo-400" />,
-              title: 'Receive your pack in 48h',
-              desc: 'Get done-for-you positioning, landing/listing copy, launch comms (5 X posts / launch messaging angles), and one revision.',
+              title: 'Download your PDF',
+              desc: 'AI-generated positioning, copy, and a content plan — ready to paste and ship in minutes.',
             },
           ].map((s) => (
             <div
@@ -430,22 +430,32 @@ export default function LandingPage() {
       <section id="pricing" className="mt-20 sm:mt-28 scroll-mt-24">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">What you get for £99</h2>
-            <p className="mt-2 text-sm text-white/40">Done-for-you scope, delivered within 48 hours of intake.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">Choose your plan</h2>
+            <p className="mt-2 text-sm text-white/40">One-time payment. Instant PDF delivery. No account required.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
-            {/* Inclusions */}
+            {/* Basic */}
             <div className="rounded-2xl border border-white/6 bg-white/[0.02] p-6">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <span className="text-base font-bold text-white">Launch Brief + Copy Pack</span>
-                  <p className="mt-1 text-xs text-white/35">Paste-ready messaging for your launch</p>
+                  <span className="text-base font-bold text-white">Basic</span>
+                  <p className="mt-1 text-xs text-white/35">Typically 10+ pages</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-3xl font-bold text-white">£39</span>
+                  <p className="text-xs text-white/35">one-time</p>
                 </div>
               </div>
-              <p className="text-sm text-white/40 mb-5">Built for indie makers who need sharper positioning and copy to win first customers.</p>
+              <p className="text-sm text-white/40 mb-5">Sharp positioning and landing page copy — everything you need to start shipping.</p>
               <ul className="space-y-2.5 text-sm text-white/60 mb-6">
-                {PACK_INCLUDES.map((f) => (
+                {[
+                  'Positioning Snapshot',
+                  'Competitor Angles + Say This Not That',
+                  '5 headline options + feature bullets',
+                  'Short + long CTA options',
+                  '5 X/Twitter + 2 LinkedIn launch posts',
+                ].map((f) => (
                   <li key={f} className="flex gap-2.5 items-start">
                     <Check className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                     {f}
@@ -453,16 +463,14 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link
-                href={SAMPLE_PACK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/start?tier=basic"
                 className="flex items-center justify-center rounded-xl border border-indigo-500/30 px-6 py-3 text-sm font-semibold text-indigo-300 hover:bg-indigo-500/8 hover:border-indigo-400/50 transition-all"
               >
-                View LightScout sample
+                Get Basic — £39
               </Link>
             </div>
 
-            {/* Offer terms */}
+            {/* Pro — gradient border */}
             <div className="rounded-[17px] bg-gradient-to-b from-indigo-500/35 to-violet-500/15 p-[1px]">
               <div className="rounded-2xl bg-[oklch(0.12_0.01_270)] p-6 relative overflow-hidden h-full">
                 {/* Ambient glow */}
@@ -471,38 +479,38 @@ export default function LandingPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-bold text-white">Founding batch offer</span>
-                      <span className="rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">£99</span>
+                      <span className="text-base font-bold text-white">Pro</span>
+                      <span className="rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">Popular</span>
                     </div>
-                    <p className="mt-1 text-xs text-white/35">One-time payment</p>
+                    <p className="mt-1 text-xs text-white/35">Typically 20+ pages</p>
                   </div>
                   <div className="text-right">
                     <span className="text-3xl font-bold bg-gradient-to-r from-indigo-300 to-violet-300 bg-clip-text text-transparent">£99</span>
                     <p className="text-xs text-white/35">one-time</p>
                   </div>
                 </div>
-                <p className="text-sm text-white/40 mb-5">Clear deliverables, clear deadline, no retainer.</p>
+                <p className="text-sm text-white/40 mb-5">Everything in Basic plus the full launch toolkit — the complete package.</p>
                 <ul className="space-y-2.5 text-sm text-white/60 mb-6">
-                  {PACK_TERMS.map((f) => (
+                  {[
+                    'Everything in Basic',
+                    'Email Sequence (3 emails + A/B subjects)',
+                    '30-Day Content Calendar',
+                    'Ad Copy Angles for Meta/X',
+                    'App Store / Listing Copy',
+                    'Tone-of-Voice Cheat Sheet',
+                    '10 X/Twitter + 5 LinkedIn posts',
+                  ].map((f) => (
                     <li key={f} className="flex gap-2.5 items-start">
                       <Check className="h-4 w-4 text-indigo-400 flex-shrink-0 mt-0.5" />
                       {f}
                     </li>
                   ))}
                 </ul>
-                <a
-                  href={STRIPE_LAUNCH_PACK_URL}
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href="/start?tier=pro"
                   className="flex items-center justify-center rounded-xl bg-gradient-to-b from-indigo-400 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] border border-indigo-400/20 hover:shadow-[0_0_28px_rgba(99,102,241,0.45)] hover:scale-[1.01] transition-all"
                 >
-                  Pay £99 now
-                </a>
-                <Link
-                  href={INTAKE_PAGE_URL}
-                  className="mt-3 flex items-center justify-center rounded-xl border border-indigo-500/30 px-6 py-3 text-sm font-semibold text-indigo-300 hover:bg-indigo-500/8 hover:border-indigo-400/50 transition-all"
-                >
-                  Already paid? Send intake
+                  Get Pro — £99
                 </Link>
               </div>
             </div>
