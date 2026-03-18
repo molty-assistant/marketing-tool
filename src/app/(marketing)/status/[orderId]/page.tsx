@@ -4,6 +4,50 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
+const GENERATION_MESSAGES = [
+  "Analysing your product...",
+  "Researching your competitors...",
+  "Finding your unfair advantages...",
+  "Crafting your positioning statement...",
+  "Writing your headline options...",
+  "Building your email sequences...",
+  "Sharpening your ad copy...",
+  "Mapping out your 30-day calendar...",
+  "Polishing your App Store listing...",
+  "Assembling your tone of voice guide...",
+  "Finalising your launch strategy...",
+  "Adding the finishing touches...",
+  "Almost there — packaging everything up...",
+];
+
+function AnimatedMessage({ active }: { active: boolean }) {
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    if (!active) return;
+    const cycle = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % GENERATION_MESSAGES.length);
+        setVisible(true);
+      }, 400);
+    }, 3500);
+    return () => clearInterval(cycle);
+  }, [active]);
+
+  if (!active) return null;
+
+  return (
+    <p
+      className="text-sm text-indigo-500 dark:text-indigo-400 font-medium mt-3 transition-opacity duration-400"
+      style={{ opacity: visible ? 1 : 0 }}
+    >
+      {GENERATION_MESSAGES[index]}
+    </p>
+  );
+}
+
 type StepStatus = 'pending' | 'running' | 'done' | 'failed';
 
 interface PipelineStep {
@@ -139,8 +183,12 @@ export default function StatusPage() {
                 <span className="h-2 w-2 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: '150ms' }} />
                 <span className="h-2 w-2 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
-              <p className="text-xs text-slate-400 mt-3">Starting up…</p>
+              <AnimatedMessage active={true} />
             </div>
+          )}
+
+          {!isFailed && steps.length > 0 && orderStatus?.status === 'generating' && (
+            <AnimatedMessage active={true} />
           )}
 
           {isFailed && (

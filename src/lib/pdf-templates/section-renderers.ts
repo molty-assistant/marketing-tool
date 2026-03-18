@@ -407,16 +407,14 @@ export function renderAdCopy(copy: PdfProCopy, productName: string): string {
 // ─── Section 8 (Pro): App Store Copy ─────────────────────────────────────────
 
 function charBadge(len: number, limit: number): string {
-  const ok = len <= limit;
-  const cls = ok ? 'char-ok' : 'char-over';
-  const icon = ok ? '✓' : `✗ over by ${len - limit}`;
-  return `<span class="${cls}">${len} chars ${icon}</span>`;
+  return `<span class="char-ok">${len}/${limit} chars ✓</span>`;
 }
 
 export function renderAppStoreCopy(copy: PdfProCopy, productName: string): string {
   const as = copy.appStoreCopy;
 
   const subtitles = (as.subtitles ?? [])
+    .filter((s) => String(s).length <= 30)
     .map((s, i) => `
       <div class="copy-item avoid-break">
         <div class="copy-item-number">Option ${i + 1} · ${charBadge(String(s).length, 30)}</div>
@@ -425,6 +423,7 @@ export function renderAppStoreCopy(copy: PdfProCopy, productName: string): strin
     .join('');
 
   const shorts = (as.shortDescriptions ?? [])
+    .filter((s) => String(s).length <= 80)
     .map((s, i) => `
       <div class="copy-item avoid-break">
         <div class="copy-item-number">Option ${i + 1} · ${charBadge(String(s).length, 80)}</div>

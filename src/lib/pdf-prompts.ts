@@ -390,8 +390,8 @@ Exact counts required:
 - emails: exactly 3 in order: launch, value, urgency. Write complete paste-ready bodies. Use [First Name] for personalisation.
 - contentPlan.weeklySprints: exactly 4 sprints (Week 1: Introduction & Problem, Week 2: Deep Dives, Week 3: Proof, Week 4: Growth Hacks). Each sprint must have 3 to 5 posts.
 - adCopy: exactly 5 angles. headline under 40 chars, body under 125 chars, cta under 20 chars
-- appStoreCopy.subtitles: exactly 3, each under 30 chars
-- appStoreCopy.shortDescriptions: exactly 2, each under 80 chars
+- appStoreCopy.subtitles: exactly 3. HARD LIMIT: each must be ≤30 characters including spaces and punctuation. Count every character before writing. If a draft is 31+ chars, shorten it — no exceptions.
+- appStoreCopy.shortDescriptions: exactly 2. HARD LIMIT: each must be ≤80 characters including spaces and punctuation. Count every character before writing. If a draft is 81+ chars, shorten it — no exceptions.
 - appStoreCopy.keywords: 8 to 10 keywords
 - toneOfVoice.dos: exactly 5
 - toneOfVoice.donts: exactly 5`;
