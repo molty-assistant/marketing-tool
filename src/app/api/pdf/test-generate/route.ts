@@ -76,7 +76,10 @@ export async function POST(req: NextRequest) {
 
   updatePdfOrder(order.id, { status: 'paid' });
 
-  const origin = req.nextUrl.origin;
+  const origin =
+    process.env.PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    `${req.headers.get('x-forwarded-proto') ?? 'https'}://${req.headers.get('x-forwarded-host') ?? req.nextUrl.host}`;
   const result = await runPdfPipeline(order.id);
 
   return Response.json({
