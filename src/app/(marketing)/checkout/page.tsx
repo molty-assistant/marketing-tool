@@ -38,7 +38,10 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
 
   // Fetch order on mount
   useEffect(() => {
-    if (!orderId) { setLoading(false); return; }
+    if (!orderId) {
+      queueMicrotask(() => setLoading(false));
+      return;
+    }
 
     fetch(`/api/pdf/orders/${orderId}`)
       .then((r) => r.json())
@@ -60,8 +63,10 @@ function CheckoutContent({ scriptReady }: { scriptReady: boolean }) {
     // Map 'entry' back to 'basic' for API compatibility with existing DB records
     const apiTier = selectedTier === 'entry' ? 'basic' : selectedTier;
 
-    setSyncing(true);
-    setError('');
+    queueMicrotask(() => {
+      setSyncing(true);
+      setError('');
+    });
 
     fetch('/api/pdf/checkout', {
       method: 'POST',

@@ -107,7 +107,7 @@ export default function TikTokIntegrationPage() {
             <div>
               <h3 className="text-base font-semibold text-white/90 mb-2">4. Data Removal & Revocation</h3>
               <p className="text-sm sm:text-base leading-relaxed text-white/60">
-                You retain full and total control over your integration. You can instantly revoke our application access at any time directly through your TikTok account&apos;s "Authorized Apps" settings, or by contacting our team to have your MoltyPostiz integration data permanently deleted by emailing support@molty.marketing.
+                You retain full and total control over your integration. You can instantly revoke our application access at any time directly through your TikTok account&apos;s &quot;Authorized Apps&quot; settings, or by contacting our team to have your MoltyPostiz integration data permanently deleted by emailing support@molty.marketing.
               </p>
             </div>
           </div>
