@@ -298,6 +298,8 @@ export default function LandingPage() {
               { href: SAMPLE_PACK_URL, label: 'Sample pack' },
               { href: '/terms', label: 'Terms' },
               { href: '/privacy', label: 'Privacy' },
+              { href: '/tiktok/terms', label: 'MoltyPostiz Terms of Service' },
+              { href: '/tiktok/privacy', label: 'MoltyPostiz Privacy Policy' },
             ].map(({ href, label }) => (
               <Link
                 key={href}
