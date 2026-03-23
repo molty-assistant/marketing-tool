@@ -30,6 +30,11 @@ export default function MarketingLayout({
 }) {
   return (
     <>
+      <script
+        data-goatcounter="https://microapps.goatcounter.com/count"
+        async
+        src="//gc.zgo.at/count.js"
+      />
       <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link
