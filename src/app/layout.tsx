@@ -48,6 +48,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`dark ${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
+        <script
+          data-goatcounter="https://microapps.goatcounter.com/count"
+          async
+          src="//gc.zgo.at/count.js"
+        />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>

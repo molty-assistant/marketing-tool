@@ -98,7 +98,22 @@ export default function LandingPage() {
             <span>One revision included</span>
           </div>
 
-          {/* PDF Mockup */}
+          {/* Sample pack nudge */}
+          <p className="mt-4 text-sm text-muted-foreground">
+            Not sure yet?{' '}
+            <a
+              href={SAMPLE_PACK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-indigo-400 hover:text-indigo-300 transition-colors underline underline-offset-2"
+            >
+              View the sample pack free
+              <FileText className="h-3.5 w-3.5" />
+            </a>{' '}
+            before committing.
+          </p>
+
+          {/* PDF Mockup — clickable to open sample pack */}
           <div className="mt-14 mx-auto max-w-2xl">
             <div className="relative">
               <div className="absolute inset-x-12 bottom-0 h-24 bg-indigo-600/20 blur-3xl rounded-full" />
@@ -116,8 +131,12 @@ export default function LandingPage() {
                     aria-hidden="true"
                   />
                 </div>
-                <div
-                  className="relative rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-1.5 shadow-2xl overflow-hidden"
+                <a
+                  href={SAMPLE_PACK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View sample pack — opens in new tab"
+                  className="group/block relative rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-1.5 shadow-2xl overflow-hidden cursor-pointer hover:border-indigo-400/50 hover:shadow-[0_0_32px_rgba(99,102,241,0.2)] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   style={{ transform: 'perspective(1200px) rotateX(3deg) rotateY(-1deg)', zIndex: 1 }}
                 >
                   <Image
@@ -129,10 +148,17 @@ export default function LandingPage() {
                     priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent rounded-2xl pointer-events-none" />
-                </div>
+                  {/* Hover overlay with CTA */}
+                  <div className="absolute inset-0 rounded-2xl bg-indigo-600/0 group-hover/block:bg-indigo-600/10 transition-colors duration-300 flex items-end justify-center pb-6 pointer-events-none">
+                    <span className="opacity-0 group-hover/block:opacity-100 transition-opacity duration-300 rounded-full bg-indigo-600/90 px-4 py-2 text-sm font-semibold text-white shadow-lg flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      View full sample pack →
+                    </span>
+                  </div>
+                </a>
               </div>
               <div className="mt-5 text-center">
-                <Link
+                <a
                   href={SAMPLE_PACK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -140,7 +166,7 @@ export default function LandingPage() {
                 >
                   <FileText className="h-3.5 w-3.5" />
                   View full sample pack →
-                </Link>
+                </a>
               </div>
             </div>
           </div>

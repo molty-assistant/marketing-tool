@@ -150,8 +150,6 @@ function StartPageContent() {
 
       // Cache email so the delivery page can pre-fill the ownership verification
       sessionStorage.setItem(`pdf-email-${data.orderId}`, email.trim().toLowerCase());
-      // Clear intake draft — form submitted successfully
-      sessionStorage.removeItem(STORAGE_KEY);
 
       router.push(`/checkout?orderId=${data.orderId}`);
     } catch {
